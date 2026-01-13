@@ -7,7 +7,7 @@ from enum import Enum
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.card import Card
 from src.domain.models.chips import ChipAmount
-from src.domain.models.player import Player, PlayerId
+from src.domain.models.player import BettingRoundActionStatus, Player, PlayerId
 from src.domain.models.pot import PotState
 from src.domain.models.seat import Seat
 
@@ -103,18 +103,20 @@ class HandState:
 
 @dataclass(slots=True)
 class BettingState:
-    minimum_raise_amount: ChipAmount
-    last_raise_amount: ChipAmount
+    """State tracking for the current betting round."""
+
+    last_raise_increment: ChipAmount
+    current_bet_level_to_match: ChipAmount
     current_player_position: int | None
 
     def __post_init__(self) -> None:
-        if self.minimum_raise_amount.value < 0:
+        if self.last_raise_increment.value < 0:
             raise ValueError(
-                f"Minimum raise amount cannot be negative: {self.minimum_raise_amount.value}"
+                f"Last raise increment cannot be negative: {self.last_raise_increment.value}"
             )
-        if self.last_raise_amount.value < 0:
+        if self.current_bet_level_to_match.value < 0:
             raise ValueError(
-                f"Last raise amount cannot be negative: {self.last_raise_amount.value}"
+                f"Current bet level to match cannot be negative: {self.current_bet_level_to_match.value}"
             )
         if self.current_player_position is not None and self.current_player_position < 0:
             raise ValueError(
@@ -252,3 +254,52 @@ class Game:
 
     def get_player_by_id(self, player_id: str) -> Player | None:
         return next((p for p in self.players if p.id == player_id), None)
+
+    def is_hand_complete(self) -> bool:
+        """
+        Check if hand is complete.
+
+        A hand is complete when:
+        1. We've reached showdown phase → betting complete, proceed to determine winners
+        2. Only one player remains (all others folded) → early win, no showdown needed
+        """
+        if self.current_phase == GamePhase.SHOWDOWN:
+            return True
+
+        players_in_hand = [p for p in self.players if p.is_in_hand()]
+        return len(players_in_hand) <= 1
+
+    def is_round_complete(self) -> bool:
+        """
+        Determine if current betting round is complete.
+
+        Framework:
+        1. If only 0-1 players remain (not folded) → hand ends → round complete
+        2. If all players in hand have acted AND bets are equal → round complete
+        3. If all players in hand are all-in → round complete (no more betting)
+        4. Otherwise → round continues
+        """
+        players_in_hand = [p for p in self.players if p.is_in_hand()]
+
+        if len(players_in_hand) <= 1:
+            return True
+
+        all_acted = all(
+            player.betting_status == BettingRoundActionStatus.ACTED for player in players_in_hand
+        )
+
+        if not all_acted:
+            return False
+
+        bets = [player.current_bet for player in players_in_hand]
+        unique_bet_amounts = {bet.value for bet in bets}
+
+        if len(unique_bet_amounts) == 1:
+            return True
+
+        all_all_in = all(player.is_all_in() for player in players_in_hand)
+
+        if all_all_in:
+            return True
+
+        return False

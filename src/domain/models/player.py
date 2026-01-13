@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 from src.domain.models.bot import BotId
@@ -11,10 +11,18 @@ from src.domain.models.seat import Seat
 PlayerId = str
 
 
-class PlayerStatus(Enum):
-    ACTIVE = "active"
+class BettingRoundActionStatus(Enum):
+    """Whether the player has acted in the current betting round."""
+
+    NEEDS_ACTION = "needs_action"
+    ACTED = "acted"
+
+
+class HandParticipationStatus(Enum):
+    """Whether the player is still participating in the current hand."""
+
+    IN_HAND = "in_hand"
     FOLDED = "folded"
-    ALL_IN = "all_in"
     ELIMINATED = "eliminated"
 
 
@@ -25,9 +33,10 @@ class Player:
     seat: Seat
     chips: ChipAmount
     hole_cards: Hand | None
-    status: PlayerStatus
+    betting_status: BettingRoundActionStatus
+    participation_status: HandParticipationStatus
     current_bet: ChipAmount
-    has_acted_this_round: bool
+    total_invested_this_hand: ChipAmount = field(default_factory=lambda: ChipAmount(0))
     hands_played: int = 0
     elimination_hand_number: int | None = None
     table_finish_position: int | None = None
@@ -50,14 +59,25 @@ class Player:
                 f"Table finish position must be at least 1: {self.table_finish_position}"
             )
 
-    def is_active(self) -> bool:
-        return self.status == PlayerStatus.ACTIVE
+    def needs_action(self) -> bool:
+        """Player needs to take action this round."""
+        return self.betting_status == BettingRoundActionStatus.NEEDS_ACTION
 
     def is_in_hand(self) -> bool:
-        return self.status in (PlayerStatus.ACTIVE, PlayerStatus.ALL_IN)
+        """Player is still in the hand (not folded, not eliminated)."""
+        return self.participation_status == HandParticipationStatus.IN_HAND
 
     def can_act(self) -> bool:
-        return self.is_active() and not self.has_acted_this_round
+        """Player can take action (needs action and has chips)."""
+        return self.needs_action() and self.has_chips()
+
+    def has_acted_this_round(self) -> bool:
+        """Check if player has acted this betting round."""
+        return self.betting_status == BettingRoundActionStatus.ACTED
+
+    def is_all_in(self) -> bool:
+        """Player has acted and has no chips left."""
+        return self.betting_status == BettingRoundActionStatus.ACTED and self.chips.value == 0
 
     def has_chips(self) -> bool:
         return self.chips.value > 0
