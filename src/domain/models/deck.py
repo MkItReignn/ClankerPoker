@@ -50,6 +50,13 @@ class Deck:
         self._deal_index += count
         return cards
 
+    def burn_card(self) -> None:
+        """Burn the top card of the deck (remove it from play)."""
+        if self._deal_index >= len(self.cards):
+            raise ValueError("Cannot burn card: deck is empty")
+
+        self._deal_index += 1
+
     def cards_remaining(self) -> int:
         """Return number of cards remaining in deck."""
         return len(self.cards) - self._deal_index
