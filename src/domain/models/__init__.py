@@ -13,6 +13,7 @@ from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
 from src.domain.models.events import EventId, GameEvent, GameEventType
 from src.domain.models.game import (
+    NO_CURRENT_PLAYER,
     BettingState,
     BlindState,
     Game,
@@ -66,6 +67,7 @@ __all__ = [
     "Hand",
     "HandState",
     "LlmModel",
+    "NO_CURRENT_PLAYER",
     "Narration",
     "BettingRoundActionStatus",
     "HandParticipationStatus",

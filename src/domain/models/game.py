@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from src.domain.models.blinds import BlindLevel
+from src.domain.models.blinds import BlindLevel, BlindSchedule
 from src.domain.models.card import Card
 from src.domain.models.chips import ChipAmount
-from src.domain.models.player import BettingRoundActionStatus, Player, PlayerId
+from src.domain.models.player import HandParticipationStatus, Player, PlayerId
 from src.domain.models.pot import PotState
 from src.domain.models.seat import Seat
 
@@ -28,14 +28,39 @@ class GamePhase(Enum):
     RIVER = "river"
     SHOWDOWN = "showdown"
 
+    @property
+    def card_count(self) -> int:
+        """Number of community cards required for this phase."""
+        mapping = {
+            GamePhase.PRE_FLOP: 0,
+            GamePhase.FLOP: 3,
+            GamePhase.TURN: 4,
+            GamePhase.RIVER: 5,
+            GamePhase.SHOWDOWN: 5,
+        }
+        return mapping[self]
 
-PHASE_CARD_COUNTS: dict[GamePhase, int] = {
-    GamePhase.PRE_FLOP: 0,
-    GamePhase.FLOP: 3,
-    GamePhase.TURN: 4,
-    GamePhase.RIVER: 5,
-    GamePhase.SHOWDOWN: 5,
-}
+    @classmethod
+    def get_phase_order(cls) -> tuple[GamePhase, ...]:
+        """Returns phases in sequence order."""
+        return (
+            cls.PRE_FLOP,
+            cls.FLOP,
+            cls.TURN,
+            cls.RIVER,
+            cls.SHOWDOWN,
+        )
+
+    def next_phase(self) -> GamePhase | None:
+        """Returns the next phase in sequence, or None if this is the last phase."""
+        order = self.get_phase_order()
+        try:
+            current_index = order.index(self)
+            if current_index + 1 >= len(order):
+                return None
+            return order[current_index + 1]
+        except ValueError:
+            return None
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,6 +94,7 @@ class TournamentConfig:
     starting_chip_stack: ChipAmount
     total_prize_pool: ChipAmount
     payout_structure: str
+    blind_schedule: BlindSchedule | None = None
 
     def __post_init__(self) -> None:
         if self.buy_in_amount.value <= 0:
@@ -94,11 +120,14 @@ class HandState:
             raise ValueError(
                 f"Cannot have more than 5 community cards: {len(self.community_cards)}"
             )
-        expected_cards = PHASE_CARD_COUNTS.get(self.current_phase, 0)
+        expected_cards = self.current_phase.card_count
         if len(self.community_cards) != expected_cards:
             raise ValueError(
                 f"Phase {self.current_phase.value} requires {expected_cards} community cards, got {len(self.community_cards)}"
             )
+
+
+NO_CURRENT_PLAYER: int = -1
 
 
 @dataclass(slots=True)
@@ -106,21 +135,16 @@ class BettingState:
     """State tracking for the current betting round."""
 
     last_raise_increment: ChipAmount
-    current_bet_level_to_match: ChipAmount
-    current_player_position: int | None
+    current_player_position: int
 
     def __post_init__(self) -> None:
         if self.last_raise_increment.value < 0:
             raise ValueError(
                 f"Last raise increment cannot be negative: {self.last_raise_increment.value}"
             )
-        if self.current_bet_level_to_match.value < 0:
+        if self.current_player_position != NO_CURRENT_PLAYER and self.current_player_position < 0:
             raise ValueError(
-                f"Current bet level to match cannot be negative: {self.current_bet_level_to_match.value}"
-            )
-        if self.current_player_position is not None and self.current_player_position < 0:
-            raise ValueError(
-                f"Current player position must be non-negative: {self.current_player_position}"
+                f"Current player position must be non-negative or {NO_CURRENT_PLAYER}: {self.current_player_position}"
             )
 
 
@@ -185,9 +209,12 @@ class Game:
             )
 
         if self.identity.status == GameStatus.IN_PROGRESS:
-            if self.betting_state.current_player_position is None:
-                raise ValueError("IN_PROGRESS game must have a current_player_position")
-            if self.betting_state.current_player_position >= len(self.players):
+            if self.betting_state.current_player_position == NO_CURRENT_PLAYER:
+                if not self.is_round_complete():
+                    raise ValueError(
+                        "IN_PROGRESS game with NO_CURRENT_PLAYER must have a complete betting round"
+                    )
+            elif self.betting_state.current_player_position >= len(self.players):
                 raise ValueError(
                     f"Current player position {self.betting_state.current_player_position} is out of range for {len(self.players)} players"
                 )
@@ -235,7 +262,7 @@ class Game:
         return self.table_positions.big_blind_position
 
     @property
-    def current_player_position(self) -> int | None:
+    def current_player_position(self) -> int:
         return self.betting_state.current_player_position
 
     @property
@@ -246,8 +273,26 @@ class Game:
     def payout_structure(self) -> str:
         return self.tournament_config.payout_structure
 
-    def get_active_players(self) -> list[Player]:
-        return [p for p in self.players if p.is_in_hand()]
+    def get_non_eliminated_players(self) -> list[Player]:
+        """Get list of all non-eliminated players."""
+        return [
+            p for p in self.players if p.participation_status != HandParticipationStatus.ELIMINATED
+        ]
+
+    def get_non_eliminated_player_ids(self) -> frozenset[PlayerId]:
+        """Get set of IDs for all non-eliminated players."""
+        return frozenset(
+            p.id
+            for p in self.players
+            if p.participation_status != HandParticipationStatus.ELIMINATED
+        )
+
+    def players_in_hand(self, excluded_player_id: PlayerId | None = None) -> list[Player]:
+        """Get all players currently in hand, optionally excluding a specific player."""
+        players = [p for p in self.players if p.is_in_hand()]
+        if excluded_player_id is not None:
+            players = [p for p in players if p.id != excluded_player_id]
+        return players
 
     def get_player_by_seat(self, seat: Seat) -> Player | None:
         return next((p for p in self.players if p.seat == seat), None)
@@ -267,39 +312,37 @@ class Game:
             return True
 
         players_in_hand = [p for p in self.players if p.is_in_hand()]
-        return len(players_in_hand) <= 1
+        return len(players_in_hand) == 1
 
     def is_round_complete(self) -> bool:
         """
         Determine if current betting round is complete.
 
         Framework:
-        1. If only 0-1 players remain (not folded) → hand ends → round complete
-        2. If all players in hand have acted AND bets are equal → round complete
+        1. If only 1 player remains (not folded) → hand ends → round complete
+        2. If all players in hand have acted AND investments are equal → round complete
         3. If all players in hand are all-in → round complete (no more betting)
         4. Otherwise → round continues
         """
-        players_in_hand = [p for p in self.players if p.is_in_hand()]
+        from src.domain.rules.betting_calculator import BettingCalculator
 
-        if len(players_in_hand) <= 1:
+        players_in_hand = self.players_in_hand()
+
+        if len(players_in_hand) == 1:
             return True
 
-        all_acted = all(
-            player.betting_status == BettingRoundActionStatus.ACTED for player in players_in_hand
-        )
+        max_invested: ChipAmount = BettingCalculator.get_max_invested_this_hand(players_in_hand)
+        for player in players_in_hand:
+            if player.is_all_in():
+                continue
 
-        if not all_acted:
-            return False
+            call_amount: ChipAmount = BettingCalculator.calculate_call_amount(
+                max_invested, player.total_invested_this_hand
+            )
+            if call_amount.value > 0:
+                return False
 
-        bets = [player.current_bet for player in players_in_hand]
-        unique_bet_amounts = {bet.value for bet in bets}
+            if not player.has_acted_this_round():
+                return False
 
-        if len(unique_bet_amounts) == 1:
-            return True
-
-        all_all_in = all(player.is_all_in() for player in players_in_hand)
-
-        if all_all_in:
-            return True
-
-        return False
+        return True

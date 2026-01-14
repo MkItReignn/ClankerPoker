@@ -24,8 +24,8 @@ class AvailableCallAction:
 
 @dataclass(frozen=True, slots=True)
 class AvailableRaiseAction:
-    min_amount: ChipAmount
-    max_amount: ChipAmount
+    min_raise_amount: ChipAmount
+    max_raise_amount: ChipAmount
     action_type: ActionType = ActionType.RAISE
 
 

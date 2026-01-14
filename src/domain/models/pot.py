@@ -43,7 +43,7 @@ class PotState:
         return total
 
     def all_pots(self) -> list[Pot]:
-        return [self.main_pot] + self.side_pots
+        return [self.main_pot, *self.side_pots]
 
     def get_pots_for_player(self, player_id: PlayerId) -> list[Pot]:
         return [pot for pot in self.all_pots() if pot.is_eligible(player_id)]

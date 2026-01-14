@@ -31,11 +31,10 @@ class Player:
     id: PlayerId
     bot_id: BotId
     seat: Seat
-    chips: ChipAmount
+    remaining_chips: ChipAmount
     hole_cards: Hand | None
     betting_status: BettingRoundActionStatus
     participation_status: HandParticipationStatus
-    current_bet: ChipAmount
     total_invested_this_hand: ChipAmount = field(default_factory=lambda: ChipAmount(0))
     hands_played: int = 0
     elimination_hand_number: int | None = None
@@ -44,10 +43,12 @@ class Player:
     def __post_init__(self) -> None:
         if not self.id:
             raise ValueError("Player id cannot be empty")
-        if self.chips.value < 0:
-            raise ValueError(f"Chips cannot be negative: {self.chips.value}")
-        if self.current_bet.value < 0:
-            raise ValueError(f"Current bet cannot be negative: {self.current_bet.value}")
+        if self.remaining_chips.value < 0:
+            raise ValueError(f"Remaining chips cannot be negative: {self.remaining_chips.value}")
+        if self.total_invested_this_hand.value < 0:
+            raise ValueError(
+                f"Total invested cannot be negative: {self.total_invested_this_hand.value}"
+            )
         if self.hands_played < 0:
             raise ValueError(f"Hands played cannot be negative: {self.hands_played}")
         if self.elimination_hand_number is not None and self.elimination_hand_number < 1:
@@ -68,8 +69,8 @@ class Player:
         return self.participation_status == HandParticipationStatus.IN_HAND
 
     def can_act(self) -> bool:
-        """Player can take action (needs action and has chips)."""
-        return self.needs_action() and self.has_chips()
+        """Player can take action (needs action, has chips, and is in hand)."""
+        return self.needs_action() and self.has_chips() and self.is_in_hand()
 
     def has_acted_this_round(self) -> bool:
         """Check if player has acted this betting round."""
@@ -77,10 +78,21 @@ class Player:
 
     def is_all_in(self) -> bool:
         """Player has acted and has no chips left."""
-        return self.betting_status == BettingRoundActionStatus.ACTED and self.chips.value == 0
+        return self.total_invested_this_hand.value > 0 and self.remaining_chips.value == 0
 
     def has_chips(self) -> bool:
-        return self.chips.value > 0
+        return self.remaining_chips.value > 0
 
     def total_stack(self) -> ChipAmount:
-        return self.chips + self.current_bet
+        return self.remaining_chips + self.total_invested_this_hand
+
+    def reset_for_new_hand(self, hole_cards: Hand) -> None:
+        """Reset player state for a new hand.
+
+        Sets hole cards, resets betting status to NEEDS_ACTION,
+        sets participation status to IN_HAND, and resets investment.
+        """
+        self.hole_cards = hole_cards
+        self.betting_status = BettingRoundActionStatus.NEEDS_ACTION
+        self.participation_status = HandParticipationStatus.IN_HAND
+        self.total_invested_this_hand = ChipAmount(0)
