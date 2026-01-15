@@ -99,5 +99,4 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-profile = "black"
 known-first-party = ["src"]
