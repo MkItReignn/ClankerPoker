@@ -21,9 +21,15 @@ from src.domain.rules.betting_calculator import BettingCalculator
 
 @dataclass(frozen=True, slots=True)
 class _BettingStateUpdate:
-    """Tracks betting state changes from applying an action."""
+    """Tracks betting state changes from applying an action.
 
-    was_raise: bool
+    bet_increased: True if the bet level changed at all (players need to respond)
+    was_legal_raise: True if it was a full legal raise (reopens betting with can_raise=True)
+    last_raise_increment: The raise increment (only meaningful if was_legal_raise=True)
+    """
+
+    bet_increased: bool
+    was_legal_raise: bool
     last_raise_increment: ChipAmount
 
 
@@ -78,10 +84,18 @@ class ActionApplier:
 
         updated_players: Players = game.players.replace_player(player_id, result.updated_player)
 
-        if result.betting_state_update.was_raise:
-            updated_players: Players = ActionApplier._reset_acted_players_after_raise(
-                updated_players, player_id
-            )
+        # Reset players based on betting state change
+        if result.betting_state_update.bet_increased:
+            if result.betting_state_update.was_legal_raise:
+                # Full raise: reopen betting, players can raise
+                updated_players = ActionApplier._reset_acted_players_after_raise(
+                    updated_players, player_id
+                )
+            else:
+                # Short all-in: players must respond but cannot re-raise (WSOP Rule 96)
+                updated_players = ActionApplier._reset_acted_players_for_short_allin(
+                    updated_players, player_id
+                )
 
         position_to_act: int = ActionApplier._find_next_position_to_act_within_round(
             updated_players, game.betting_state.position_to_act
@@ -90,7 +104,7 @@ class ActionApplier:
         updated_betting_state: BettingState = BettingState(
             last_raise_increment=(
                 result.betting_state_update.last_raise_increment
-                if result.betting_state_update.was_raise
+                if result.betting_state_update.was_legal_raise
                 else game.betting_state.last_raise_increment
             ),
             position_to_act=position_to_act,
@@ -200,7 +214,8 @@ class ActionApplier:
         return _ActionApplicationResult(
             updated_player=updated_player,
             betting_state_update=_BettingStateUpdate(
-                was_raise=False,
+                bet_increased=False,
+                was_legal_raise=False,
                 last_raise_increment=ChipAmount(0),
             ),
         )
@@ -215,7 +230,8 @@ class ActionApplier:
         return _ActionApplicationResult(
             updated_player=updated_player,
             betting_state_update=_BettingStateUpdate(
-                was_raise=False,
+                bet_increased=False,
+                was_legal_raise=False,
                 last_raise_increment=ChipAmount(0),
             ),
         )
@@ -233,7 +249,8 @@ class ActionApplier:
         return _ActionApplicationResult(
             updated_player=updated_player,
             betting_state_update=_BettingStateUpdate(
-                was_raise=False,
+                bet_increased=False,
+                was_legal_raise=False,
                 last_raise_increment=ChipAmount(0),
             ),
         )
@@ -243,6 +260,7 @@ class ActionApplier:
         """Apply bet action: player bets when no bet exists.
 
         Amount is the total bet amount (not an increment).
+        A bet is always a legal raise (from 0 to bet amount).
         """
         if action.amount is None:
             raise ValueError("Bet action requires an amount")
@@ -257,7 +275,8 @@ class ActionApplier:
         return _ActionApplicationResult(
             updated_player=updated_player,
             betting_state_update=_BettingStateUpdate(
-                was_raise=True,
+                bet_increased=True,
+                was_legal_raise=True,
                 last_raise_increment=bet_amount,
             ),
         )
@@ -266,7 +285,10 @@ class ActionApplier:
     def _apply_raise(
         player: Player, action: Action, call_amount: ChipAmount
     ) -> _ActionApplicationResult:
-        """Apply raise action: player calls then raises by increment."""
+        """Apply raise action: player calls then raises by increment.
+
+        A raise action is always a legal raise (validated before applying).
+        """
         if action.amount is None:
             raise ValueError("Raise action requires an amount")
 
@@ -281,7 +303,8 @@ class ActionApplier:
         return _ActionApplicationResult(
             updated_player=updated_player,
             betting_state_update=_BettingStateUpdate(
-                was_raise=True,
+                bet_increased=True,
+                was_legal_raise=True,
                 last_raise_increment=raise_increment,
             ),
         )
@@ -295,14 +318,16 @@ class ActionApplier:
     ) -> _ActionApplicationResult:
         """Apply all-in action: player bets all remaining chips.
 
-        All-in reopening rules:
-        - If call_amount == 0: equivalent to BET (post-flop) or RAISE (pre-flop), always reopens action
-        - If all_in_amount < call_amount: treated as partial call, does not reopen
-        - If all_in_amount == call_amount: treated as call, does not reopen
-        - If all_in_amount > call_amount but raise_increment < minimum_raise_increment:
-          treated as call, does not reopen
-        - If all_in_amount > call_amount and raise_increment >= minimum_raise_increment:
-          treated as raise, reopens action
+        All-in reopening rules (WSOP Rule 96):
+        - bet_increased: True if bet level changed at all (players need to respond)
+        - was_legal_raise: True only if raise meets minimum (reopens betting fully)
+
+        Cases:
+        - If call_amount == 0 and all_in >= min_raise: legal bet, full reopen
+        - If call_amount == 0 and all_in < min_raise: short bet, players respond but can't re-raise
+        - If all_in_amount <= call_amount: call (partial or exact), no bet increase
+        - If all_in_amount > call_amount but increment < min_raise: short all-in, respond but can't re-raise
+        - If all_in_amount > call_amount and increment >= min_raise: full raise, full reopen
         """
         if action.amount is None:
             raise ValueError("All-in action requires an amount")
@@ -316,42 +341,90 @@ class ActionApplier:
         )
 
         if call_amount.value == 0:
+            # No bet facing - this is a bet (post-flop) or raise from BB (pre-flop)
+            # Check if it meets minimum bet requirement (same as minimum_raise_increment when no prior bet)
+            is_legal_bet = all_in_amount >= minimum_raise_increment
             return _ActionApplicationResult(
                 updated_player=updated_player,
                 betting_state_update=_BettingStateUpdate(
-                    was_raise=True,
-                    last_raise_increment=all_in_amount,
+                    bet_increased=True,  # Always increases bet level
+                    was_legal_raise=is_legal_bet,  # Only reopens fully if >= minimum
+                    last_raise_increment=all_in_amount if is_legal_bet else ChipAmount(0),
                 ),
             )
 
-        if all_in_amount < call_amount:
-            raise_increment = ChipAmount(0)
-        else:
-            raise_increment = all_in_amount - call_amount
+        # There's a bet facing - calculate raise increment
+        if all_in_amount <= call_amount:
+            # All-in is a call (partial or exact) - no bet increase
+            return _ActionApplicationResult(
+                updated_player=updated_player,
+                betting_state_update=_BettingStateUpdate(
+                    bet_increased=False,
+                    was_legal_raise=False,
+                    last_raise_increment=ChipAmount(0),
+                ),
+            )
 
-        is_raise = raise_increment.value > 0 and raise_increment >= minimum_raise_increment
+        # All-in exceeds call amount - check if it's a legal raise
+        raise_increment = all_in_amount - call_amount
+        is_legal_raise = raise_increment >= minimum_raise_increment
 
         return _ActionApplicationResult(
             updated_player=updated_player,
             betting_state_update=_BettingStateUpdate(
-                was_raise=is_raise,
-                last_raise_increment=raise_increment if is_raise else ChipAmount(0),
+                bet_increased=True,  # Bet level increased
+                was_legal_raise=is_legal_raise,  # Only reopens fully if >= minimum
+                last_raise_increment=raise_increment if is_legal_raise else ChipAmount(0),
             ),
         )
 
     @staticmethod
     def _reset_acted_players_after_raise(players: Players, raising_player_id: str) -> Players:
-        """Reset all acted players to NEEDS_ACTION after a raise.
+        """Reset all acted players to NEEDS_ACTION after a legal raise.
 
+        Sets can_raise=True because a legal raise reopens betting fully.
+        Also resets can_raise=True for players who were blocked by a previous short all-in.
+        Excludes all-in players (0 chips) since they cannot act again.
         Returns new Players collection without mutating original.
         """
         return players.transform_filtered(
             predicate=lambda p: (
                 p.is_in_hand()
+                and p.has_chips()  # Exclude all-in players who cannot act
                 and p.id != raising_player_id
+                and (
+                    p.betting_status == BettingRoundActionStatus.ACTED
+                    or not p.can_raise  # Also reset players blocked by short all-in
+                )
+            ),
+            transform=lambda p: replace(
+                p,
+                betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+                can_raise=True,
+            ),
+        )
+
+    @staticmethod
+    def _reset_acted_players_for_short_allin(players: Players, acting_player_id: str) -> Players:
+        """Reset all acted players to NEEDS_ACTION after a short all-in.
+
+        Sets can_raise=False because a short all-in does not reopen betting (WSOP Rule 96).
+        Players who already acted can only call or fold, not re-raise.
+        Excludes all-in players (0 chips) since they cannot act again.
+        Returns new Players collection without mutating original.
+        """
+        return players.transform_filtered(
+            predicate=lambda p: (
+                p.is_in_hand()
+                and p.has_chips()  # Exclude all-in players who cannot act
+                and p.id != acting_player_id
                 and p.betting_status == BettingRoundActionStatus.ACTED
             ),
-            transform=lambda p: replace(p, betting_status=BettingRoundActionStatus.NEEDS_ACTION),
+            transform=lambda p: replace(
+                p,
+                betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+                can_raise=False,
+            ),
         )
 
     @staticmethod

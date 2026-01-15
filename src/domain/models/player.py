@@ -39,6 +39,7 @@ class Player:
     hands_played: int = 0
     elimination_hand_number: int | None = None
     table_finish_position: int | None = None
+    can_raise: bool = True  # Can this player raise in current betting round? (WSOP Rule 96)
 
     def __post_init__(self) -> None:
         if not self.id:
@@ -90,7 +91,8 @@ class Player:
         """Reset player state for a new hand.
 
         Sets hole cards, resets betting status to NEEDS_ACTION,
-        sets participation status to IN_HAND, and resets investment.
+        sets participation status to IN_HAND, resets investment,
+        and resets can_raise to True.
 
         Returns a new Player instance (immutable).
         """
@@ -100,4 +102,5 @@ class Player:
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
             participation_status=HandParticipationStatus.IN_HAND,
             total_invested_this_hand=ChipAmount(0),
+            can_raise=True,
         )

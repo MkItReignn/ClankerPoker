@@ -63,9 +63,11 @@ class AvailableActionCalculator:
             )
             is_pre_flop = game.current_phase == GamePhase.PRE_FLOP
 
+            # Bet/raise only available if player.can_raise is True (WSOP Rule 96)
             if (
-                is_post_flop
-                and player.remaining_chips.value >= game.current_blind_level.big_blind.value
+                player.can_raise
+                and is_post_flop
+                and player.remaining_chips >= game.current_blind_level.big_blind
             ):
                 available_actions.append(
                     AvailableBetAction(
@@ -75,7 +77,7 @@ class AvailableActionCalculator:
                 )
 
             # You can only raise when call_amount = 0 during pre-flop, since BET is not allowed.
-            if is_pre_flop:
+            if player.can_raise and is_pre_flop:
                 minimum_raise_increment: ChipAmount = (
                     BettingCalculator.calculate_minimum_raise_increment(
                         game.betting_state.last_raise_increment,
@@ -83,7 +85,7 @@ class AvailableActionCalculator:
                     )
                 )
 
-                if player.remaining_chips.value >= minimum_raise_increment.value:
+                if player.remaining_chips >= minimum_raise_increment:
                     available_actions.append(
                         AvailableRaiseAction(
                             min_raise_amount=minimum_raise_increment,
@@ -95,7 +97,8 @@ class AvailableActionCalculator:
             if player.remaining_chips.value >= call_amount.value:
                 available_actions.append(AvailableCallAction(call_amount=call_amount))
 
-            if player.remaining_chips > call_amount:
+            # Raise only available if player.can_raise is True (WSOP Rule 96)
+            if player.can_raise and player.remaining_chips > call_amount:
                 min_raise_amount: ChipAmount = BettingCalculator.calculate_minimum_raise_increment(
                     game.betting_state.last_raise_increment,
                     game.current_blind_level.big_blind,

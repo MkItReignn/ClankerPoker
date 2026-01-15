@@ -75,6 +75,7 @@ def sample_player_factory(sample_bot: Bot) -> Callable[..., Player]:
         participation_status: HandParticipationStatus | None = None,
         betting_status: BettingRoundActionStatus | None = None,
         hole_cards: Hand | None = None,
+        can_raise: bool = True,
     ) -> Player:
         if total_invested_this_hand is None:
             total_invested_this_hand = ChipAmount(0)
@@ -92,6 +93,7 @@ def sample_player_factory(sample_bot: Bot) -> Callable[..., Player]:
             betting_status=betting_status,
             participation_status=participation_status,
             total_invested_this_hand=total_invested_this_hand,
+            can_raise=can_raise,
         )
 
     return create_player

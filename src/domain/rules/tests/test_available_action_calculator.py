@@ -1484,3 +1484,694 @@ class TestBetActionRules:
         assert AvailableRaiseAction in action_types
         assert AvailableCallAction in action_types
         assert AvailableFoldAction in action_types
+
+
+class TestInputValidation:
+    """Tests for input validation and error handling."""
+
+    def test_raises_error_when_player_not_found(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Should raise ValueError when player ID not in game."""
+        import pytest
+
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(100),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        other = sample_player_factory(
+            player_id="player-2",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, other])
+
+        with pytest.raises(ValueError, match="not found"):
+            AvailableActionCalculator.calculate_available_actions(game, "non-existent-id")
+
+
+class TestMultiPlayerActionAvailability:
+    """Tests for action availability in 3+ player scenarios."""
+
+    def test_three_player_different_investments(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """In 3-player scenario with varying investments, call amount is max - player's investment."""
+        # Player 1: invested 20, Player 2: invested 50, Player 3: invested 100
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(20),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        p2 = sample_player_factory(
+            player_id="player-2",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(150),
+            total_invested_this_hand=ChipAmount(50),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        p3 = sample_player_factory(
+            player_id="player-3",
+            seat=Seat.SEAT_2,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(100),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, p2, p3])
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        # Player 1 needs to call 80 (100 - 20)
+        call_action = next(a for a in result if isinstance(a, AvailableCallAction))
+        assert call_action.call_amount == ChipAmount(80)
+
+    def test_four_player_one_folded_one_all_in(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """4-player scenario: one folded, one all-in, two active."""
+        player = sample_player_factory(
+            player_id="player",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(20),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        all_in = sample_player_factory(
+            player_id="all-in",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(50),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        folded = sample_player_factory(
+            player_id="folded",
+            seat=Seat.SEAT_2,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(20),
+            participation_status=HandParticipationStatus.FOLDED,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        active = sample_player_factory(
+            player_id="active",
+            seat=Seat.SEAT_3,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(50),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, all_in, folded, active])
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        # Player should have fold, call, raise, all-in available
+        action_types = {type(a) for a in result}
+        assert AvailableFoldAction in action_types
+        assert AvailableCallAction in action_types
+        assert AvailableAllInAction in action_types
+
+    def test_five_player_scenario(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """5-player scenario with complex state."""
+        players = [
+            sample_player_factory(
+                player_id=f"p{i}",
+                seat=Seat(i),
+                remaining_chips=ChipAmount(100 + i * 50),
+                total_invested_this_hand=ChipAmount(50),
+                betting_status=(
+                    BettingRoundActionStatus.NEEDS_ACTION
+                    if i == 0
+                    else BettingRoundActionStatus.ACTED
+                ),
+            )
+            for i in range(5)
+        ]
+        game = minimal_game_factory(players)
+
+        result = AvailableActionCalculator.calculate_available_actions(game, players[0].id)
+
+        # All players at 50, so check is available
+        action_types = {type(a) for a in result}
+        assert AvailableCheckAction in action_types
+        assert AvailableFoldAction in action_types
+
+
+class TestBetMinMaxBoundaries:
+    """Tests for bet minimum and maximum amount boundaries."""
+
+    def test_bet_min_equals_big_blind(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Minimum bet amount should equal big blind."""
+        player = sample_player_factory(
+            player_id="player",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        other = sample_player_factory(
+            player_id="other",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, other])
+        game.hand_state.current_phase = GamePhase.FLOP
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        bet_action = next(a for a in result if isinstance(a, AvailableBetAction))
+        # BB is 20 (from conftest.py)
+        assert bet_action.min_bet_amount == ChipAmount(20)
+
+    def test_bet_max_equals_remaining_chips(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Maximum bet amount should equal player's remaining chips."""
+        remaining = ChipAmount(175)
+        player = sample_player_factory(
+            player_id="player",
+            seat=Seat.SEAT_0,
+            remaining_chips=remaining,
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        other = sample_player_factory(
+            player_id="other",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, other])
+        game.hand_state.current_phase = GamePhase.FLOP
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        bet_action = next(a for a in result if isinstance(a, AvailableBetAction))
+        assert bet_action.max_bet_amount == remaining
+
+    def test_bet_not_available_when_chips_less_than_minimum(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """BET not available when player has less chips than minimum bet."""
+        player = sample_player_factory(
+            player_id="player",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(15),  # Less than BB of 20
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        other = sample_player_factory(
+            player_id="other",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, other])
+        game.hand_state.current_phase = GamePhase.FLOP
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        action_types = {type(a) for a in result}
+        assert AvailableBetAction not in action_types
+        # But all-in should be available
+        assert AvailableAllInAction in action_types
+
+
+class TestRaiseMinMaxBoundaries:
+    """Tests for raise minimum and maximum amount boundaries."""
+
+    def test_raise_min_uses_big_blind_when_no_prior_raise(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Minimum raise should use BB when no prior raise."""
+        player = sample_player_factory(
+            player_id="player",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        bettor = sample_player_factory(
+            player_id="bettor",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(50),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        # No last_raise_increment set (or 0)
+        game = minimal_game_factory([player, bettor], last_raise_increment=ChipAmount(0))
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        raise_action = next(a for a in result if isinstance(a, AvailableRaiseAction))
+        # BB is 20, so min raise is 20
+        assert raise_action.min_raise_amount == ChipAmount(20)
+
+    def test_raise_min_uses_last_raise_when_greater_than_bb(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Minimum raise uses last raise size when greater than BB."""
+        player = sample_player_factory(
+            player_id="player",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(500),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        raiser = sample_player_factory(
+            player_id="raiser",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(400),
+            total_invested_this_hand=ChipAmount(100),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        # Last raise was 100
+        game = minimal_game_factory([player, raiser], last_raise_increment=ChipAmount(100))
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        raise_action = next(a for a in result if isinstance(a, AvailableRaiseAction))
+        # min raise should be 100, not BB (20)
+        assert raise_action.min_raise_amount == ChipAmount(100)
+
+    def test_raise_max_is_chips_minus_call(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Maximum raise is remaining chips minus call amount."""
+        player = sample_player_factory(
+            player_id="player",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        bettor = sample_player_factory(
+            player_id="bettor",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(50),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, bettor])
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        raise_action = next(a for a in result if isinstance(a, AvailableRaiseAction))
+        # Call is 50, remaining is 200, so max raise is 150
+        assert raise_action.max_raise_amount == ChipAmount(150)
+
+
+class TestBigBlindOption:
+    """Tests for big blind option scenario."""
+
+    def test_bb_can_check_when_all_limped(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Big blind can check when everyone has just called (limped)."""
+        bb = sample_player_factory(
+            player_id="bb",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(20),  # Posted BB
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        limper = sample_player_factory(
+            player_id="limper",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(180),
+            total_invested_this_hand=ChipAmount(20),  # Called BB
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([bb, limper])
+
+        result = AvailableActionCalculator.calculate_available_actions(game, bb.id)
+
+        action_types = {type(a) for a in result}
+        assert AvailableCheckAction in action_types
+
+    def test_bb_can_raise_when_all_limped(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Big blind can raise when everyone has just called (limped)."""
+        bb = sample_player_factory(
+            player_id="bb",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(20),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        limper = sample_player_factory(
+            player_id="limper",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(180),
+            total_invested_this_hand=ChipAmount(20),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([bb, limper])
+
+        result = AvailableActionCalculator.calculate_available_actions(game, bb.id)
+
+        action_types = {type(a) for a in result}
+        assert AvailableRaiseAction in action_types
+
+    def test_bb_cannot_check_when_facing_raise(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Big blind cannot check when someone has raised."""
+        bb = sample_player_factory(
+            player_id="bb",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(20),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        raiser = sample_player_factory(
+            player_id="raiser",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(140),
+            total_invested_this_hand=ChipAmount(60),  # Raised to 60
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([bb, raiser])
+
+        result = AvailableActionCalculator.calculate_available_actions(game, bb.id)
+
+        action_types = {type(a) for a in result}
+        assert AvailableCheckAction not in action_types
+        assert AvailableCallAction in action_types
+
+
+class TestSmallBlindPreflop:
+    """Tests for small blind preflop scenarios."""
+
+    def test_sb_cannot_check_facing_bb(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Small blind cannot check when facing big blind."""
+        sb = sample_player_factory(
+            player_id="sb",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(10),  # Posted SB
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        bb = sample_player_factory(
+            player_id="bb",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(180),
+            total_invested_this_hand=ChipAmount(20),  # Posted BB
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([sb, bb])
+
+        result = AvailableActionCalculator.calculate_available_actions(game, sb.id)
+
+        action_types = {type(a) for a in result}
+        assert AvailableCheckAction not in action_types
+        assert AvailableCallAction in action_types
+
+    def test_sb_call_amount_is_bb_minus_sb(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Small blind's call amount is BB - SB."""
+        sb = sample_player_factory(
+            player_id="sb",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(10),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        bb = sample_player_factory(
+            player_id="bb",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(180),
+            total_invested_this_hand=ChipAmount(20),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([sb, bb])
+
+        result = AvailableActionCalculator.calculate_available_actions(game, sb.id)
+
+        call_action = next(a for a in result if isinstance(a, AvailableCallAction))
+        # Call amount is 20 - 10 = 10
+        assert call_action.call_amount == ChipAmount(10)
+
+
+class TestCanRaiseRestrictions:
+    """Tests for can_raise flag restricting RAISE/BET availability (Rule 8.3 / WSOP Rule 96)."""
+
+    def test_raise_not_available_when_can_raise_is_false_facing_bet(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """When can_raise=False (after short all-in), RAISE not available."""
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(20),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+            can_raise=False,  # Blocked by short all-in
+        )
+        other_player = sample_player_factory(
+            player_id="player-2",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(50),
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, other_player])
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        action_types = {type(a) for a in result}
+        assert AvailableRaiseAction not in action_types
+        assert AvailableFoldAction in action_types
+        assert AvailableCallAction in action_types
+        assert AvailableAllInAction in action_types
+
+    def test_bet_not_available_when_can_raise_is_false_postflop(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """When can_raise=False postflop with no bet facing, BET not available."""
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+            can_raise=False,  # Blocked by short all-in
+        )
+        other_player = sample_player_factory(
+            player_id="player-2",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(0),
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, other_player])
+        game.hand_state.current_phase = GamePhase.FLOP
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        action_types = {type(a) for a in result}
+        assert AvailableBetAction not in action_types
+        assert AvailableFoldAction in action_types
+        assert AvailableCheckAction in action_types
+        assert AvailableAllInAction in action_types
+
+    def test_raise_not_available_when_can_raise_is_false_preflop_bb_option(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """When can_raise=False preflop BB option, RAISE not available."""
+        bb_player = sample_player_factory(
+            player_id="big-blind",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(20),  # Posted BB
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+            can_raise=False,  # Blocked by short all-in
+        )
+        limper = sample_player_factory(
+            player_id="limper",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(180),
+            total_invested_this_hand=ChipAmount(20),  # Limped
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([bb_player, limper])
+        assert game.current_phase == GamePhase.PRE_FLOP
+
+        result = AvailableActionCalculator.calculate_available_actions(game, bb_player.id)
+
+        action_types = {type(a) for a in result}
+        assert AvailableRaiseAction not in action_types
+        assert AvailableFoldAction in action_types
+        assert AvailableCheckAction in action_types
+        assert AvailableAllInAction in action_types
+
+    def test_raise_available_when_can_raise_is_true_default(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Default can_raise=True allows RAISE when facing bet."""
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(20),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+            can_raise=True,  # Default
+        )
+        other_player = sample_player_factory(
+            player_id="player-2",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(50),
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, other_player])
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        action_types = {type(a) for a in result}
+        assert AvailableRaiseAction in action_types
+
+    def test_call_always_available_regardless_of_can_raise(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """CALL is always available when facing bet, even with can_raise=False."""
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(20),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+            can_raise=False,  # Blocked, but CALL should still work
+        )
+        other_player = sample_player_factory(
+            player_id="player-2",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(50),
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, other_player])
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        call_actions = [a for a in result if isinstance(a, AvailableCallAction)]
+        assert len(call_actions) == 1
+        assert call_actions[0].call_amount == ChipAmount(30)
+
+
+class TestAllInAmountCorrectness:
+    """Tests to verify all-in amount is always correct."""
+
+    def test_all_in_amount_equals_remaining_chips(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """All-in amount should exactly equal remaining chips."""
+        remaining = ChipAmount(73)  # Odd amount to verify exactness
+        player = sample_player_factory(
+            player_id="player",
+            seat=Seat.SEAT_0,
+            remaining_chips=remaining,
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        other = sample_player_factory(
+            player_id="other",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, other])
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        all_in = next(a for a in result if isinstance(a, AvailableAllInAction))
+        assert all_in.all_in_amount == remaining
+
+    def test_all_in_not_available_with_zero_chips(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """All-in not available when player has zero chips."""
+        player = sample_player_factory(
+            player_id="player",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(50),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        other = sample_player_factory(
+            player_id="other",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(50),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, other])
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+
+        action_types = {type(a) for a in result}
+        assert AvailableAllInAction not in action_types
