@@ -6,13 +6,14 @@ from collections.abc import Callable
 
 from src.domain.models.available_action import (
     AvailableAllInAction,
+    AvailableBetAction,
     AvailableCallAction,
     AvailableCheckAction,
     AvailableFoldAction,
     AvailableRaiseAction,
 )
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game
+from src.domain.models.game import Game, GamePhase
 from src.domain.models.player import BettingRoundActionStatus, HandParticipationStatus, Player
 from src.domain.models.seat import Seat
 from src.domain.rules.available_action_calculator import AvailableActionCalculator
@@ -1193,3 +1194,293 @@ class TestEdgeCases:
         assert AvailableRaiseAction in action_types
         assert AvailableAllInAction in action_types
         assert AvailableCallAction not in action_types
+
+
+class TestRaiseActionRules:
+    """Tests for RAISE action availability rules across game phases."""
+
+    def test_raise_available_preflop_when_call_amount_is_zero(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        big_blind_player = sample_player_factory(
+            player_id="big-blind",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(980),
+            total_invested_this_hand=ChipAmount(20),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        limping_player = sample_player_factory(
+            player_id="limper",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(980),
+            total_invested_this_hand=ChipAmount(20),
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory(
+            [big_blind_player, limping_player],
+            last_raise_increment=ChipAmount(0),
+        )
+        assert game.current_phase == GamePhase.PRE_FLOP
+
+        result = AvailableActionCalculator.calculate_available_actions(game, big_blind_player)
+
+        action_types = {type(a) for a in result}
+        assert AvailableRaiseAction in action_types
+        assert AvailableCheckAction in action_types
+        assert AvailableFoldAction in action_types
+        assert AvailableAllInAction in action_types
+        assert AvailableBetAction not in action_types
+        assert AvailableCallAction not in action_types
+
+    def test_raise_available_preflop_when_call_amount_greater_than_zero(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(20),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        raiser = sample_player_factory(
+            player_id="raiser",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(50),
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory(
+            [player, raiser],
+            last_raise_increment=ChipAmount(0),
+        )
+        assert game.current_phase == GamePhase.PRE_FLOP
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player)
+
+        action_types = {type(a) for a in result}
+        assert AvailableRaiseAction in action_types
+        assert AvailableCallAction in action_types
+        assert AvailableFoldAction in action_types
+        assert AvailableBetAction not in action_types
+
+    def test_raise_available_postflop_when_call_amount_greater_than_zero(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        better = sample_player_factory(
+            player_id="better",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(50),
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, better])
+        game.hand_state.current_phase = GamePhase.FLOP
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player)
+
+        action_types = {type(a) for a in result}
+        assert AvailableRaiseAction in action_types
+        assert AvailableCallAction in action_types
+        assert AvailableBetAction not in action_types
+
+    def test_raise_not_available_postflop_when_call_amount_is_zero(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        checked_player = sample_player_factory(
+            player_id="checked",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(0),
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, checked_player])
+        game.hand_state.current_phase = GamePhase.FLOP
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player)
+
+        action_types = {type(a) for a in result}
+        assert AvailableRaiseAction not in action_types
+        assert AvailableBetAction in action_types
+
+
+class TestBetActionRules:
+    """Tests for BET action availability rules across game phases."""
+
+    def test_bet_not_available_preflop(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        checked_player = sample_player_factory(
+            player_id="checked",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(0),
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, checked_player])
+        assert game.current_phase == GamePhase.PRE_FLOP
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player)
+
+        action_types = {type(a) for a in result}
+        assert AvailableBetAction not in action_types
+        assert AvailableRaiseAction in action_types
+        assert AvailableFoldAction in action_types
+
+    def test_bet_available_postflop_when_call_amount_is_zero_first_to_act(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        checked_player = sample_player_factory(
+            player_id="checked",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(0),
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, checked_player])
+        game.hand_state.current_phase = GamePhase.FLOP
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player)
+
+        action_types = {type(a) for a in result}
+        assert AvailableBetAction in action_types
+        assert AvailableRaiseAction not in action_types
+        bet_actions = [a for a in result if isinstance(a, AvailableBetAction)]
+        assert len(bet_actions) == 1
+        assert bet_actions[0].min_bet_amount == game.current_blind_level.big_blind
+        assert bet_actions[0].max_bet_amount == player.remaining_chips
+
+    def test_bet_available_postflop_on_turn_when_call_amount_is_zero(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        checked_player = sample_player_factory(
+            player_id="checked",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(0),
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, checked_player])
+        game.hand_state.current_phase = GamePhase.TURN
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player)
+
+        action_types = {type(a) for a in result}
+        assert AvailableBetAction in action_types
+        assert AvailableRaiseAction not in action_types
+
+    def test_bet_available_postflop_on_river_when_call_amount_is_zero(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        checked_player = sample_player_factory(
+            player_id="checked",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(0),
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, checked_player])
+        game.hand_state.current_phase = GamePhase.RIVER
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player)
+
+        action_types = {type(a) for a in result}
+        assert AvailableBetAction in action_types
+        assert AvailableFoldAction in action_types
+        assert AvailableRaiseAction not in action_types
+
+    def test_bet_not_available_postflop_when_call_amount_greater_than_zero(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        player = sample_player_factory(
+            player_id="player-1",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(0),
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+        )
+        better = sample_player_factory(
+            player_id="better",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(50),
+            participation_status=HandParticipationStatus.IN_HAND,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        game = minimal_game_factory([player, better])
+        game.hand_state.current_phase = GamePhase.FLOP
+
+        result = AvailableActionCalculator.calculate_available_actions(game, player)
+
+        action_types = {type(a) for a in result}
+        assert AvailableBetAction not in action_types
+        assert AvailableRaiseAction in action_types
+        assert AvailableCallAction in action_types
+        assert AvailableFoldAction in action_types

@@ -2,6 +2,7 @@ from src.domain.models.actions import Action, ActionType
 from src.domain.models.available_action import (
     AvailableActions,
     AvailableAllInAction,
+    AvailableBetAction,
     AvailableCallAction,
     AvailableCheckAction,
     AvailableFoldAction,
@@ -43,6 +44,7 @@ __all__ = [
     "ActionType",
     "AvailableActions",
     "AvailableAllInAction",
+    "AvailableBetAction",
     "AvailableCallAction",
     "AvailableCheckAction",
     "AvailableFoldAction",

@@ -10,6 +10,7 @@ class ActionType(Enum):
     FOLD = "fold"
     CHECK = "check"
     CALL = "call"
+    BET = "bet"
     RAISE = "raise"
     ALL_IN = "all_in"
 
@@ -20,7 +21,7 @@ class Action:
     amount: ChipAmount | None = None
 
     def __post_init__(self) -> None:
-        if self.action_type in (ActionType.RAISE, ActionType.ALL_IN):
+        if self.action_type in (ActionType.BET, ActionType.RAISE, ActionType.ALL_IN):
             if self.amount is None:
                 raise ValueError(f"{self.action_type.value} requires an amount")
             if self.amount.value <= 0:

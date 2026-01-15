@@ -23,6 +23,13 @@ class AvailableCallAction:
 
 
 @dataclass(frozen=True, slots=True)
+class AvailableBetAction:
+    min_bet_amount: ChipAmount
+    max_bet_amount: ChipAmount
+    action_type: ActionType = ActionType.BET
+
+
+@dataclass(frozen=True, slots=True)
 class AvailableRaiseAction:
     min_raise_amount: ChipAmount
     max_raise_amount: ChipAmount
@@ -39,6 +46,7 @@ AvailableActions = (
     AvailableFoldAction
     | AvailableCheckAction
     | AvailableCallAction
+    | AvailableBetAction
     | AvailableRaiseAction
     | AvailableAllInAction
 )

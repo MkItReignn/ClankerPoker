@@ -3,13 +3,14 @@ from __future__ import annotations
 from src.domain.models.available_action import (
     AvailableActions,
     AvailableAllInAction,
+    AvailableBetAction,
     AvailableCallAction,
     AvailableCheckAction,
     AvailableFoldAction,
     AvailableRaiseAction,
 )
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game
+from src.domain.models.game import Game, GamePhase
 from src.domain.models.player import Player
 from src.domain.rules.betting_calculator import BettingCalculator
 
@@ -49,26 +50,58 @@ class AvailableActionCalculator:
         if call_amount.value == 0:
             available_actions.append(AvailableCheckAction())
 
+            is_post_flop = game.current_phase in (
+                GamePhase.FLOP,
+                GamePhase.TURN,
+                GamePhase.RIVER,
+            )
+            is_pre_flop = game.current_phase == GamePhase.PRE_FLOP
+
+            if (
+                is_post_flop
+                and player.remaining_chips.value >= game.current_blind_level.big_blind.value
+            ):
+                available_actions.append(
+                    AvailableBetAction(
+                        min_bet_amount=game.current_blind_level.big_blind,
+                        max_bet_amount=player.remaining_chips,
+                    )
+                )
+
+            # You can only raise when call_amount = 0 during pre-flop, since BET is not allowed.
+            if is_pre_flop:
+                minimum_raise_increment: ChipAmount = (
+                    BettingCalculator.calculate_minimum_raise_increment(
+                        game.betting_state.last_raise_increment,
+                        game.current_blind_level.big_blind,
+                    )
+                )
+
+                if player.remaining_chips.value >= minimum_raise_increment.value:
+                    available_actions.append(
+                        AvailableRaiseAction(
+                            min_raise_amount=minimum_raise_increment,
+                            max_raise_amount=player.remaining_chips,
+                        )
+                    )
+
         if call_amount.value > 0:
             if player.remaining_chips.value >= call_amount.value:
                 available_actions.append(AvailableCallAction(call_amount=call_amount))
 
-        minimum_raise_increment: ChipAmount = BettingCalculator.calculate_minimum_raise_increment(
-            game.betting_state.last_raise_increment,
-            game.current_blind_level.big_blind,
-        )
-
-        if player.remaining_chips > call_amount:
-            max_raise_increment: ChipAmount = player.remaining_chips - call_amount
-
-            if max_raise_increment >= minimum_raise_increment:
-                min_raise_amount: ChipAmount = minimum_raise_increment
-                max_raise_amount: ChipAmount = max_raise_increment
-                available_actions.append(
-                    AvailableRaiseAction(
-                        min_raise_amount=min_raise_amount, max_raise_amount=max_raise_amount
-                    )
+            if player.remaining_chips > call_amount:
+                min_raise_amount: ChipAmount = BettingCalculator.calculate_minimum_raise_increment(
+                    game.betting_state.last_raise_increment,
+                    game.current_blind_level.big_blind,
                 )
+                max_raise_amount: ChipAmount = player.remaining_chips - call_amount
+
+                if max_raise_amount >= min_raise_amount:
+                    available_actions.append(
+                        AvailableRaiseAction(
+                            min_raise_amount=min_raise_amount, max_raise_amount=max_raise_amount
+                        )
+                    )
 
         if player.remaining_chips.value > 0:
             available_actions.append(AvailableAllInAction(all_in_amount=player.remaining_chips))
