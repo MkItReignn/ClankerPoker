@@ -9,7 +9,7 @@ from src.domain.models.available_action import (AvailableActions,
                                                 AvailableCallAction,
                                                 AvailableRaiseAction)
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import NO_CURRENT_PLAYER, BettingState, Game
+from src.domain.models.game import NO_POSITION_TO_ACT, BettingState, Game
 from src.domain.models.player import (BettingRoundActionStatus,
                                       HandParticipationStatus, Player,
                                       PlayerId)
@@ -76,17 +76,15 @@ class ActionApplier:
             player, action, call_amount, minimum_raise_increment
         )
 
-        updated_players: Players = game.players.replace_player(
-            player_id, result.updated_player
-        )  # pyright: ignore[reportRedeclaration]
+        updated_players: Players = game.players.replace_player(player_id, result.updated_player)
 
         if result.betting_state_update.was_raise:
             updated_players: Players = ActionApplier._reset_acted_players_after_raise(
                 updated_players, player_id
             )
 
-        current_player_position: int = ActionApplier._find_next_player_needing_action_within_round(
-            updated_players, game.betting_state.current_player_position
+        position_to_act: int = ActionApplier._find_next_position_to_act_within_round(
+            updated_players, game.betting_state.position_to_act
         )
 
         updated_betting_state: BettingState = BettingState(
@@ -95,7 +93,7 @@ class ActionApplier:
                 if result.betting_state_update.was_raise
                 else game.betting_state.last_raise_increment
             ),
-            current_player_position=current_player_position,
+            position_to_act=position_to_act,
         )
 
         return ActionApplier._build_updated_game(game, updated_players, updated_betting_state)
@@ -374,22 +372,20 @@ class ActionApplier:
         )
 
     @staticmethod
-    def _find_next_player_needing_action_within_round(
-        players: Players, current_position: int
-    ) -> int:
-        """Find next player who needs action within the current betting round, starting from current_position.
+    def _find_next_position_to_act_within_round(players: Players, last_position_to_act: int) -> int:
+        """Find next player who needs action within the current betting round, starting from last_position_to_act.
 
         This method is used to find the next player to act after someone has taken an action
         within an ongoing betting round. It searches circularly starting from the position
-        after current_position.
+        after last_position_to_act.
 
-        Returns NO_CURRENT_PLAYER if no player needs action or current_position is invalid.
+        Returns NO_POSITION_TO_ACT if no player needs action or last_position_to_act is invalid.
         """
-        if current_position == NO_CURRENT_PLAYER:
-            return NO_CURRENT_PLAYER
+        if last_position_to_act == NO_POSITION_TO_ACT:
+            return NO_POSITION_TO_ACT
 
         num_players: int = len(players)
-        start_pos: int = (current_position + 1) % num_players
+        start_pos: int = (last_position_to_act + 1) % num_players
 
         for i in range(num_players):
             position: int = (start_pos + i) % num_players
@@ -397,4 +393,4 @@ class ActionApplier:
             if player.betting_status == BettingRoundActionStatus.NEEDS_ACTION:
                 return position
 
-        return NO_CURRENT_PLAYER
+        return NO_POSITION_TO_ACT

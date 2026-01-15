@@ -128,7 +128,7 @@ class HandState:
             )
 
 
-NO_CURRENT_PLAYER: int = -1
+NO_POSITION_TO_ACT: int = -1
 
 
 @dataclass(slots=True)
@@ -136,16 +136,16 @@ class BettingState:
     """State tracking for the current betting round."""
 
     last_raise_increment: ChipAmount
-    current_player_position: int
+    position_to_act: int
 
     def __post_init__(self) -> None:
         if self.last_raise_increment.value < 0:
             raise ValueError(
                 f"Last raise increment cannot be negative: {self.last_raise_increment.value}"
             )
-        if self.current_player_position != NO_CURRENT_PLAYER and self.current_player_position < 0:
+        if self.position_to_act != NO_POSITION_TO_ACT and self.position_to_act < 0:
             raise ValueError(
-                f"Current player position must be non-negative or {NO_CURRENT_PLAYER}: {self.current_player_position}"
+                f"Position to act must be non-negative or {NO_POSITION_TO_ACT}: {self.position_to_act}"
             )
 
 
@@ -205,14 +205,14 @@ class Game:
             )
 
         if self.identity.status == GameStatus.IN_PROGRESS:
-            if self.betting_state.current_player_position == NO_CURRENT_PLAYER:
+            if self.betting_state.position_to_act == NO_POSITION_TO_ACT:
                 if not self.is_round_complete():
                     raise ValueError(
-                        "IN_PROGRESS game with NO_CURRENT_PLAYER must have a complete betting round"
+                        "IN_PROGRESS game with NO_POSITION_TO_ACT must have a complete betting round"
                     )
-            elif self.betting_state.current_player_position >= num_players:
+            elif self.betting_state.position_to_act >= num_players:
                 raise ValueError(
-                    f"Current player position {self.betting_state.current_player_position} is out of range for {num_players} players"
+                    f"Position to act {self.betting_state.position_to_act} is out of range for {num_players} players"
                 )
 
         if self.identity.status == GameStatus.COMPLETED:
@@ -246,8 +246,8 @@ class Game:
         return self.blind_state.current_blind_level
 
     @property
-    def current_player_position(self) -> int:
-        return self.betting_state.current_player_position
+    def position_to_act(self) -> int:
+        return self.betting_state.position_to_act
 
     @property
     def buy_in_amount(self) -> ChipAmount:

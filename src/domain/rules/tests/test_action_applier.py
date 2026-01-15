@@ -9,7 +9,7 @@ import pytest
 from src.domain.models.actions import Action, ActionType
 from src.domain.models.card import Rank, Suit
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import NO_CURRENT_PLAYER, Game, GamePhase
+from src.domain.models.game import NO_POSITION_TO_ACT, Game, GamePhase
 from src.domain.models.player import (BettingRoundActionStatus,
                                       HandParticipationStatus, Player)
 from src.domain.models.seat import Seat
@@ -1721,12 +1721,12 @@ class TestNextPlayerCalculation:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player1, player2, player3])
-        game.betting_state.current_player_position = 0
+        game.betting_state.position_to_act = 0
         action = Action(action_type=ActionType.CHECK)
 
         updated_game = ActionApplier.apply_action(game, player1.id, action)
 
-        assert updated_game.betting_state.current_player_position == 1
+        assert updated_game.betting_state.position_to_act == 1
 
     def test_wraps_around_to_first_player_when_last_player_acts(
         self,
@@ -1746,12 +1746,12 @@ class TestNextPlayerCalculation:
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         game = minimal_game_factory([player1, player2])
-        game.betting_state.current_player_position = 1
+        game.betting_state.position_to_act = 1
         action = Action(action_type=ActionType.CHECK)
 
         updated_game = ActionApplier.apply_action(game, player2.id, action)
 
-        assert updated_game.betting_state.current_player_position == NO_CURRENT_PLAYER
+        assert updated_game.betting_state.position_to_act == NO_POSITION_TO_ACT
 
     def test_returns_none_when_no_players_need_action(
         self,
@@ -1771,12 +1771,12 @@ class TestNextPlayerCalculation:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player1, player2])
-        game.betting_state.current_player_position = 0
+        game.betting_state.position_to_act = 0
         action = Action(action_type=ActionType.CHECK)
 
         updated_game = ActionApplier.apply_action(game, player1.id, action)
 
-        assert updated_game.betting_state.current_player_position == NO_CURRENT_PLAYER
+        assert updated_game.betting_state.position_to_act == NO_POSITION_TO_ACT
 
     def test_skips_folded_players_when_finding_next_player(
         self,
@@ -1803,12 +1803,12 @@ class TestNextPlayerCalculation:
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         game = minimal_game_factory([player1, folded_player, player3])
-        game.betting_state.current_player_position = 0
+        game.betting_state.position_to_act = 0
         action = Action(action_type=ActionType.CHECK)
 
         updated_game = ActionApplier.apply_action(game, player1.id, action)
 
-        assert updated_game.betting_state.current_player_position == 2
+        assert updated_game.betting_state.position_to_act == 2
 
     def test_skips_players_who_have_already_acted_when_finding_next_player(
         self,
@@ -1834,12 +1834,12 @@ class TestNextPlayerCalculation:
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         game = minimal_game_factory([player1, acted_player, player3])
-        game.betting_state.current_player_position = 0
+        game.betting_state.position_to_act = 0
         action = Action(action_type=ActionType.CHECK)
 
         updated_game = ActionApplier.apply_action(game, player1.id, action)
 
-        assert updated_game.betting_state.current_player_position == 2
+        assert updated_game.betting_state.position_to_act == 2
 
     def test_finds_next_player_after_raise_resets_other_players(
         self,
@@ -1861,12 +1861,12 @@ class TestNextPlayerCalculation:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player1, player2], last_raise_increment=BIG_BLIND_STANDARD)
-        game.betting_state.current_player_position = 0
+        game.betting_state.position_to_act = 0
         action = Action(action_type=ActionType.RAISE, amount=ChipAmount(50))
 
         updated_game = ActionApplier.apply_action(game, player1.id, action)
 
-        assert updated_game.betting_state.current_player_position == 1
+        assert updated_game.betting_state.position_to_act == 1
 
 
 class TestGameStatePreservation:

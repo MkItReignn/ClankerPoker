@@ -132,7 +132,7 @@ def minimal_game_factory() -> Callable[..., Game]:
             ),
             betting_state=BettingState(
                 last_raise_increment=last_raise_increment,
-                current_player_position=0,
+                position_to_act=0,
             ),
             button_seat=Seat.SEAT_0,
             blind_state=BlindState(
