@@ -19,7 +19,6 @@ from src.domain.models.game import (
     GamePhase,
     GameStatus,
     HandState,
-    TablePositions,
     TournamentConfig,
 )
 from src.domain.models.hand import Hand
@@ -149,11 +148,7 @@ def minimal_game_factory() -> Callable[..., Game]:
                 last_raise_increment=last_raise_increment,
                 current_player_position=0,
             ),
-            table_positions=TablePositions(
-                dealer_position=0,
-                small_blind_position=0,
-                big_blind_position=1,
-            ),
+            button_seat=Seat.SEAT_0,
             blind_state=BlindState(
                 current_blind_level=BlindLevel(
                     small_blind=ChipAmount(10),

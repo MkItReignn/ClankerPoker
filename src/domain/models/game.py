@@ -148,21 +148,6 @@ class BettingState:
             )
 
 
-@dataclass(slots=True)
-class TablePositions:
-    dealer_position: int
-    small_blind_position: int
-    big_blind_position: int
-
-    def __post_init__(self) -> None:
-        if self.dealer_position < 0:
-            raise ValueError(f"Dealer position must be non-negative: {self.dealer_position}")
-        if self.small_blind_position < 0:
-            raise ValueError(
-                f"Small blind position must be non-negative: {self.small_blind_position}"
-            )
-        if self.big_blind_position < 0:
-            raise ValueError(f"Big blind position must be non-negative: {self.big_blind_position}")
 
 
 @dataclass(frozen=True, slots=True)
@@ -189,7 +174,7 @@ class Game:
     hand_state: HandState
     pot_state: PotState
     betting_state: BettingState
-    table_positions: TablePositions
+    button_seat: Seat
     blind_state: BlindState
     players: list[Player]
     results: GameResults | None
@@ -206,6 +191,13 @@ class Game:
         if max(valid_seats) >= len(self.players):
             raise ValueError(
                 f"Player seat {max(valid_seats)} is out of range for {len(self.players)} players"
+            )
+
+        if self.button_seat.value < 0:
+            raise ValueError(f"Button seat must be non-negative: {self.button_seat.value}")
+        if self.button_seat.value >= len(self.players):
+            raise ValueError(
+                f"Button seat {self.button_seat.value} is out of range for {len(self.players)} players"
             )
 
         if self.identity.status == GameStatus.IN_PROGRESS:
@@ -250,18 +242,6 @@ class Game:
         return self.blind_state.current_blind_level
 
     @property
-    def dealer_position(self) -> int:
-        return self.table_positions.dealer_position
-
-    @property
-    def small_blind_position(self) -> int:
-        return self.table_positions.small_blind_position
-
-    @property
-    def big_blind_position(self) -> int:
-        return self.table_positions.big_blind_position
-
-    @property
     def current_player_position(self) -> int:
         return self.betting_state.current_player_position
 
@@ -273,14 +253,14 @@ class Game:
     def payout_structure(self) -> str:
         return self.tournament_config.payout_structure
 
-    def get_non_eliminated_players(self) -> list[Player]:
-        """Get list of all non-eliminated players."""
+    def get_active_players(self) -> list[Player]:
+        """Get list of all active (non-eliminated) players."""
         return [
             p for p in self.players if p.participation_status != HandParticipationStatus.ELIMINATED
         ]
 
-    def get_non_eliminated_player_ids(self) -> frozenset[PlayerId]:
-        """Get set of IDs for all non-eliminated players."""
+    def get_active_player_ids(self) -> frozenset[PlayerId]:
+        """Get set of IDs for all active (non-eliminated) players."""
         return frozenset(
             p.id
             for p in self.players

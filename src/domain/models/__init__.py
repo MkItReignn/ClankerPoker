@@ -23,7 +23,6 @@ from src.domain.models.game import (
     GameResults,
     GameStatus,
     HandState,
-    TablePositions,
     TournamentConfig,
 )
 from src.domain.models.hand import Hand
@@ -35,6 +34,7 @@ from src.domain.models.player import (
     Player,
     PlayerId,
 )
+from src.domain.models.position import PositionName, TablePositionMapping
 from src.domain.models.pot import Pot, PotState
 from src.domain.models.seat import Seat
 
@@ -75,10 +75,11 @@ __all__ = [
     "PlayerId",
     "Pot",
     "PotState",
+    "PositionName",
     "Prompt",
     "Rank",
     "Seat",
     "Suit",
-    "TablePositions",
+    "TablePositionMapping",
     "TournamentConfig",
 ]

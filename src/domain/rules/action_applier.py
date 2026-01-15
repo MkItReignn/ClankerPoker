@@ -180,7 +180,7 @@ class ActionApplier:
             hand_state=game.hand_state,
             pot_state=game.pot_state,
             betting_state=updated_betting_state,
-            table_positions=game.table_positions,
+            button_seat=game.button_seat,
             blind_state=game.blind_state,
             players=updated_players,
             results=game.results,
