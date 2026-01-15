@@ -1180,6 +1180,524 @@ class TestDistributeAllPotsEdgeCases:
 
 
 # =============================================================================
+# ADDITIONAL EDGE CASES AND DEFENSIVE TESTS
+# =============================================================================
+
+
+class TestSortWinnersByPositionAdjacentSeats:
+    """Edge cases for position sorting with adjacent and non-contiguous seats."""
+
+    def test_adjacent_winners_sorted_correctly(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """Winners at adjacent seats: 1, 2, 3 with button at 0 → [1, 2, 3]."""
+        all_players = [
+            sample_player_factory(
+                player_id=f"player-{i}",
+                seat=Seat.from_int(i),
+                remaining_chips=ChipAmount(1000),
+            )
+            for i in range(6)
+        ]
+        winners = [all_players[1], all_players[2], all_players[3]]
+        button_seat = Seat.SEAT_0
+
+        result = ChipDistributor.sort_winners_by_position_left_of_button(
+            winners=winners,
+            button_seat=button_seat,
+            all_players=all_players,
+        )
+
+        assert [p.seat for p in result] == [Seat.SEAT_1, Seat.SEAT_2, Seat.SEAT_3]
+
+    def test_button_is_winner_sorted_last(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """Button player is winner → sorted last (furthest from left of button)."""
+        all_players = [
+            sample_player_factory(
+                player_id=f"player-{i}",
+                seat=Seat.from_int(i),
+                remaining_chips=ChipAmount(1000),
+            )
+            for i in range(4)
+        ]
+        # Winners include the button (seat 2)
+        winners = [all_players[0], all_players[2], all_players[3]]
+        button_seat = Seat.SEAT_2
+
+        # Clockwise from seat 2: 3 → 0 → 1 → 2
+        # Winners in order: 3 → 0 → 2 (button last)
+        result = ChipDistributor.sort_winners_by_position_left_of_button(
+            winners=winners,
+            button_seat=button_seat,
+            all_players=all_players,
+        )
+
+        assert [p.seat for p in result] == [Seat.SEAT_3, Seat.SEAT_0, Seat.SEAT_2]
+
+    def test_winners_wrap_around_table(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """Winners span wrap-around: button at 3, winners at 5, 0, 1."""
+        all_players = [
+            sample_player_factory(
+                player_id=f"player-{i}",
+                seat=Seat.from_int(i),
+                remaining_chips=ChipAmount(1000),
+            )
+            for i in range(6)
+        ]
+        winners = [all_players[5], all_players[0], all_players[1]]
+        button_seat = Seat.SEAT_3
+
+        # Clockwise from seat 3: 4 → 5 → 0 → 1 → 2 → 3
+        result = ChipDistributor.sort_winners_by_position_left_of_button(
+            winners=winners,
+            button_seat=button_seat,
+            all_players=all_players,
+        )
+
+        assert [p.seat for p in result] == [Seat.SEAT_5, Seat.SEAT_0, Seat.SEAT_1]
+
+
+class TestDistributePotFiveAndSixWaySplits:
+    """Test larger splits (5-6 way) to ensure algorithm scales correctly."""
+
+    def test_five_way_split_even_pot(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """500 chips, 5 winners → 100 each."""
+        all_players = [
+            sample_player_factory(
+                player_id=f"player-{i}",
+                seat=Seat.from_int(i),
+                remaining_chips=ChipAmount(1000),
+            )
+            for i in range(6)
+        ]
+        winners = all_players[:5]  # First 5 players
+        pot = Pot(
+            amount=ChipAmount(500),
+            eligible_player_ids=frozenset(p.id for p in all_players),
+        )
+
+        result = ChipDistributor.distribute_pot_to_winners(
+            pot=pot,
+            winners=winners,
+            button_seat=Seat.SEAT_5,
+            all_players=all_players,
+        )
+
+        for i in range(5):
+            assert result[f"player-{i}"] == ChipAmount(100)
+
+    def test_five_way_split_four_odd_chips(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """504 chips, 5 winners → 101, 101, 101, 101, 100 (max remainder case)."""
+        all_players = [
+            sample_player_factory(
+                player_id=f"player-{i}",
+                seat=Seat.from_int(i),
+                remaining_chips=ChipAmount(1000),
+            )
+            for i in range(6)
+        ]
+        winners = all_players[:5]
+        pot = Pot(
+            amount=ChipAmount(504),  # 504 / 5 = 100 remainder 4
+            eligible_player_ids=frozenset(p.id for p in all_players),
+        )
+        button_seat = Seat.SEAT_5
+
+        # Clockwise from seat 5: 0 → 1 → 2 → 3 → 4 → 5
+        # First 4 get odd chips
+        result = ChipDistributor.distribute_pot_to_winners(
+            pot=pot,
+            winners=winners,
+            button_seat=button_seat,
+            all_players=all_players,
+        )
+
+        assert result["player-0"] == ChipAmount(101)  # 1st left of button
+        assert result["player-1"] == ChipAmount(101)  # 2nd
+        assert result["player-2"] == ChipAmount(101)  # 3rd
+        assert result["player-3"] == ChipAmount(101)  # 4th
+        assert result["player-4"] == ChipAmount(100)  # 5th (no odd chip)
+
+        # Verify total
+        total = sum(amt.value for amt in result.values())
+        assert total == 504
+
+    def test_six_way_split_five_odd_chips(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """605 chips, 6 winners → 101, 101, 101, 101, 101, 100."""
+        all_players = [
+            sample_player_factory(
+                player_id=f"player-{i}",
+                seat=Seat.from_int(i),
+                remaining_chips=ChipAmount(1000),
+            )
+            for i in range(6)
+        ]
+        pot = Pot(
+            amount=ChipAmount(605),  # 605 / 6 = 100 remainder 5
+            eligible_player_ids=frozenset(p.id for p in all_players),
+        )
+        button_seat = Seat.SEAT_0
+
+        # Clockwise from seat 0: 1 → 2 → 3 → 4 → 5 → 0
+        result = ChipDistributor.distribute_pot_to_winners(
+            pot=pot,
+            winners=all_players,
+            button_seat=button_seat,
+            all_players=all_players,
+        )
+
+        assert result["player-1"] == ChipAmount(101)  # 1st left of button
+        assert result["player-2"] == ChipAmount(101)  # 2nd
+        assert result["player-3"] == ChipAmount(101)  # 3rd
+        assert result["player-4"] == ChipAmount(101)  # 4th
+        assert result["player-5"] == ChipAmount(101)  # 5th
+        assert result["player-0"] == ChipAmount(100)  # 6th (button, no odd chip)
+
+        total = sum(amt.value for amt in result.values())
+        assert total == 605
+
+
+class TestDistributePotHeadsUpScenarios:
+    """Heads-up (2 player) specific distribution scenarios."""
+
+    def test_heads_up_split_pot_even(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """Heads-up tie with even pot → 50/50 split."""
+        all_players = [
+            sample_player_factory(
+                player_id=f"player-{i}",
+                seat=Seat.from_int(i),
+                remaining_chips=ChipAmount(500),
+            )
+            for i in range(2)
+        ]
+        pot = Pot(
+            amount=ChipAmount(200),
+            eligible_player_ids=frozenset(p.id for p in all_players),
+        )
+
+        result = ChipDistributor.distribute_pot_to_winners(
+            pot=pot,
+            winners=all_players,
+            button_seat=Seat.SEAT_0,
+            all_players=all_players,
+        )
+
+        assert result["player-0"] == ChipAmount(100)
+        assert result["player-1"] == ChipAmount(100)
+
+    def test_heads_up_split_pot_odd_to_left_of_button(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """Heads-up tie with odd pot → player left of button gets extra chip."""
+        all_players = [
+            sample_player_factory(
+                player_id=f"player-{i}",
+                seat=Seat.from_int(i),
+                remaining_chips=ChipAmount(500),
+            )
+            for i in range(2)
+        ]
+        pot = Pot(
+            amount=ChipAmount(201),
+            eligible_player_ids=frozenset(p.id for p in all_players),
+        )
+        button_seat = Seat.SEAT_0
+
+        # Clockwise from seat 0: seat 1 is first left of button
+        result = ChipDistributor.distribute_pot_to_winners(
+            pot=pot,
+            winners=all_players,
+            button_seat=button_seat,
+            all_players=all_players,
+        )
+
+        assert result["player-1"] == ChipAmount(101)  # Left of button
+        assert result["player-0"] == ChipAmount(100)  # Button
+
+
+class TestSidePotWithTiedWinners:
+    """Side pot distribution when multiple players tie for a side pot."""
+
+    def test_side_pot_two_way_tie(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """Side pot won by two players who tie."""
+        all_players = [
+            sample_player_factory(
+                player_id=f"player-{i}",
+                seat=Seat.from_int(i),
+                remaining_chips=ChipAmount(0),
+            )
+            for i in range(3)
+        ]
+
+        main_pot = Pot(
+            amount=ChipAmount(300),
+            eligible_player_ids=frozenset(p.id for p in all_players),
+        )
+        side_pot = Pot(
+            amount=ChipAmount(200),
+            eligible_player_ids=frozenset([all_players[1].id, all_players[2].id]),
+        )
+
+        pot_state = PotState(main_pot=main_pot, side_pots=[side_pot])
+
+        # Player 0 wins main pot
+        # Players 1 and 2 TIE for side pot
+        winners_by_pot = {
+            main_pot: [all_players[0]],
+            side_pot: [all_players[1], all_players[2]],  # Tie!
+        }
+        button_seat = Seat.SEAT_0
+
+        result = ChipDistributor.distribute_all_pots(
+            pot_state=pot_state,
+            winners_by_pot=winners_by_pot,
+            button_seat=button_seat,
+            all_players=all_players,
+        )
+
+        assert result["player-0"] == ChipAmount(300)  # Main pot
+        # Side pot 200 split 2 ways = 100 each
+        assert result["player-1"] == ChipAmount(100)
+        assert result["player-2"] == ChipAmount(100)
+
+    def test_side_pot_three_way_tie_with_odd_chip(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """Side pot three-way tie with odd chip distribution."""
+        all_players = [
+            sample_player_factory(
+                player_id=f"player-{i}",
+                seat=Seat.from_int(i),
+                remaining_chips=ChipAmount(0),
+            )
+            for i in range(4)
+        ]
+
+        main_pot = Pot(
+            amount=ChipAmount(400),
+            eligible_player_ids=frozenset(p.id for p in all_players),
+        )
+        side_pot = Pot(
+            amount=ChipAmount(301),  # 301 / 3 = 100 remainder 1
+            eligible_player_ids=frozenset(
+                [all_players[1].id, all_players[2].id, all_players[3].id]
+            ),
+        )
+
+        pot_state = PotState(main_pot=main_pot, side_pots=[side_pot])
+
+        # Player 0 wins main pot
+        # Players 1, 2, 3 TIE for side pot
+        winners_by_pot = {
+            main_pot: [all_players[0]],
+            side_pot: [all_players[1], all_players[2], all_players[3]],
+        }
+        button_seat = Seat.SEAT_0
+
+        # Clockwise from seat 0: 1 → 2 → 3 → 0
+        # Side pot winners in order: 1 → 2 → 3
+        # Player 1 gets odd chip
+        result = ChipDistributor.distribute_all_pots(
+            pot_state=pot_state,
+            winners_by_pot=winners_by_pot,
+            button_seat=button_seat,
+            all_players=all_players,
+        )
+
+        assert result["player-0"] == ChipAmount(400)  # Main pot
+        assert result["player-1"] == ChipAmount(101)  # 100 + 1 odd chip
+        assert result["player-2"] == ChipAmount(100)
+        assert result["player-3"] == ChipAmount(100)
+
+
+class TestDefensiveChecks:
+    """Defensive tests to ensure robust behavior."""
+
+    def test_non_winners_not_in_payout_dict(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """Players who didn't win should not appear in payout dictionary."""
+        all_players = [
+            sample_player_factory(
+                player_id=f"player-{i}",
+                seat=Seat.from_int(i),
+                remaining_chips=ChipAmount(1000),
+            )
+            for i in range(4)
+        ]
+        winners = [all_players[0]]  # Only player 0 wins
+        pot = Pot(
+            amount=ChipAmount(500),
+            eligible_player_ids=frozenset(p.id for p in all_players),
+        )
+
+        result = ChipDistributor.distribute_pot_to_winners(
+            pot=pot,
+            winners=winners,
+            button_seat=Seat.SEAT_3,
+            all_players=all_players,
+        )
+
+        # Only winner should be in result
+        assert "player-0" in result
+        assert "player-1" not in result
+        assert "player-2" not in result
+        assert "player-3" not in result
+
+    def test_all_payouts_are_non_negative(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """All payout amounts should be >= 0."""
+        all_players = [
+            sample_player_factory(
+                player_id=f"player-{i}",
+                seat=Seat.from_int(i),
+                remaining_chips=ChipAmount(1000),
+            )
+            for i in range(6)
+        ]
+        pot = Pot(
+            amount=ChipAmount(5),  # Very small pot split 6 ways
+            eligible_player_ids=frozenset(p.id for p in all_players),
+        )
+
+        result = ChipDistributor.distribute_pot_to_winners(
+            pot=pot,
+            winners=all_players,
+            button_seat=Seat.SEAT_0,
+            all_players=all_players,
+        )
+
+        for player_id, amount in result.items():
+            assert amount.value >= 0, f"Player {player_id} has negative payout: {amount}"
+
+    def test_small_pot_large_split_some_get_zero(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """When pot is smaller than number of winners, some get zero."""
+        all_players = [
+            sample_player_factory(
+                player_id=f"player-{i}",
+                seat=Seat.from_int(i),
+                remaining_chips=ChipAmount(1000),
+            )
+            for i in range(6)
+        ]
+        pot = Pot(
+            amount=ChipAmount(3),  # 3 chips split 6 ways
+            eligible_player_ids=frozenset(p.id for p in all_players),
+        )
+        button_seat = Seat.SEAT_0
+
+        # Clockwise from seat 0: 1 → 2 → 3 → 4 → 5 → 0
+        result = ChipDistributor.distribute_pot_to_winners(
+            pot=pot,
+            winners=all_players,
+            button_seat=button_seat,
+            all_players=all_players,
+        )
+
+        # 3 / 6 = 0 remainder 3
+        # First 3 left of button get 1 chip each
+        assert result["player-1"] == ChipAmount(1)
+        assert result["player-2"] == ChipAmount(1)
+        assert result["player-3"] == ChipAmount(1)
+        assert result["player-4"] == ChipAmount(0)
+        assert result["player-5"] == ChipAmount(0)
+        assert result["player-0"] == ChipAmount(0)
+
+        # Total still preserved
+        total = sum(amt.value for amt in result.values())
+        assert total == 3
+
+
+class TestUncalledBetReturnsAdditionalScenarios:
+    """Additional uncalled bet return scenarios."""
+
+    def test_four_players_with_different_investments(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """A(1000), B(500), C(300), D(100) → return 500 to A."""
+        players = [
+            sample_player_factory(
+                player_id="player-a",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(0),
+                total_invested_this_hand=ChipAmount(1000),
+            ),
+            sample_player_factory(
+                player_id="player-b",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(0),
+                total_invested_this_hand=ChipAmount(500),
+            ),
+            sample_player_factory(
+                player_id="player-c",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(0),
+                total_invested_this_hand=ChipAmount(300),
+            ),
+            sample_player_factory(
+                player_id="player-d",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(0),
+                total_invested_this_hand=ChipAmount(100),
+            ),
+        ]
+
+        result = ChipDistributor.calculate_uncalled_bet_returns(players)
+
+        # Highest: 1000 (A), Second highest: 500 (B)
+        # Uncalled: 1000 - 500 = 500
+        assert result == {"player-a": ChipAmount(500)}
+
+    def test_all_players_all_in_at_different_levels(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """All all-in: A(100), B(200), C(300) → return 100 to C."""
+        players = [
+            sample_player_factory(
+                player_id="player-a",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(0),  # All-in
+                total_invested_this_hand=ChipAmount(100),
+            ),
+            sample_player_factory(
+                player_id="player-b",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(0),  # All-in
+                total_invested_this_hand=ChipAmount(200),
+            ),
+            sample_player_factory(
+                player_id="player-c",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(0),  # All-in
+                total_invested_this_hand=ChipAmount(300),
+            ),
+        ]
+
+        result = ChipDistributor.calculate_uncalled_bet_returns(players)
+
+        # Highest: 300 (C), Second highest: 200 (B)
+        # Uncalled: 300 - 200 = 100
+        assert result == {"player-c": ChipAmount(100)}
+
+
+# =============================================================================
 # CHIP ACCOUNTING CORRECTNESS
 # =============================================================================
 
