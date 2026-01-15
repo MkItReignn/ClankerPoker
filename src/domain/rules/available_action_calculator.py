@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-from src.domain.models.available_action import (
-    AvailableActions,
-    AvailableAllInAction,
-    AvailableBetAction,
-    AvailableCallAction,
-    AvailableCheckAction,
-    AvailableFoldAction,
-    AvailableRaiseAction,
-)
+from src.domain.models.available_action import (AvailableActions,
+                                                AvailableAllInAction,
+                                                AvailableBetAction,
+                                                AvailableCallAction,
+                                                AvailableCheckAction,
+                                                AvailableFoldAction,
+                                                AvailableRaiseAction)
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game, GamePhase
-from src.domain.models.player import Player
+from src.domain.models.player import PlayerId
 from src.domain.rules.betting_calculator import BettingCalculator
 
 
@@ -23,16 +21,24 @@ class AvailableActionCalculator:
     """
 
     @staticmethod
-    def calculate_available_actions(game: Game, player: Player) -> list[AvailableActions]:
+    def calculate_available_actions(game: Game, player_id: PlayerId) -> list[AvailableActions]:
         """
         Calculate all available actions for a player given current game state.
 
         Only returns actions that are valid for the current state.
         If player cannot act, returns empty list.
 
+        Args:
+            game: Current game state
+            player_id: ID of the player to calculate actions for
+
         Returns:
             List of available actions (may be empty if player cannot act).
         """
+        player = game.players.get_by_id(player_id)
+        if player is None:
+            raise ValueError(f"Player {player_id} not found in game")
+
         players_in_hand = game.players_in_hand(excluded_player_id=player.id)
         if not player.can_act() or len(players_in_hand) == 0:
             return []

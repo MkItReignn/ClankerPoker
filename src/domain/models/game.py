@@ -8,6 +8,7 @@ from src.domain.models.blinds import BlindLevel, BlindSchedule
 from src.domain.models.card import Card
 from src.domain.models.chips import ChipAmount
 from src.domain.models.player import HandParticipationStatus, Player, PlayerId
+from src.domain.models.players import Players
 from src.domain.models.pot import PotState
 from src.domain.models.seat import Seat
 
@@ -148,8 +149,6 @@ class BettingState:
             )
 
 
-
-
 @dataclass(frozen=True, slots=True)
 class BlindState:
     current_blind_level: BlindLevel
@@ -176,28 +175,33 @@ class Game:
     betting_state: BettingState
     button_seat: Seat
     blind_state: BlindState
-    players: list[Player]
+    players: Players
     results: GameResults | None
 
     def __post_init__(self) -> None:
-        if len(self.players) < 2:
-            raise ValueError(f"Game must have at least 2 players: {len(self.players)}")
-        if len(self.players) > 6:
-            raise ValueError(f"Game cannot have more than 6 players: {len(self.players)}")
+        # Convert list[Player] to Players for backward compatibility
+        if isinstance(self.players, list):
+            object.__setattr__(self, "players", Players.from_list(self.players))
+
+        num_players = len(self.players)
+        if num_players < 2:
+            raise ValueError(f"Game must have at least 2 players: {num_players}")
+        if num_players > 6:
+            raise ValueError(f"Game cannot have more than 6 players: {num_players}")
 
         valid_seats = {player.seat.value for player in self.players}
-        if len(valid_seats) != len(self.players):
+        if len(valid_seats) != num_players:
             raise ValueError("Player seats must be unique")
-        if max(valid_seats) >= len(self.players):
+        if max(valid_seats) >= num_players:
             raise ValueError(
-                f"Player seat {max(valid_seats)} is out of range for {len(self.players)} players"
+                f"Player seat {max(valid_seats)} is out of range for {num_players} players"
             )
 
         if self.button_seat.value < 0:
             raise ValueError(f"Button seat must be non-negative: {self.button_seat.value}")
-        if self.button_seat.value >= len(self.players):
+        if self.button_seat.value >= num_players:
             raise ValueError(
-                f"Button seat {self.button_seat.value} is out of range for {len(self.players)} players"
+                f"Button seat {self.button_seat.value} is out of range for {num_players} players"
             )
 
         if self.identity.status == GameStatus.IN_PROGRESS:
@@ -206,9 +210,9 @@ class Game:
                     raise ValueError(
                         "IN_PROGRESS game with NO_CURRENT_PLAYER must have a complete betting round"
                     )
-            elif self.betting_state.current_player_position >= len(self.players):
+            elif self.betting_state.current_player_position >= num_players:
                 raise ValueError(
-                    f"Current player position {self.betting_state.current_player_position} is out of range for {len(self.players)} players"
+                    f"Current player position {self.betting_state.current_player_position} is out of range for {num_players} players"
                 )
 
         if self.identity.status == GameStatus.COMPLETED:
@@ -275,10 +279,10 @@ class Game:
         return players
 
     def get_player_by_seat(self, seat: Seat) -> Player | None:
-        return next((p for p in self.players if p.seat == seat), None)
+        return self.players.get_by_seat(seat)
 
     def get_player_by_id(self, player_id: str) -> Player | None:
-        return next((p for p in self.players if p.id == player_id), None)
+        return self.players.get_by_id(player_id)
 
     def is_hand_complete(self) -> bool:
         """

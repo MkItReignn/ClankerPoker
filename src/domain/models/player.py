@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 
 from src.domain.models.bot import BotId
@@ -26,7 +26,7 @@ class HandParticipationStatus(Enum):
     ELIMINATED = "eliminated"
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class Player:
     id: PlayerId
     bot_id: BotId
@@ -86,13 +86,18 @@ class Player:
     def total_stack(self) -> ChipAmount:
         return self.remaining_chips + self.total_invested_this_hand
 
-    def reset_for_new_hand(self, hole_cards: Hand) -> None:
+    def reset_for_new_hand(self, hole_cards: Hand) -> Player:
         """Reset player state for a new hand.
 
         Sets hole cards, resets betting status to NEEDS_ACTION,
         sets participation status to IN_HAND, and resets investment.
+
+        Returns a new Player instance (immutable).
         """
-        self.hole_cards = hole_cards
-        self.betting_status = BettingRoundActionStatus.NEEDS_ACTION
-        self.participation_status = HandParticipationStatus.IN_HAND
-        self.total_invested_this_hand = ChipAmount(0)
+        return replace(
+            self,
+            hole_cards=hole_cards,
+            betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+            participation_status=HandParticipationStatus.IN_HAND,
+            total_invested_this_hand=ChipAmount(0),
+        )

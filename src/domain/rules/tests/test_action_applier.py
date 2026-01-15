@@ -42,7 +42,7 @@ class TestFoldAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.FOLD)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -68,7 +68,7 @@ class TestFoldAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.FOLD)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -88,8 +88,8 @@ class TestFoldAction:
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+            hole_cards=hole_cards,
         )
-        player.hole_cards = hole_cards
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
@@ -99,7 +99,7 @@ class TestFoldAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.FOLD)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -126,7 +126,7 @@ class TestFoldAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.FOLD)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -154,7 +154,7 @@ class TestFoldAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.FOLD)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -180,7 +180,7 @@ class TestFoldAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.FOLD)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
@@ -208,7 +208,7 @@ class TestFoldAction:
         game = minimal_game_factory([player, other_player], last_raise_increment=raise_increment)
         action = Action(action_type=ActionType.FOLD)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         assert updated_game.betting_state.last_raise_increment == raise_increment
 
@@ -238,7 +238,7 @@ class TestCheckAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -267,7 +267,7 @@ class TestCheckAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -296,7 +296,7 @@ class TestCheckAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -324,7 +324,7 @@ class TestCheckAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -352,7 +352,7 @@ class TestCheckAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
@@ -381,7 +381,7 @@ class TestCheckAction:
         game = minimal_game_factory([player, other_player], last_raise_increment=raise_increment)
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         assert updated_game.betting_state.last_raise_increment == raise_increment
 
@@ -412,7 +412,7 @@ class TestCallAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CALL)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -441,7 +441,7 @@ class TestCallAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CALL)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -469,7 +469,7 @@ class TestCallAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CALL)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -498,7 +498,7 @@ class TestCallAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.ALL_IN, amount=initial_chips)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -527,7 +527,7 @@ class TestCallAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CALL)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
@@ -556,7 +556,7 @@ class TestCallAction:
         game = minimal_game_factory([player, other_player], last_raise_increment=raise_increment)
         action = Action(action_type=ActionType.CALL)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         assert updated_game.betting_state.last_raise_increment == raise_increment
 
@@ -588,7 +588,7 @@ class TestRaiseAction:
         game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -618,7 +618,7 @@ class TestRaiseAction:
         game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -647,7 +647,7 @@ class TestRaiseAction:
         game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -676,7 +676,7 @@ class TestRaiseAction:
         game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
@@ -714,7 +714,7 @@ class TestRaiseAction:
         )
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_folded_player = updated_game.get_player_by_id(folded_player.id)
         assert updated_folded_player is not None
@@ -743,7 +743,7 @@ class TestRaiseAction:
         game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -772,7 +772,7 @@ class TestRaiseAction:
         game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         assert updated_game.betting_state.last_raise_increment == raise_increment
 
@@ -808,7 +808,7 @@ class TestRaiseAction:
         )
 
         raise_action = Action(action_type=ActionType.RAISE, amount=raise_increment)
-        game_after_raise = ActionApplier.apply_action(game, player_a, raise_action)
+        game_after_raise = ActionApplier.apply_action(game, player_a.id, raise_action)
         assert game_after_raise.betting_state.last_raise_increment == raise_increment
 
         updated_player_b = game_after_raise.get_player_by_id(player_b.id)
@@ -821,12 +821,12 @@ class TestRaiseAction:
 
         call_action = Action(action_type=ActionType.CALL)
         game_after_call_b = ActionApplier.apply_action(
-            game_after_raise, updated_player_b, call_action
+            game_after_raise, updated_player_b.id, call_action
         )
         assert game_after_call_b.betting_state.last_raise_increment == raise_increment
 
         game_after_call_c = ActionApplier.apply_action(
-            game_after_call_b, updated_player_c, call_action
+            game_after_call_b, updated_player_c.id, call_action
         )
         assert game_after_call_c.betting_state.last_raise_increment == raise_increment
 
@@ -862,7 +862,7 @@ class TestRaiseAction:
         )
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_acted_player_1 = updated_game.get_player_by_id(acted_player_1.id)
         assert updated_acted_player_1 is not None
@@ -898,7 +898,7 @@ class TestAllInAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -927,7 +927,7 @@ class TestAllInAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -955,7 +955,7 @@ class TestAllInAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -984,7 +984,7 @@ class TestAllInAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
@@ -1015,7 +1015,7 @@ class TestAllInAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
@@ -1046,7 +1046,7 @@ class TestAllInAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -1077,7 +1077,7 @@ class TestAllInAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
@@ -1113,7 +1113,7 @@ class TestAllInAction:
         )
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
@@ -1149,7 +1149,7 @@ class TestAllInAction:
         )
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
@@ -1185,7 +1185,7 @@ class TestAllInAction:
         )
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
@@ -1216,7 +1216,7 @@ class TestAllInAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
@@ -1246,7 +1246,7 @@ class TestAllInAction:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
@@ -1282,7 +1282,7 @@ class TestBetAction:
         game.hand_state.current_phase = GamePhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -1313,7 +1313,7 @@ class TestBetAction:
         game.hand_state.current_phase = GamePhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -1343,7 +1343,7 @@ class TestBetAction:
         game.hand_state.current_phase = GamePhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -1373,7 +1373,7 @@ class TestBetAction:
         game.hand_state.current_phase = GamePhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
@@ -1403,7 +1403,7 @@ class TestBetAction:
         game.hand_state.current_phase = GamePhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         assert updated_game.betting_state.last_raise_increment == bet_amount
 
@@ -1431,7 +1431,7 @@ class TestBetAction:
         game.hand_state.current_phase = GamePhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -1463,7 +1463,7 @@ class TestBetAction:
         game.hand_state.current_phase = GamePhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -1501,7 +1501,7 @@ class TestBetAction:
         game.hand_state.current_phase = GamePhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_folded_player = updated_game.get_player_by_id(folded_player.id)
         assert updated_folded_player is not None
@@ -1538,7 +1538,7 @@ class TestBetAction:
         game.hand_state.current_phase = GamePhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_acted_player_1 = updated_game.get_player_by_id(acted_player_1.id)
         assert updated_acted_player_1 is not None
@@ -1574,7 +1574,7 @@ class TestBetAction:
             game.hand_state.current_phase = phase
             action = Action(action_type=ActionType.BET, amount=bet_amount)
 
-            updated_game = ActionApplier.apply_action(game, player, action)
+            updated_game = ActionApplier.apply_action(game, player.id, action)
 
             updated_player = updated_game.get_player_by_id(player.id)
             assert updated_player is not None
@@ -1611,7 +1611,7 @@ class TestActionValidation:
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
         with pytest.raises(ValueError, match="Bet amount .* is below minimum"):
-            ActionApplier.apply_action(game, player, action)
+            ActionApplier.apply_action(game, player.id, action)
 
     def test_raises_error_when_bet_amount_above_maximum(
         self,
@@ -1639,7 +1639,7 @@ class TestActionValidation:
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
         with pytest.raises(ValueError, match="Bet amount .* exceeds maximum"):
-            ActionApplier.apply_action(game, player, action)
+            ActionApplier.apply_action(game, player.id, action)
 
     def test_raises_error_when_all_in_amount_does_not_match_remaining_chips(
         self,
@@ -1665,7 +1665,7 @@ class TestActionValidation:
         action = Action(action_type=ActionType.ALL_IN, amount=incorrect_amount)
 
         with pytest.raises(ValueError, match="All-in amount .* does not match"):
-            ActionApplier.apply_action(game, player, action)
+            ActionApplier.apply_action(game, player.id, action)
 
     def test_raises_error_when_action_type_not_available(
         self,
@@ -1691,7 +1691,7 @@ class TestActionValidation:
         action = Action(action_type=ActionType.RAISE, amount=ChipAmount(50))
 
         with pytest.raises(ValueError, match="Action raise is not available"):
-            ActionApplier.apply_action(game, player, action)
+            ActionApplier.apply_action(game, player.id, action)
 
 
 class TestNextPlayerCalculation:
@@ -1724,7 +1724,7 @@ class TestNextPlayerCalculation:
         game.betting_state.current_player_position = 0
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player1, action)
+        updated_game = ActionApplier.apply_action(game, player1.id, action)
 
         assert updated_game.betting_state.current_player_position == 1
 
@@ -1749,7 +1749,7 @@ class TestNextPlayerCalculation:
         game.betting_state.current_player_position = 1
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player2, action)
+        updated_game = ActionApplier.apply_action(game, player2.id, action)
 
         assert updated_game.betting_state.current_player_position == NO_CURRENT_PLAYER
 
@@ -1774,7 +1774,7 @@ class TestNextPlayerCalculation:
         game.betting_state.current_player_position = 0
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player1, action)
+        updated_game = ActionApplier.apply_action(game, player1.id, action)
 
         assert updated_game.betting_state.current_player_position == NO_CURRENT_PLAYER
 
@@ -1806,7 +1806,7 @@ class TestNextPlayerCalculation:
         game.betting_state.current_player_position = 0
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player1, action)
+        updated_game = ActionApplier.apply_action(game, player1.id, action)
 
         assert updated_game.betting_state.current_player_position == 2
 
@@ -1837,7 +1837,7 @@ class TestNextPlayerCalculation:
         game.betting_state.current_player_position = 0
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player1, action)
+        updated_game = ActionApplier.apply_action(game, player1.id, action)
 
         assert updated_game.betting_state.current_player_position == 2
 
@@ -1864,7 +1864,7 @@ class TestNextPlayerCalculation:
         game.betting_state.current_player_position = 0
         action = Action(action_type=ActionType.RAISE, amount=ChipAmount(50))
 
-        updated_game = ActionApplier.apply_action(game, player1, action)
+        updated_game = ActionApplier.apply_action(game, player1.id, action)
 
         assert updated_game.betting_state.current_player_position == 1
 
@@ -1893,7 +1893,7 @@ class TestGameStatePreservation:
         original_player_chips = player.remaining_chips
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         assert updated_game is not game
         assert player.remaining_chips == original_player_chips
@@ -1918,7 +1918,7 @@ class TestGameStatePreservation:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         assert updated_game.identity == game.identity
 
@@ -1942,7 +1942,7 @@ class TestGameStatePreservation:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         assert updated_game.tournament_config == game.tournament_config
 
@@ -1966,7 +1966,7 @@ class TestGameStatePreservation:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         assert updated_game.hand_state == game.hand_state
 
@@ -1990,7 +1990,7 @@ class TestGameStatePreservation:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         assert updated_game.pot_state == game.pot_state
 
@@ -2014,7 +2014,7 @@ class TestGameStatePreservation:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         assert updated_game.button_seat == game.button_seat
 
@@ -2038,7 +2038,7 @@ class TestGameStatePreservation:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         assert updated_game.blind_state == game.blind_state
 
@@ -2062,7 +2062,7 @@ class TestGameStatePreservation:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CHECK)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         assert updated_game.results == game.results
 
@@ -2084,8 +2084,8 @@ class TestEdgeCases:
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+            hole_cards=hole_cards,
         )
-        player.hole_cards = hole_cards
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
@@ -2095,7 +2095,7 @@ class TestEdgeCases:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.FOLD)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -2124,7 +2124,7 @@ class TestEdgeCases:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.CALL)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -2154,7 +2154,7 @@ class TestEdgeCases:
         game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
         action = Action(action_type=ActionType.RAISE, amount=minimum_raise)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -2183,7 +2183,7 @@ class TestEdgeCases:
         game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
         action = Action(action_type=ActionType.RAISE, amount=max_raise)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -2211,7 +2211,7 @@ class TestEdgeCases:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -2242,7 +2242,7 @@ class TestEdgeCases:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
@@ -2281,7 +2281,7 @@ class TestEdgeCases:
         )
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
-        updated_game = ActionApplier.apply_action(game, player, action)
+        updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_eliminated_player = updated_game.get_player_by_id(eliminated_player.id)
         assert updated_eliminated_player is not None

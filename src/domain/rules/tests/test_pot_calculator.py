@@ -22,15 +22,15 @@ class TestSimpleCaseAllPlayersInvestSameAmount:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player1.total_invested_this_hand = ChipAmount(100)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player2.total_invested_this_hand = ChipAmount(100)
 
         result = PotCalculator.calculate_pot_state([player1, player2])
 
@@ -45,22 +45,22 @@ class TestSimpleCaseAllPlayersInvestSameAmount:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(50),
         )
-        player1.total_invested_this_hand = ChipAmount(50)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(50),
         )
-        player2.total_invested_this_hand = ChipAmount(50)
 
         player3 = sample_player_factory(
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(50),
         )
-        player3.total_invested_this_hand = ChipAmount(50)
 
         result = PotCalculator.calculate_pot_state([player1, player2, player3])
 
@@ -77,8 +77,8 @@ class TestSimpleCaseAllPlayersInvestSameAmount:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(200),
         )
-        player1.total_invested_this_hand = ChipAmount(200)
 
         result = PotCalculator.calculate_pot_state([player1])
 
@@ -97,22 +97,22 @@ class TestSidePotWithOnePlayerAllIn:
             player_id="all-in-player",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        all_in_player.total_invested_this_hand = ChipAmount(100)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(200),
         )
-        player2.total_invested_this_hand = ChipAmount(value=200)
 
         player3 = sample_player_factory(
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(200),
         )
-        player3.total_invested_this_hand = ChipAmount(200)
 
         result = PotCalculator.calculate_pot_state([all_in_player, player2, player3])
 
@@ -133,15 +133,15 @@ class TestSidePotWithOnePlayerAllIn:
             player_id="all-in-player",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(50),
         )
-        all_in_player.total_invested_this_hand = ChipAmount(50)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(150),
         )
-        player2.total_invested_this_hand = ChipAmount(150)
 
         result = PotCalculator.calculate_pot_state([all_in_player, player2])
 
@@ -164,22 +164,22 @@ class TestMultipleAllInLevels:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player1.total_invested_this_hand = ChipAmount(100)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(200),
         )
-        player2.total_invested_this_hand = ChipAmount(200)
 
         player3 = sample_player_factory(
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(300),
         )
-        player3.total_invested_this_hand = ChipAmount(300)
 
         result = PotCalculator.calculate_pot_state([player1, player2, player3])
 
@@ -205,29 +205,29 @@ class TestMultipleAllInLevels:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(50),
         )
-        player1.total_invested_this_hand = ChipAmount(50)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player2.total_invested_this_hand = ChipAmount(100)
 
         player3 = sample_player_factory(
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(150),
         )
-        player3.total_invested_this_hand = ChipAmount(150)
 
         player4 = sample_player_factory(
             player_id="player-4",
             seat=Seat.SEAT_3,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(200),
         )
-        player4.total_invested_this_hand = ChipAmount(200)
 
         result = PotCalculator.calculate_pot_state([player1, player2, player3, player4])
 
@@ -261,15 +261,15 @@ class TestEligiblePlayerIds:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player1.total_invested_this_hand = ChipAmount(100)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(200),
         )
-        player2.total_invested_this_hand = ChipAmount(200)
 
         result = PotCalculator.calculate_pot_state([player1, player2])
 
@@ -287,22 +287,22 @@ class TestEligiblePlayerIds:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(50),
         )
-        player1.total_invested_this_hand = ChipAmount(50)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player2.total_invested_this_hand = ChipAmount(100)
 
         player3 = sample_player_factory(
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(200),
         )
-        player3.total_invested_this_hand = ChipAmount(200)
 
         result = PotCalculator.calculate_pot_state([player1, player2, player3])
 
@@ -317,22 +317,22 @@ class TestEligiblePlayerIds:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player1.total_invested_this_hand = ChipAmount(100)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(200),
         )
-        player2.total_invested_this_hand = ChipAmount(200)
 
         player3 = sample_player_factory(
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(300),
         )
-        player3.total_invested_this_hand = ChipAmount(300)
 
         result = PotCalculator.calculate_pot_state([player1, player2, player3])
 
@@ -350,22 +350,22 @@ class TestEdgeCases:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player1.total_invested_this_hand = ChipAmount(100)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(200),
         )
-        player2.total_invested_this_hand = ChipAmount(200)
 
         player3 = sample_player_factory(
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(300),
         )
-        player3.total_invested_this_hand = ChipAmount(300)
 
         result = PotCalculator.calculate_pot_state([player1, player2, player3])
 
@@ -382,8 +382,8 @@ class TestEdgeCases:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(0),
         )
-        player1.total_invested_this_hand = ChipAmount(0)
 
         result = PotCalculator.calculate_pot_state([player1])
 
@@ -402,15 +402,15 @@ class TestEdgeCases:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player1.total_invested_this_hand = ChipAmount(100)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(200),
         )
-        player2.total_invested_this_hand = ChipAmount(200)
 
         result1 = PotCalculator.calculate_pot_state([player1, player2])
         result2 = PotCalculator.calculate_pot_state([player2, player1])
@@ -431,22 +431,22 @@ class TestEdgeCases:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player1.total_invested_this_hand = ChipAmount(100)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player2.total_invested_this_hand = ChipAmount(100)
 
         player3 = sample_player_factory(
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(200),
         )
-        player3.total_invested_this_hand = ChipAmount(200)
 
         result = PotCalculator.calculate_pot_state([player1, player2, player3])
 
@@ -466,15 +466,15 @@ class TestEdgeCases:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player1.total_invested_this_hand = ChipAmount(100)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player2.total_invested_this_hand = ChipAmount(100)
 
         result = PotCalculator.calculate_pot_state([player1, player2])
 
@@ -489,29 +489,29 @@ class TestEdgeCases:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player1.total_invested_this_hand = ChipAmount(100)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player2.total_invested_this_hand = ChipAmount(100)
 
         player3 = sample_player_factory(
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player3.total_invested_this_hand = ChipAmount(100)
 
         player4 = sample_player_factory(
             player_id="player-4",
             seat=Seat.SEAT_3,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(300),
         )
-        player4.total_invested_this_hand = ChipAmount(300)
 
         result = PotCalculator.calculate_pot_state([player1, player2, player3, player4])
 
@@ -535,22 +535,22 @@ class TestPotCalculationCorrectness:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(50),
         )
-        player1.total_invested_this_hand = ChipAmount(50)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
         )
-        player2.total_invested_this_hand = ChipAmount(100)
 
         player3 = sample_player_factory(
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=ChipAmount(1000),
+            total_invested_this_hand=ChipAmount(150),
         )
-        player3.total_invested_this_hand = ChipAmount(150)
 
         result = PotCalculator.calculate_pot_state([player1, player2, player3])
 
@@ -571,22 +571,22 @@ class TestPotCalculationCorrectness:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(1000),
         )
-        player1.total_invested_this_hand = ChipAmount(1000)
 
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(5000),
         )
-        player2.total_invested_this_hand = ChipAmount(5000)
 
         player3 = sample_player_factory(
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=ChipAmount(10000),
+            total_invested_this_hand=ChipAmount(10000),
         )
-        player3.total_invested_this_hand = ChipAmount(10000)
 
         result = PotCalculator.calculate_pot_state([player1, player2, player3])
 

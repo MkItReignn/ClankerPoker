@@ -11,24 +11,14 @@ from src.domain.models.blinds import BlindLevel
 from src.domain.models.bot import Bot, BotId, BotType, Prompt
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import (
-    BettingState,
-    BlindState,
-    Game,
-    GameIdentity,
-    GamePhase,
-    GameStatus,
-    HandState,
-    TournamentConfig,
-)
+from src.domain.models.game import (BettingState, BlindState, Game,
+                                    GameIdentity, GamePhase, GameStatus,
+                                    HandState, TournamentConfig)
 from src.domain.models.hand import Hand
 from src.domain.models.llm_model import LlmModel
-from src.domain.models.player import (
-    BettingRoundActionStatus,
-    HandParticipationStatus,
-    Player,
-    PlayerId,
-)
+from src.domain.models.player import (BettingRoundActionStatus,
+                                      HandParticipationStatus, Player,
+                                      PlayerId)
 from src.domain.models.pot import Pot, PotState
 from src.domain.models.seat import Seat
 
@@ -84,6 +74,7 @@ def sample_player_factory(sample_bot: Bot) -> Callable[..., Player]:
         total_invested_this_hand: ChipAmount | None = None,
         participation_status: HandParticipationStatus | None = None,
         betting_status: BettingRoundActionStatus | None = None,
+        hole_cards: Hand | None = None,
     ) -> Player:
         if total_invested_this_hand is None:
             total_invested_this_hand = ChipAmount(0)
@@ -97,7 +88,7 @@ def sample_player_factory(sample_bot: Bot) -> Callable[..., Player]:
             bot_id=sample_bot.id,
             seat=seat,
             remaining_chips=remaining_chips,
-            hole_cards=None,
+            hole_cards=hole_cards,
             betting_status=betting_status,
             participation_status=participation_status,
             total_invested_this_hand=total_invested_this_hand,

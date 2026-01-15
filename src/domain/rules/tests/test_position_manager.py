@@ -11,6 +11,7 @@ Tests verify position system behavior according to RULE_BOOK.md:
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import replace
 
 import pytest
 
@@ -2077,10 +2078,14 @@ class TestMultiHandTournamentScenario:
             ]
 
         def eliminate_player(player_id: str) -> None:
-            for p in players:
+            nonlocal players
+            for i, p in enumerate(players):
                 if p.id == player_id:
-                    p.participation_status = HandParticipationStatus.ELIMINATED
-                    p.remaining_chips = ChipAmount(0)
+                    players[i] = replace(
+                        p,
+                        participation_status=HandParticipationStatus.ELIMINATED,
+                        remaining_chips=ChipAmount(0),
+                    )
                     break
 
         current_button_seat = Seat.SEAT_0

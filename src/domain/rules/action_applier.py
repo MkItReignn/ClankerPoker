@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from src.domain.models.actions import Action, ActionType
 from src.domain.models.available_action import (AvailableActions,
@@ -12,26 +11,60 @@ from src.domain.models.available_action import (AvailableActions,
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import NO_CURRENT_PLAYER, BettingState, Game
 from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player)
+                                      HandParticipationStatus, Player,
+                                      PlayerId)
+from src.domain.models.players import Players
 from src.domain.rules.available_action_calculator import \
     AvailableActionCalculator
 from src.domain.rules.betting_calculator import BettingCalculator
 
 
+@dataclass(frozen=True, slots=True)
+class _BettingStateUpdate:
+    """Tracks betting state changes from applying an action."""
+
+    was_raise: bool
+    last_raise_increment: ChipAmount
+
+
+@dataclass(frozen=True, slots=True)
+class _ActionApplicationResult:
+    """Result of applying an action to a player.
+
+    Contains the updated player and betting state changes.
+    No mutations - purely functional transformation.
+    """
+
+    updated_player: Player
+    betting_state_update: _BettingStateUpdate
+
+
 class ActionApplier:
     @staticmethod
-    def apply_action(game: Game, player: Player, action: Action) -> Game:
-        available_actions = AvailableActionCalculator.calculate_available_actions(game, player)
+    def apply_action(game: Game, player_id: PlayerId, action: Action) -> Game:
+        """Apply an action to a player.
+
+        Args:
+            game: Current game state
+            player_id: ID of the player taking action
+            action: The action to apply
+
+        Returns:
+            New Game instance with updated state
+        """
+        player: Player | None = game.players.get_by_id(player_id)
+        if player is None:
+            raise ValueError(f"Player {player_id} not found in game")
+
+        available_actions: list[AvailableActions] = (
+            AvailableActionCalculator.calculate_available_actions(game, player_id)
+        )
         ActionApplier._validate_action(action, available_actions)
 
-        updated_players: list[Player] = deepcopy(game.players)
-        player_index: int = ActionApplier._find_player_index(updated_players, player.id)
-        updated_player: Player = updated_players[player_index]
-
-        players_in_hand = [p for p in updated_players if p.is_in_hand()]
+        players_in_hand: list[Player] = list(game.players.in_hand())
         max_invested: ChipAmount = BettingCalculator.get_max_invested_this_hand(players_in_hand)
         call_amount: ChipAmount = BettingCalculator.calculate_call_amount(
-            max_invested, updated_player.total_invested_this_hand
+            max_invested, player.total_invested_this_hand
         )
 
         minimum_raise_increment: ChipAmount = BettingCalculator.calculate_minimum_raise_increment(
@@ -39,14 +72,18 @@ class ActionApplier:
             game.current_blind_level.big_blind,
         )
 
-        betting_state_update: _BettingStateUpdate = ActionApplier._apply_action_to_player(
-            updated_player, action, call_amount, minimum_raise_increment
+        result: _ActionApplicationResult = ActionApplier._apply_action_to_player(
+            player, action, call_amount, minimum_raise_increment
         )
 
-        updated_players[player_index] = updated_player
+        updated_players: Players = game.players.replace_player(
+            player_id, result.updated_player
+        )  # pyright: ignore[reportRedeclaration]
 
-        if betting_state_update.was_raise:
-            ActionApplier._reset_acted_players_after_raise(updated_players, updated_player.id)
+        if result.betting_state_update.was_raise:
+            updated_players: Players = ActionApplier._reset_acted_players_after_raise(
+                updated_players, player_id
+            )
 
         current_player_position: int = ActionApplier._find_next_player_needing_action_within_round(
             updated_players, game.betting_state.current_player_position
@@ -54,8 +91,8 @@ class ActionApplier:
 
         updated_betting_state: BettingState = BettingState(
             last_raise_increment=(
-                betting_state_update.last_raise_increment
-                if betting_state_update.was_raise
+                result.betting_state_update.last_raise_increment
+                if result.betting_state_update.was_raise
                 else game.betting_state.last_raise_increment
             ),
             current_player_position=current_player_position,
@@ -131,21 +168,13 @@ class ActionApplier:
                 )
 
     @staticmethod
-    def _find_player_index(players: list[Player], player_id: str) -> int:
-        """Find player index by ID, raising if not found."""
-        for i, p in enumerate(players):
-            if p.id == player_id:
-                return i
-        raise ValueError(f"Player {player_id} not found in game")
-
-    @staticmethod
     def _apply_action_to_player(
         player: Player,
         action: Action,
         call_amount: ChipAmount,
         minimum_raise_increment: ChipAmount,
-    ) -> _BettingStateUpdate:
-        """Apply action to player and return betting state changes."""
+    ) -> _ActionApplicationResult:
+        """Apply action to player and return result with updated player and betting state changes."""
         if action.action_type == ActionType.FOLD:
             return ActionApplier._apply_fold(player)
         elif action.action_type == ActionType.CHECK:
@@ -162,38 +191,57 @@ class ActionApplier:
             raise ValueError(f"Unknown action type: {action.action_type}")
 
     @staticmethod
-    def _apply_fold(player: Player) -> _BettingStateUpdate:
+    def _apply_fold(player: Player) -> _ActionApplicationResult:
         """Apply fold action: player exits hand, clears cards."""
-        player.participation_status = HandParticipationStatus.FOLDED
-        player.betting_status = BettingRoundActionStatus.ACTED
-        player.hole_cards = None
-        return _BettingStateUpdate(
-            was_raise=False,
-            last_raise_increment=ChipAmount(0),
+        updated_player = replace(
+            player,
+            participation_status=HandParticipationStatus.FOLDED,
+            betting_status=BettingRoundActionStatus.ACTED,
+            hole_cards=None,
+        )
+        return _ActionApplicationResult(
+            updated_player=updated_player,
+            betting_state_update=_BettingStateUpdate(
+                was_raise=False,
+                last_raise_increment=ChipAmount(0),
+            ),
         )
 
     @staticmethod
-    def _apply_check(player: Player) -> _BettingStateUpdate:
+    def _apply_check(player: Player) -> _ActionApplicationResult:
         """Apply check action: player acts without betting."""
-        player.betting_status = BettingRoundActionStatus.ACTED
-        return _BettingStateUpdate(
-            was_raise=False,
-            last_raise_increment=ChipAmount(0),
+        updated_player = replace(
+            player,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        return _ActionApplicationResult(
+            updated_player=updated_player,
+            betting_state_update=_BettingStateUpdate(
+                was_raise=False,
+                last_raise_increment=ChipAmount(0),
+            ),
         )
 
     @staticmethod
-    def _apply_call(player: Player, call_amount: ChipAmount) -> _BettingStateUpdate:
+    def _apply_call(player: Player, call_amount: ChipAmount) -> _ActionApplicationResult:
         """Apply call action: player matches current bet level."""
         chips_to_call = min(call_amount.value, player.remaining_chips.value)
-        ActionApplier._update_player_bet(player, ChipAmount(chips_to_call))
-        player.betting_status = BettingRoundActionStatus.ACTED
-        return _BettingStateUpdate(
-            was_raise=False,
-            last_raise_increment=ChipAmount(0),
+        updated_player = replace(
+            player,
+            remaining_chips=player.remaining_chips - ChipAmount(chips_to_call),
+            total_invested_this_hand=player.total_invested_this_hand + ChipAmount(chips_to_call),
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        return _ActionApplicationResult(
+            updated_player=updated_player,
+            betting_state_update=_BettingStateUpdate(
+                was_raise=False,
+                last_raise_increment=ChipAmount(0),
+            ),
         )
 
     @staticmethod
-    def _apply_bet(player: Player, action: Action) -> _BettingStateUpdate:
+    def _apply_bet(player: Player, action: Action) -> _ActionApplicationResult:
         """Apply bet action: player bets when no bet exists.
 
         Amount is the total bet amount (not an increment).
@@ -202,32 +250,42 @@ class ActionApplier:
             raise ValueError("Bet action requires an amount")
 
         bet_amount = action.amount
-        ActionApplier._update_player_bet(player, bet_amount)
-        player.betting_status = BettingRoundActionStatus.ACTED
-
-        raise_increment = bet_amount
-
-        return _BettingStateUpdate(
-            was_raise=True,
-            last_raise_increment=raise_increment,
+        updated_player = replace(
+            player,
+            remaining_chips=player.remaining_chips - bet_amount,
+            total_invested_this_hand=player.total_invested_this_hand + bet_amount,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        return _ActionApplicationResult(
+            updated_player=updated_player,
+            betting_state_update=_BettingStateUpdate(
+                was_raise=True,
+                last_raise_increment=bet_amount,
+            ),
         )
 
     @staticmethod
     def _apply_raise(
         player: Player, action: Action, call_amount: ChipAmount
-    ) -> _BettingStateUpdate:
+    ) -> _ActionApplicationResult:
         """Apply raise action: player calls then raises by increment."""
         if action.amount is None:
             raise ValueError("Raise action requires an amount")
 
         raise_increment = action.amount
-        total_needed = call_amount.value + raise_increment.value
-        ActionApplier._update_player_bet(player, ChipAmount(total_needed))
-        player.betting_status = BettingRoundActionStatus.ACTED
-
-        return _BettingStateUpdate(
-            was_raise=True,
-            last_raise_increment=raise_increment,
+        total_needed = ChipAmount(call_amount.value + raise_increment.value)
+        updated_player = replace(
+            player,
+            remaining_chips=player.remaining_chips - total_needed,
+            total_invested_this_hand=player.total_invested_this_hand + total_needed,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
+        return _ActionApplicationResult(
+            updated_player=updated_player,
+            betting_state_update=_BettingStateUpdate(
+                was_raise=True,
+                last_raise_increment=raise_increment,
+            ),
         )
 
     @staticmethod
@@ -236,7 +294,7 @@ class ActionApplier:
         action: Action,
         call_amount: ChipAmount,
         minimum_raise_increment: ChipAmount,
-    ) -> _BettingStateUpdate:
+    ) -> _ActionApplicationResult:
         """Apply all-in action: player bets all remaining chips.
 
         All-in reopening rules:
@@ -252,13 +310,20 @@ class ActionApplier:
             raise ValueError("All-in action requires an amount")
 
         all_in_amount = action.amount
-        ActionApplier._update_player_bet(player, all_in_amount)
-        player.betting_status = BettingRoundActionStatus.ACTED
+        updated_player = replace(
+            player,
+            remaining_chips=player.remaining_chips - all_in_amount,
+            total_invested_this_hand=player.total_invested_this_hand + all_in_amount,
+            betting_status=BettingRoundActionStatus.ACTED,
+        )
 
         if call_amount.value == 0:
-            return _BettingStateUpdate(
-                was_raise=True,
-                last_raise_increment=all_in_amount,
+            return _ActionApplicationResult(
+                updated_player=updated_player,
+                betting_state_update=_BettingStateUpdate(
+                    was_raise=True,
+                    last_raise_increment=all_in_amount,
+                ),
             )
 
         if all_in_amount < call_amount:
@@ -268,31 +333,32 @@ class ActionApplier:
 
         is_raise = raise_increment.value > 0 and raise_increment >= minimum_raise_increment
 
-        return _BettingStateUpdate(
-            was_raise=is_raise,
-            last_raise_increment=raise_increment if is_raise else ChipAmount(0),
+        return _ActionApplicationResult(
+            updated_player=updated_player,
+            betting_state_update=_BettingStateUpdate(
+                was_raise=is_raise,
+                last_raise_increment=raise_increment if is_raise else ChipAmount(0),
+            ),
         )
 
     @staticmethod
-    def _update_player_bet(player: Player, amount: ChipAmount) -> None:
-        """Update player's chips and total invested."""
-        player.remaining_chips = player.remaining_chips - amount
-        player.total_invested_this_hand = player.total_invested_this_hand + amount
+    def _reset_acted_players_after_raise(players: Players, raising_player_id: str) -> Players:
+        """Reset all acted players to NEEDS_ACTION after a raise.
 
-    @staticmethod
-    def _reset_acted_players_after_raise(players: list[Player], raising_player_id: str) -> None:
-        """Reset all acted players to NEEDS_ACTION after a raise."""
-        for player in players:
-            if (
-                player.is_in_hand()
-                and player.id != raising_player_id
-                and player.betting_status == BettingRoundActionStatus.ACTED
-            ):
-                player.betting_status = BettingRoundActionStatus.NEEDS_ACTION
+        Returns new Players collection without mutating original.
+        """
+        return players.transform_filtered(
+            predicate=lambda p: (
+                p.is_in_hand()
+                and p.id != raising_player_id
+                and p.betting_status == BettingRoundActionStatus.ACTED
+            ),
+            transform=lambda p: replace(p, betting_status=BettingRoundActionStatus.NEEDS_ACTION),
+        )
 
     @staticmethod
     def _build_updated_game(
-        game: Game, updated_players: list[Player], updated_betting_state: BettingState
+        game: Game, updated_players: Players, updated_betting_state: BettingState
     ) -> Game:
         """Build new Game instance with updated players and betting state."""
         return Game(
@@ -309,7 +375,7 @@ class ActionApplier:
 
     @staticmethod
     def _find_next_player_needing_action_within_round(
-        players: list[Player], current_position: int
+        players: Players, current_position: int
     ) -> int:
         """Find next player who needs action within the current betting round, starting from current_position.
 
@@ -332,11 +398,3 @@ class ActionApplier:
                 return position
 
         return NO_CURRENT_PLAYER
-
-
-@dataclass(frozen=True, slots=True)
-class _BettingStateUpdate:
-    """Tracks betting state changes from applying an action."""
-
-    was_raise: bool
-    last_raise_increment: ChipAmount
