@@ -29,7 +29,7 @@ class BlindScheduleEntry:
 
 
 @dataclass(frozen=True, slots=True)
-class BlindScheduleConfig:
+class BlindSchedule:
     """Tournament blind schedule defining when each blind level applies.
 
     Blinds advance based on hand number. Each entry specifies:
@@ -88,7 +88,7 @@ class BlindScheduleConfig:
 
 
 @dataclass(frozen=True, slots=True)
-class BlindScheduleModeRegistry:
+class BlindScheduleRegistry:
     """Registry of all available blind schedule modes.
 
     Loads all schedule modes into memory and provides access to them.
@@ -96,7 +96,7 @@ class BlindScheduleModeRegistry:
     added via configuration without code changes.
     """
 
-    modes: dict[str, BlindScheduleConfig]
+    modes: dict[str, BlindSchedule]
     default_mode: str
 
     def __post_init__(self) -> None:
@@ -108,18 +108,18 @@ class BlindScheduleModeRegistry:
                 f"Default mode '{self.default_mode}' not found in available modes: {available}"
             )
 
-    def get_default(self) -> BlindScheduleConfig:
+    def get_default(self) -> BlindSchedule:
         """Get the default blind schedule."""
         return self.modes[self.default_mode]
 
-    def get_mode(self, mode_name: str) -> BlindScheduleConfig:
+    def get_mode(self, mode_name: str) -> BlindSchedule:
         """Get a specific blind schedule mode.
 
         Args:
             mode_name: Name of the mode to retrieve (case-sensitive).
 
         Returns:
-            BlindScheduleConfig for the requested mode.
+            BlindSchedule for the requested mode.
 
         Raises:
             ValueError: If mode_name is not found.

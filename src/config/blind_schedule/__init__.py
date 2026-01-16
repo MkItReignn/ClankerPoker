@@ -1,19 +1,19 @@
 """Blind schedule configuration management."""
 
 from src.config.blind_schedule.config import (
-    BlindScheduleConfig,
+    BlindSchedule,
     BlindScheduleEntry,
-    BlindScheduleModeRegistry,
+    BlindScheduleRegistry,
 )
-from src.config.blind_schedule.config_loader import BlindScheduleConfigLoader
-from src.config.blind_schedule.registry_loader import BlindScheduleModeRegistryLoader
+from src.config.blind_schedule.config_loader import BlindScheduleLoader
+from src.config.blind_schedule.registry_loader import BlindScheduleRegistryLoader
 from src.constants.config import BLIND_SCHEDULE_CONFIG_PATH
 
 __all__ = [
-    "BlindScheduleConfig",
+    "BlindSchedule",
     "BlindScheduleEntry",
-    "BlindScheduleModeRegistry",
-    "BlindScheduleConfigLoader",
-    "BlindScheduleModeRegistryLoader",
+    "BlindScheduleRegistry",
+    "BlindScheduleLoader",
+    "BlindScheduleRegistryLoader",
     "BLIND_SCHEDULE_CONFIG_PATH",
 ]

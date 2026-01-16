@@ -7,7 +7,7 @@ from datetime import datetime
 
 import pytest
 
-from src.config.blind_schedule.config import BlindScheduleConfig, BlindScheduleEntry
+from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.config.tournament.config import PayoutStructure, TournamentConfig
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.bot import Bot, BotId, BotType, Prompt
@@ -126,7 +126,7 @@ def minimal_game_factory() -> Callable[..., Game]:
                 buy_in_amount=ChipAmount(1000),
                 starting_chip_stack=ChipAmount(1000),
                 payout_structure=PayoutStructure.WINNER_TAKES_ALL,
-                blind_schedule=BlindScheduleConfig(
+                blind_schedule=BlindSchedule(
                     entries=(
                         BlindScheduleEntry(
                             level=BlindLevel(

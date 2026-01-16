@@ -12,7 +12,7 @@ from typing import Any, final, override
 import structlog
 
 from src.config.base.config_loader import BaseConfigLoader
-from src.config.blind_schedule.registry_loader import BlindScheduleModeRegistryLoader
+from src.config.blind_schedule.registry_loader import BlindScheduleRegistryLoader
 from src.config.tournament.config import PayoutStructure, TournamentConfig
 from src.config.utils.type_extractors import ConfigTypeExtractor
 from src.constants.config import BLIND_SCHEDULE_CONFIG_PATH, TOURNAMENT_CONFIG_PATH
@@ -30,7 +30,7 @@ class TournamentConfigLoader(BaseConfigLoader[TournamentConfig]):
         logger: structlog.BoundLogger | None = None,
         *,
         json_loader: Any = None,
-        blind_schedule_loader: BlindScheduleModeRegistryLoader | None = None,
+        blind_schedule_loader: BlindScheduleRegistryLoader | None = None,
     ) -> None:
         """Initialize tournament config loader.
 
@@ -78,7 +78,7 @@ class TournamentConfigLoader(BaseConfigLoader[TournamentConfig]):
             )
 
         # Blind schedule is required - fail if not found
-        loader = self._blind_schedule_loader or BlindScheduleModeRegistryLoader(
+        loader = self._blind_schedule_loader or BlindScheduleRegistryLoader(
             config_path=BLIND_SCHEDULE_CONFIG_PATH,
             logger=self._logger,
         )

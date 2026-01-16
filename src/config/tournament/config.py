@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
-from src.config.blind_schedule.config import BlindScheduleConfig
+from src.config.blind_schedule.config import BlindSchedule
 from src.domain.models.chips import ChipAmount
 
 
@@ -29,7 +29,7 @@ class TournamentConfig:
     buy_in_amount: ChipAmount
     starting_chip_stack: ChipAmount
     payout_structure: PayoutStructure
-    blind_schedule: BlindScheduleConfig
+    blind_schedule: BlindSchedule
 
     def __post_init__(self) -> None:
         if self.buy_in_amount.value <= 0:

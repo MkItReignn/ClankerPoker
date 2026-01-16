@@ -12,18 +12,18 @@ from typing import Any, final, override
 import structlog
 
 from src.config.base.config_loader import BaseConfigLoader
-from src.config.blind_schedule.config import BlindScheduleConfig, BlindScheduleModeRegistry
-from src.config.blind_schedule.config_loader import BlindScheduleConfigLoader
+from src.config.blind_schedule.config import BlindSchedule, BlindScheduleRegistry
+from src.config.blind_schedule.config_loader import BlindScheduleLoader
 from src.config.utils.type_extractors import ConfigTypeExtractor
 from src.logger.factories import get_generic_logger
 
 
 @final
-class BlindScheduleModeRegistryLoader(BaseConfigLoader[BlindScheduleModeRegistry]):
+class BlindScheduleRegistryLoader(BaseConfigLoader[BlindScheduleRegistry]):
     """Loads blind schedule mode registry from main config file.
 
     Loads the registry that contains all available blind schedule modes.
-    Each mode is loaded from its individual schedule file using BlindScheduleConfigLoader.
+    Each mode is loaded from its individual schedule file using BlindScheduleLoader.
     """
 
     def __init__(
@@ -32,7 +32,7 @@ class BlindScheduleModeRegistryLoader(BaseConfigLoader[BlindScheduleModeRegistry
         logger: structlog.BoundLogger | None = None,
         *,
         json_loader: Any = None,
-        schedule_config_loader: type[BlindScheduleConfigLoader] | None = None,
+        schedule_config_loader: type[BlindScheduleLoader] | None = None,
     ) -> None:
         """Initialize blind schedule mode registry loader.
 
@@ -53,14 +53,14 @@ class BlindScheduleModeRegistryLoader(BaseConfigLoader[BlindScheduleModeRegistry
         )
         # Store schedules directory path
         self._schedules_dir = resolved_path.parent / "schedules"
-        self._schedule_config_loader_class = schedule_config_loader or BlindScheduleConfigLoader
+        self._schedule_config_loader_class = schedule_config_loader or BlindScheduleLoader
 
     @override
-    def _load_config(self) -> BlindScheduleModeRegistry:
+    def _load_config(self) -> BlindScheduleRegistry:
         """Load blind schedule mode registry with all modes.
 
         Returns:
-            BlindScheduleModeRegistry with all modes loaded.
+            BlindScheduleRegistry with all modes loaded.
 
         Raises:
             FileNotFoundError: If config file or schedule files do not exist.
@@ -81,8 +81,8 @@ class BlindScheduleModeRegistryLoader(BaseConfigLoader[BlindScheduleModeRegistry
         if not modes_config:
             raise ValueError("At least one mode must be defined in 'modes'")
 
-        # Load all schedule modes using BlindScheduleConfigLoader
-        modes: dict[str, BlindScheduleConfig] = {}
+        # Load all schedule modes using BlindScheduleLoader
+        modes: dict[str, BlindSchedule] = {}
 
         for mode_name, mode_info in modes_config.items():
             if not isinstance(mode_info, dict):
@@ -97,7 +97,7 @@ class BlindScheduleModeRegistryLoader(BaseConfigLoader[BlindScheduleModeRegistry
 
             schedule_path = self._schedules_dir / schedule_file
 
-            # Use BlindScheduleConfigLoader to load individual schedule
+            # Use BlindScheduleLoader to load individual schedule
             schedule_loader = self._schedule_config_loader_class(
                 config_path=schedule_path,
                 logger=self._logger,
@@ -112,7 +112,7 @@ class BlindScheduleModeRegistryLoader(BaseConfigLoader[BlindScheduleModeRegistry
                 num_entries=len(schedule_config.entries),
             )
 
-        registry = BlindScheduleModeRegistry(
+        registry = BlindScheduleRegistry(
             modes=modes,
             default_mode=default_mode,
         )

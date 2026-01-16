@@ -11,7 +11,7 @@ from typing import Any, final, override
 import structlog
 
 from src.config.base.config_loader import BaseConfigLoader
-from src.config.blind_schedule.config import BlindScheduleConfig, BlindScheduleEntry
+from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.config.utils.type_extractors import ConfigTypeExtractor
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.chips import ChipAmount
@@ -19,7 +19,7 @@ from src.logger.factories import get_generic_logger
 
 
 @final
-class BlindScheduleConfigLoader(BaseConfigLoader[BlindScheduleConfig]):
+class BlindScheduleLoader(BaseConfigLoader[BlindSchedule]):
     """Loads a single blind schedule configuration from a schedule file.
 
     Loads and validates a blind schedule from a single schedule file
@@ -48,11 +48,11 @@ class BlindScheduleConfigLoader(BaseConfigLoader[BlindScheduleConfig]):
         )
 
     @override
-    def _load_config(self) -> BlindScheduleConfig:
+    def _load_config(self) -> BlindSchedule:
         """Load blind schedule configuration from a schedule file.
 
         Returns:
-            BlindScheduleConfig object.
+            BlindSchedule object.
 
         Raises:
             FileNotFoundError: If schedule file does not exist.
@@ -111,7 +111,7 @@ class BlindScheduleConfigLoader(BaseConfigLoader[BlindScheduleConfig]):
             )
             entries.append(entry)
 
-        config = BlindScheduleConfig(entries=tuple(entries))
+        config = BlindSchedule(entries=tuple(entries))
         self._logger.info(
             "blind_schedule_config_loaded",
             path=str(self._config_path),

@@ -17,7 +17,7 @@ from dataclasses import replace
 
 import pytest
 
-from src.config.blind_schedule.config import BlindScheduleConfig, BlindScheduleEntry
+from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.chips import ChipAmount
 from src.domain.models.deck import Deck
@@ -594,7 +594,7 @@ class TestBlindSchedule:
         sample_player_factory: Callable[..., Player],
         minimal_game_factory: Callable[..., Game],
     ) -> None:
-        blind_schedule = BlindScheduleConfig(
+        blind_schedule = BlindSchedule(
             entries=(
                 BlindScheduleEntry(
                     level=BlindLevel(small_blind=ChipAmount(10), big_blind=ChipAmount(20), level=1),
@@ -637,7 +637,7 @@ class TestBlindSchedule:
         minimal_game_factory: Callable[..., Game],
     ) -> None:
         """Test that initial hand uses the first level from the schedule."""
-        blind_schedule = BlindScheduleConfig(
+        blind_schedule = BlindSchedule(
             entries=(
                 BlindScheduleEntry(
                     level=BlindLevel(small_blind=ChipAmount(10), big_blind=ChipAmount(20), level=1),

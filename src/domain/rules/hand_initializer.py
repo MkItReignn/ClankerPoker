@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import replace
 
-from src.config.blind_schedule.config import BlindScheduleConfig
+from src.config.blind_schedule.config import BlindSchedule
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.chips import ChipAmount
 from src.domain.models.deck import Deck
@@ -19,7 +19,7 @@ from src.domain.rules.position_manager import PositionManager
 class HandInitializer:
     @staticmethod
     def _get_blind_level_for_hand(
-        hand_number: int, blind_schedule: BlindScheduleConfig
+        hand_number: int, blind_schedule: BlindSchedule
     ) -> BlindLevel:
         """Get the blind level for a given hand number from the schedule.
 
