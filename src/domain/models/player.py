@@ -40,6 +40,7 @@ class Player:
     elimination_hand_number: int | None = None
     table_finish_position: int | None = None
     can_raise: bool = True  # Can this player raise in current betting round? (WSOP Rule 96)
+    stack_at_hand_start: ChipAmount | None = None  # For elimination tiebreaker (SIMUL-004)
 
     def __post_init__(self) -> None:
         if not self.id:
@@ -92,7 +93,8 @@ class Player:
 
         Sets hole cards, resets betting status to NEEDS_ACTION,
         sets participation status to IN_HAND, resets investment,
-        and resets can_raise to True.
+        resets can_raise to True, and captures stack_at_hand_start
+        for elimination tiebreaker purposes (SIMUL-004).
 
         Returns a new Player instance (immutable).
         """
@@ -103,6 +105,7 @@ class Player:
             participation_status=HandParticipationStatus.IN_HAND,
             total_invested_this_hand=ChipAmount(0),
             can_raise=True,
+            stack_at_hand_start=self.remaining_chips,
         )
 
     def reset_for_new_round(self) -> Player:
