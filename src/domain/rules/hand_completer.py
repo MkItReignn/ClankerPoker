@@ -83,20 +83,65 @@ class HandCompleter:
 
     @staticmethod
     def _mark_eliminated_players(players: Players, hand_number: int) -> Players:
-        def mark_if_eliminated(player: Player) -> Player:
-            if (
-                player.remaining_chips.value == 0
-                and player.participation_status != HandParticipationStatus.ELIMINATED
-            ):
-                return replace(
-                    player,
-                    participation_status=HandParticipationStatus.ELIMINATED,
-                    elimination_hand_number=hand_number,
-                    betting_status=BettingRoundActionStatus.ACTED,
-                )
-            return player
+        """Mark players with 0 chips as eliminated and assign finish positions.
 
-        return players.transform_all(mark_if_eliminated)
+        Implements SIMUL-001 through SIMUL-004:
+        - Multiple players can bust on the same hand
+        - Higher starting stack = better (lower) finish position
+        - Equal starting stacks = same finish position (tie)
+        - Uses stack at hand START for tiebreaker
+        """
+        # Count active players before marking eliminations
+        active_count = len(players.active())
+
+        # Find players being eliminated this hand
+        newly_eliminated: list[Player] = [
+            p
+            for p in players
+            if p.remaining_chips.value == 0
+            and p.participation_status != HandParticipationStatus.ELIMINATED
+        ]
+
+        if not newly_eliminated:
+            return players
+
+        # Sort by stack_at_hand_start DESCENDING (larger stack = better position)
+        # Use 0 as fallback if stack_at_hand_start is None (shouldn't happen)
+        newly_eliminated.sort(
+            key=lambda p: p.stack_at_hand_start.value if p.stack_at_hand_start else 0,
+            reverse=True,
+        )
+
+        # Assign finish positions with tiebreaker logic
+        # Positions range from (active_count - len(newly_eliminated) + 1) to active_count
+        # Best eliminated player gets lowest position number (best finish)
+        player_updates: dict[str, Player] = {}
+        current_position = active_count - len(newly_eliminated) + 1
+        prev_stack: int | None = None
+        prev_position: int = current_position
+
+        for player in newly_eliminated:
+            stack_value = player.stack_at_hand_start.value if player.stack_at_hand_start else 0
+
+            # If same stack as previous player, assign same position (tie)
+            if prev_stack is not None and stack_value == prev_stack:
+                position = prev_position
+            else:
+                position = current_position
+                prev_position = position
+
+            player_updates[player.id] = replace(
+                player,
+                participation_status=HandParticipationStatus.ELIMINATED,
+                elimination_hand_number=hand_number,
+                betting_status=BettingRoundActionStatus.ACTED,
+                table_finish_position=position,
+            )
+
+            prev_stack = stack_value
+            current_position += 1
+
+        return players.replace_all(player_updates)
 
     @staticmethod
     def complete(game: Game) -> Game:

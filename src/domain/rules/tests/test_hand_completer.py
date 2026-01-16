@@ -1059,6 +1059,311 @@ class TestPlayerElimination:
         assert player3.elimination_hand_number == 3  # Unchanged
 
 
+class TestEliminationTiebreakers:
+    """Test finish position assignment with tiebreaker logic.
+
+    ATOMIC_POKER_RULES:
+    - SIMUL-001: Multiple players can bust same hand
+    - SIMUL-002: Higher starting stack = better finish position
+    - SIMUL-003: Same starting stack = tied position
+    - SIMUL-004: Compare stack at hand START, not all-in moment
+    """
+
+    def test_single_elimination_assigns_correct_finish_position(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Single eliminated player gets last place (worst position)."""
+        # Arrange: 3 players, P3 goes all-in and loses (gets 3rd place)
+        # All players invest 500 so no uncalled bet returns
+        p1 = sample_player_factory(
+            PlayerId("p1"),
+            Seat.SEAT_0,
+            ChipAmount(500),  # 1000 - 500 invested
+            total_invested_this_hand=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.ACE, Suit.HEARTS),
+                make_card(Rank.ACE, Suit.SPADES),
+            ),
+        )
+        # Set stack_at_hand_start
+        p1 = replace(p1, stack_at_hand_start=ChipAmount(1000))
+
+        p2 = sample_player_factory(
+            PlayerId("p2"),
+            Seat.SEAT_1,
+            ChipAmount(500),  # 1000 - 500 invested
+            total_invested_this_hand=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.KING, Suit.HEARTS),
+                make_card(Rank.KING, Suit.SPADES),
+            ),
+        )
+        p2 = replace(p2, stack_at_hand_start=ChipAmount(1000))
+
+        p3 = sample_player_factory(
+            PlayerId("p3"),
+            Seat.SEAT_2,
+            ChipAmount(0),  # All-in, will be eliminated
+            total_invested_this_hand=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.QUEEN, Suit.HEARTS),
+                make_card(Rank.QUEEN, Suit.SPADES),
+            ),
+        )
+        p3 = replace(p3, stack_at_hand_start=ChipAmount(500))
+
+        players = Players.from_list([p1, p2, p3])
+        game = minimal_game_factory(players=list(players))
+
+        community_cards = [
+            make_card(Rank.TWO, Suit.CLUBS),
+            make_card(Rank.FIVE, Suit.DIAMONDS),
+            make_card(Rank.SEVEN, Suit.SPADES),
+            make_card(Rank.NINE, Suit.HEARTS),
+            make_card(Rank.THREE, Suit.CLUBS),
+        ]
+
+        pot_state = PotState(
+            main_pot=Pot(
+                amount=ChipAmount(1500),  # 500 * 3
+                eligible_player_ids=frozenset({p1.id, p2.id, p3.id}),
+            ),
+            side_pots=[],
+        )
+
+        game = replace(
+            game,
+            players=players,
+            pot_state=pot_state,
+            hand_state=replace(
+                game.hand_state,
+                current_phase=GamePhase.SHOWDOWN,
+                community_cards=community_cards,
+                hand_number=5,
+            ),
+        )
+
+        # Act
+        completed_game = HandCompleter.complete(game)
+
+        # Assert: P3 eliminated with finish position 3 (3rd out of 3 players)
+        player3 = completed_game.players.get_by_id(p3.id)
+        assert player3 is not None
+        assert player3.participation_status == HandParticipationStatus.ELIMINATED
+        assert player3.table_finish_position == 3
+
+    def test_two_eliminations_higher_stack_gets_better_position(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """When two bust same hand, higher starting stack = better (lower) position."""
+        # Arrange: 4 players, P3 (500 stack) and P4 (300 stack) bust
+        # P3 should get 3rd, P4 should get 4th
+        p1 = sample_player_factory(
+            PlayerId("p1"),
+            Seat.SEAT_0,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.ACE, Suit.HEARTS),
+                make_card(Rank.ACE, Suit.SPADES),
+            ),
+        )
+        p1 = replace(p1, stack_at_hand_start=ChipAmount(1000))
+
+        p2 = sample_player_factory(
+            PlayerId("p2"),
+            Seat.SEAT_1,
+            ChipAmount(500),
+            total_invested_this_hand=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.KING, Suit.HEARTS),
+                make_card(Rank.KING, Suit.SPADES),
+            ),
+        )
+        p2 = replace(p2, stack_at_hand_start=ChipAmount(1000))
+
+        # P3 had 500 starting stack - should get 3rd place
+        p3 = sample_player_factory(
+            PlayerId("p3"),
+            Seat.SEAT_2,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.QUEEN, Suit.HEARTS),
+                make_card(Rank.QUEEN, Suit.SPADES),
+            ),
+        )
+        p3 = replace(p3, stack_at_hand_start=ChipAmount(500))
+
+        # P4 had 300 starting stack - should get 4th place (worse)
+        p4 = sample_player_factory(
+            PlayerId("p4"),
+            Seat.SEAT_3,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(300),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.JACK, Suit.HEARTS),
+                make_card(Rank.JACK, Suit.SPADES),
+            ),
+        )
+        p4 = replace(p4, stack_at_hand_start=ChipAmount(300))
+
+        players = Players.from_list([p1, p2, p3, p4])
+        game = minimal_game_factory(players=list(players))
+
+        community_cards = [
+            make_card(Rank.TWO, Suit.CLUBS),
+            make_card(Rank.FIVE, Suit.DIAMONDS),
+            make_card(Rank.SEVEN, Suit.SPADES),
+            make_card(Rank.NINE, Suit.HEARTS),
+            make_card(Rank.THREE, Suit.CLUBS),
+        ]
+
+        pot_state = PotState(
+            main_pot=Pot(
+                amount=ChipAmount(1800),
+                eligible_player_ids=frozenset({p1.id, p2.id, p3.id, p4.id}),
+            ),
+            side_pots=[],
+        )
+
+        game = replace(
+            game,
+            players=players,
+            pot_state=pot_state,
+            hand_state=replace(
+                game.hand_state,
+                current_phase=GamePhase.SHOWDOWN,
+                community_cards=community_cards,
+                hand_number=3,
+            ),
+        )
+
+        # Act
+        completed_game = HandCompleter.complete(game)
+
+        # Assert: P3 gets 3rd (better), P4 gets 4th (worse)
+        player3 = completed_game.players.get_by_id(p3.id)
+        player4 = completed_game.players.get_by_id(p4.id)
+        assert player3 is not None
+        assert player4 is not None
+        assert player3.table_finish_position == 3
+        assert player4.table_finish_position == 4
+
+    def test_equal_starting_stacks_get_tied_position(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """When two bust with same starting stack, they share the same position."""
+        # Arrange: 4 players, P3 and P4 both had 400 starting stack
+        p1 = sample_player_factory(
+            PlayerId("p1"),
+            Seat.SEAT_0,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(400),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.ACE, Suit.HEARTS),
+                make_card(Rank.ACE, Suit.SPADES),
+            ),
+        )
+        p1 = replace(p1, stack_at_hand_start=ChipAmount(1000))
+
+        p2 = sample_player_factory(
+            PlayerId("p2"),
+            Seat.SEAT_1,
+            ChipAmount(600),
+            total_invested_this_hand=ChipAmount(400),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.KING, Suit.HEARTS),
+                make_card(Rank.KING, Suit.SPADES),
+            ),
+        )
+        p2 = replace(p2, stack_at_hand_start=ChipAmount(1000))
+
+        # P3 and P4 both have 400 starting stack - should tie
+        p3 = sample_player_factory(
+            PlayerId("p3"),
+            Seat.SEAT_2,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(400),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.QUEEN, Suit.HEARTS),
+                make_card(Rank.QUEEN, Suit.SPADES),
+            ),
+        )
+        p3 = replace(p3, stack_at_hand_start=ChipAmount(400))
+
+        p4 = sample_player_factory(
+            PlayerId("p4"),
+            Seat.SEAT_3,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(400),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.JACK, Suit.HEARTS),
+                make_card(Rank.JACK, Suit.SPADES),
+            ),
+        )
+        p4 = replace(p4, stack_at_hand_start=ChipAmount(400))
+
+        players = Players.from_list([p1, p2, p3, p4])
+        game = minimal_game_factory(players=list(players))
+
+        community_cards = [
+            make_card(Rank.TWO, Suit.CLUBS),
+            make_card(Rank.FIVE, Suit.DIAMONDS),
+            make_card(Rank.SEVEN, Suit.SPADES),
+            make_card(Rank.NINE, Suit.HEARTS),
+            make_card(Rank.THREE, Suit.CLUBS),
+        ]
+
+        pot_state = PotState(
+            main_pot=Pot(
+                amount=ChipAmount(1600),
+                eligible_player_ids=frozenset({p1.id, p2.id, p3.id, p4.id}),
+            ),
+            side_pots=[],
+        )
+
+        game = replace(
+            game,
+            players=players,
+            pot_state=pot_state,
+            hand_state=replace(
+                game.hand_state,
+                current_phase=GamePhase.SHOWDOWN,
+                community_cards=community_cards,
+                hand_number=2,
+            ),
+        )
+
+        # Act
+        completed_game = HandCompleter.complete(game)
+
+        # Assert: P3 and P4 both get 3rd place (tied)
+        player3 = completed_game.players.get_by_id(p3.id)
+        player4 = completed_game.players.get_by_id(p4.id)
+        assert player3 is not None
+        assert player4 is not None
+        assert player3.table_finish_position == 3
+        assert player4.table_finish_position == 3
+
+
 class TestEdgeCases:
     """Test edge cases and boundary conditions for hand completion."""
 
