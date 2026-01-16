@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import TypeAlias
 
-from src.domain.models.game import GamePhase
+from src.domain.models.game import NO_POSITION_TO_ACT, GamePhase
 from src.domain.models.player import HandParticipationStatus, Player
+from src.domain.models.players import Players
 from src.domain.models.position import PositionName, TablePositionMapping
 from src.domain.models.seat import Seat
 
@@ -75,12 +76,12 @@ class PositionManager:
     def resolve_positions_for_new_hand(
         all_players: list[Player],
         previous_button_seat: Seat,
-        is_first_hand: bool = False,
+        is_initial_hand_setup: bool = False,
     ) -> TablePositionMapping:
         """Resolve all positions for a new hand.
 
         Computes complete position mapping including:
-        - Button seat (advanced if not first hand)
+        - Button seat (advanced if not initial hand setup)
         - Small blind seat
         - Big blind seat
         - Heads-up status
@@ -98,7 +99,7 @@ class PositionManager:
         if active_count < 2:
             raise ValueError(f"Need at least 2 active players, got {active_count}")
 
-        if is_first_hand:
+        if is_initial_hand_setup:
             button_seat = previous_button_seat
         else:
             button_seat = PositionManager.advance_button(
@@ -298,3 +299,19 @@ class PositionManager:
                 seat_order.append(seat)
 
         return seat_order
+
+    @staticmethod
+    def find_first_position_to_act(
+        betting_order: list[Seat],
+        players: Players,
+    ) -> int:
+        """Find first position to act from betting order.
+
+        Returns the seat value of the first player in betting order
+        who is not all-in, or NO_POSITION_TO_ACT if all players are all-in.
+        """
+        for seat in betting_order:
+            player: Player | None = players.get_by_seat(seat)
+            if player and not player.is_all_in():
+                return seat.value
+        return NO_POSITION_TO_ACT
