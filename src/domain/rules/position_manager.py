@@ -74,7 +74,7 @@ class PositionManager:
     @staticmethod
     def resolve_positions_for_new_hand(
         all_players: list[Player],
-        current_button_seat: Seat,
+        previous_button_seat: Seat,
         is_first_hand: bool = False,
     ) -> TablePositionMapping:
         """Resolve all positions for a new hand.
@@ -99,11 +99,11 @@ class PositionManager:
             raise ValueError(f"Need at least 2 active players, got {active_count}")
 
         if is_first_hand:
-            button_seat = current_button_seat
+            button_seat = previous_button_seat
         else:
             button_seat = PositionManager.advance_button(
                 all_players=all_players,
-                current_button_seat=current_button_seat,
+                current_button_seat=previous_button_seat,
             )
 
         small_blind_seat, big_blind_seat = PositionManager._calculate_blind_positions(

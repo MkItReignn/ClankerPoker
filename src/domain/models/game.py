@@ -113,6 +113,7 @@ class HandState:
     hand_number: int
     current_phase: GamePhase
     community_cards: list[Card]
+    is_first_hand: bool = False
 
     def __post_init__(self) -> None:
         if self.hand_number < 1:
