@@ -20,6 +20,7 @@ from src.domain.models.llm_model import LlmModel
 from src.domain.models.player import (BettingRoundActionStatus,
                                       HandParticipationStatus, Player,
                                       PlayerId)
+from src.domain.models.players import Players
 from src.domain.models.pot import Pot, PotState
 from src.domain.models.seat import Seat
 
@@ -150,7 +151,7 @@ def minimal_game_factory() -> Callable[..., Game]:
                     level=1,
                 )
             ),
-            players=players,
+            players=Players.from_list(players),
             results=None,
         )
 
