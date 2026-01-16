@@ -7,7 +7,7 @@ from datetime import datetime
 
 import pytest
 
-from src.config.tournament.config import TournamentConfig
+from src.config.tournament.config import PayoutStructure, TournamentConfig
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.bot import Bot, BotId, BotType, Prompt
 from src.domain.models.card import Card, Rank, Suit
@@ -116,8 +116,7 @@ def minimal_game_factory() -> Callable[..., Game]:
             tournament_config=TournamentConfig(
                 buy_in_amount=ChipAmount(1000),
                 starting_chip_stack=ChipAmount(1000),
-                total_prize_pool=ChipAmount(6000),
-                payout_structure="standard",
+                payout_structure=PayoutStructure.WINNER_TAKES_ALL,
             ),
             hand_state=HandState(
                 hand_number=1,

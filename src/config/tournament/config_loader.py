@@ -13,7 +13,8 @@ import structlog
 
 from src.config.base.config_loader import BaseConfigLoader
 from src.config.tournament.config import (BlindScheduleConfig,
-                                          BlindScheduleEntry, TournamentConfig)
+                                          BlindScheduleEntry, PayoutStructure,
+                                          TournamentConfig)
 from src.config.utils.type_extractors import ConfigTypeExtractor
 from src.constants.config import (BLIND_SCHEDULE_CONFIG_PATH,
                                   TOURNAMENT_CONFIG_PATH)
@@ -160,8 +161,16 @@ class TournamentConfigLoader(BaseConfigLoader[TournamentConfig]):
 
         buy_in_amount = ChipAmount(extractor.get_required_int(payload, "buy_in_amount"))
         starting_chip_stack = ChipAmount(extractor.get_required_int(payload, "starting_chip_stack"))
-        total_prize_pool = ChipAmount(extractor.get_required_int(payload, "total_prize_pool"))
-        payout_structure = extractor.get_required_string(payload, "payout_structure")
+        payout_structure_str = extractor.get_required_string(payload, "payout_structure")
+
+        try:
+            payout_structure = PayoutStructure(payout_structure_str)
+        except ValueError:
+            valid_values = [e.value for e in PayoutStructure]
+            raise ValueError(
+                f"Invalid payout_structure: {payout_structure_str}. "
+                f"Valid values: {valid_values}"
+            )
 
         blind_schedule: BlindScheduleConfig | None = None
         try:
@@ -180,7 +189,6 @@ class TournamentConfigLoader(BaseConfigLoader[TournamentConfig]):
         config = TournamentConfig(
             buy_in_amount=buy_in_amount,
             starting_chip_stack=starting_chip_stack,
-            total_prize_pool=total_prize_pool,
             payout_structure=payout_structure,
             blind_schedule=blind_schedule,
         )
@@ -188,7 +196,7 @@ class TournamentConfigLoader(BaseConfigLoader[TournamentConfig]):
             "tournament_config_loaded",
             buy_in=buy_in_amount.value,
             starting_chips=starting_chip_stack.value,
-            prize_pool=total_prize_pool.value,
+            payout_structure=payout_structure.value,
             has_blind_schedule=blind_schedule is not None,
         )
         return config

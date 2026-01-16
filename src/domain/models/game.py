@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from src.domain.models.blinds import BlindLevel
 
 if TYPE_CHECKING:
-    from src.config.tournament.config import TournamentConfig
+    from src.config.tournament.config import PayoutStructure, TournamentConfig
 from src.domain.models.card import Card
 from src.domain.models.chips import ChipAmount
 from src.domain.models.player import HandParticipationStatus, Player, PlayerId
@@ -243,7 +243,7 @@ class Game:
         return self.tournament_config.buy_in_amount
 
     @property
-    def payout_structure(self) -> str:
+    def payout_structure(self) -> PayoutStructure:
         return self.tournament_config.payout_structure
 
     def get_active_players(self) -> list[Player]:

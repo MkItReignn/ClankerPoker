@@ -1,6 +1,5 @@
 {
     "buy_in_amount": 1000,
     "starting_chip_stack": 10000,
-    "total_prize_pool": 10000,
-    "payout_structure": "Winner takes all",
+    "payout_structure": "WINNER_TAKES_ALL"
 }
