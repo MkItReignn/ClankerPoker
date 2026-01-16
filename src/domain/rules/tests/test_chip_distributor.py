@@ -10,7 +10,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-
 from src.domain.models.chips import ChipAmount
 from src.domain.models.player import Player
 from src.domain.models.pot import Pot, PotState
@@ -1236,9 +1235,7 @@ class TestSortWinnersByPositionAdjacentSeats:
 
         assert [p.seat for p in result] == [Seat.SEAT_3, Seat.SEAT_0, Seat.SEAT_2]
 
-    def test_winners_wrap_around_table(
-        self, sample_player_factory: Callable[..., Player]
-    ) -> None:
+    def test_winners_wrap_around_table(self, sample_player_factory: Callable[..., Player]) -> None:
         """Winners span wrap-around: button at 3, winners at 5, 0, 1."""
         all_players = [
             sample_player_factory(
@@ -1264,9 +1261,7 @@ class TestSortWinnersByPositionAdjacentSeats:
 class TestDistributePotFiveAndSixWaySplits:
     """Test larger splits (5-6 way) to ensure algorithm scales correctly."""
 
-    def test_five_way_split_even_pot(
-        self, sample_player_factory: Callable[..., Player]
-    ) -> None:
+    def test_five_way_split_even_pot(self, sample_player_factory: Callable[..., Player]) -> None:
         """500 chips, 5 winners → 100 each."""
         all_players = [
             sample_player_factory(
@@ -1370,9 +1365,7 @@ class TestDistributePotFiveAndSixWaySplits:
 class TestDistributePotHeadsUpScenarios:
     """Heads-up (2 player) specific distribution scenarios."""
 
-    def test_heads_up_split_pot_even(
-        self, sample_player_factory: Callable[..., Player]
-    ) -> None:
+    def test_heads_up_split_pot_even(self, sample_player_factory: Callable[..., Player]) -> None:
         """Heads-up tie with even pot → 50/50 split."""
         all_players = [
             sample_player_factory(
@@ -1430,9 +1423,7 @@ class TestDistributePotHeadsUpScenarios:
 class TestSidePotWithTiedWinners:
     """Side pot distribution when multiple players tie for a side pot."""
 
-    def test_side_pot_two_way_tie(
-        self, sample_player_factory: Callable[..., Player]
-    ) -> None:
+    def test_side_pot_two_way_tie(self, sample_player_factory: Callable[..., Player]) -> None:
         """Side pot won by two players who tie."""
         all_players = [
             sample_player_factory(

@@ -10,6 +10,17 @@ class Suit(Enum):
     CLUBS = "clubs"
     SPADES = "spades"
 
+    @property
+    def ranking(self) -> int:
+        """Suit ranking for tiebreakers: Spades > Hearts > Diamonds > Clubs."""
+        _ranking: dict[Suit, int] = {
+            Suit.SPADES: 4,
+            Suit.HEARTS: 3,
+            Suit.DIAMONDS: 2,
+            Suit.CLUBS: 1,
+        }
+        return _ranking[self]
+
 
 class Rank(Enum):
     TWO = 2

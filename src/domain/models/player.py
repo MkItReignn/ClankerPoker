@@ -104,3 +104,19 @@ class Player:
             total_invested_this_hand=ChipAmount(0),
             can_raise=True,
         )
+
+    def reset_for_new_round(self) -> Player:
+        """Reset player state for a new betting round.
+
+        Resets betting_status to NEEDS_ACTION and can_raise to True
+        for players who are in hand and not all-in.
+
+        Returns a new Player instance (immutable).
+        """
+        if self.is_in_hand() and not self.is_all_in():
+            return replace(
+                self,
+                betting_status=BettingRoundActionStatus.NEEDS_ACTION,
+                can_raise=True,
+            )
+        return self

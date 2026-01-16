@@ -6,20 +6,11 @@ from dataclasses import replace
 from src.domain.models.blinds import BlindLevel, BlindSchedule
 from src.domain.models.chips import ChipAmount
 from src.domain.models.deck import Deck
-from src.domain.models.game import (
-    NO_POSITION_TO_ACT,
-    BettingState,
-    BlindState,
-    Game,
-    GamePhase,
-    HandState,
-)
+from src.domain.models.game import (BettingState,
+                                    BlindState, Game, GamePhase, HandState)
 from src.domain.models.hand import Hand
-from src.domain.models.player import (
-    BettingRoundActionStatus,
-    HandParticipationStatus,
-    Player,
-)
+from src.domain.models.player import (BettingRoundActionStatus,
+                                      HandParticipationStatus, Player)
 from src.domain.models.pot import Pot, PotState
 from src.domain.rules.position_manager import PositionManager
 
@@ -48,7 +39,9 @@ class HandInitializer:
             remaining_chips=ChipAmount(player.remaining_chips.value - blind_posted),
             total_invested_this_hand=ChipAmount(blind_posted),
             betting_status=(
-                BettingRoundActionStatus.ACTED if is_all_in else BettingRoundActionStatus.NEEDS_ACTION
+                BettingRoundActionStatus.ACTED
+                if is_all_in
+                else BettingRoundActionStatus.NEEDS_ACTION
             ),
         )
 
@@ -98,10 +91,12 @@ class HandInitializer:
         updated_sb = HandInitializer._post_blind(sb_player, blind_level.small_blind)
         updated_bb = HandInitializer._post_blind(bb_player, blind_level.big_blind)
 
-        updated_players = updated_players.replace_all({
-            updated_sb.id: updated_sb,
-            updated_bb.id: updated_bb,
-        })
+        updated_players = updated_players.replace_all(
+            {
+                updated_sb.id: updated_sb,
+                updated_bb.id: updated_bb,
+            }
+        )
 
         updated_hand_state = HandState(
             hand_number=next_hand_number,
@@ -120,14 +115,7 @@ class HandInitializer:
         betting_order = PositionManager.get_betting_order(
             position_mapping, GamePhase.PRE_FLOP, players_in_hand
         )
-        first_to_act = NO_POSITION_TO_ACT
-        for seat in betting_order:
-            player = updated_players.get_by_seat(seat)
-            # Players that have chips < blind is all in.
-            # So they can not act.
-            if player and not player.is_all_in():
-                first_to_act = seat.value
-                break
+        first_to_act = PositionManager.find_first_position_to_act(betting_order, updated_players)
 
         updated_betting_state = BettingState(
             last_raise_increment=ChipAmount(0),

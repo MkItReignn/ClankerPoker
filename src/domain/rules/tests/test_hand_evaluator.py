@@ -6,7 +6,8 @@ import pytest
 
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.hand import Hand
-from src.domain.rules.hand_evaluator import HandEvaluation, HandEvaluator, HandRank
+from src.domain.rules.hand_evaluator import (HandEvaluation, HandEvaluator,
+                                             HandRank)
 
 
 class TestInvalidInputs:

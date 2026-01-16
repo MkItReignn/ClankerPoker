@@ -5,8 +5,7 @@ from copy import deepcopy
 from src.domain.models.card import Card
 from src.domain.models.chips import ChipAmount
 from src.domain.models.deck import Deck
-from src.domain.models.game import (BettingState, Game,
-                                    GamePhase, HandState)
+from src.domain.models.game import BettingState, Game, GamePhase, HandState
 from src.domain.models.player import Player
 from src.domain.models.players import Players
 from src.domain.models.position import TablePositionMapping

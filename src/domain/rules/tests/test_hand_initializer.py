@@ -20,18 +20,9 @@ import pytest
 from src.domain.models.blinds import BlindLevel, BlindSchedule
 from src.domain.models.chips import ChipAmount
 from src.domain.models.deck import Deck
-from src.domain.models.game import (
-    BettingState,
-    Game,
-    GamePhase,
-    HandState,
-    TournamentConfig,
-)
-from src.domain.models.player import (
-    BettingRoundActionStatus,
-    HandParticipationStatus,
-    Player,
-)
+from src.domain.models.game import (Game, GamePhase, HandState)
+from src.domain.models.player import (BettingRoundActionStatus,
+                                      HandParticipationStatus, Player)
 from src.domain.models.players import Players
 from src.domain.models.seat import Seat
 from src.domain.rules.hand_initializer import HandInitializer

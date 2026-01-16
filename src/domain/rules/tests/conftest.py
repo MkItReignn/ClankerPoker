@@ -129,7 +129,7 @@ def minimal_game_factory() -> Callable[..., Game]:
                 hand_number=1,
                 current_phase=GamePhase.PRE_FLOP,
                 community_cards=[],
-                is_first_hand=True,
+                is_initial_hand_setup=True,
             ),
             pot_state=PotState(
                 main_pot=Pot(

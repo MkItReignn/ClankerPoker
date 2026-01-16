@@ -113,7 +113,7 @@ class HandState:
     hand_number: int
     current_phase: GamePhase
     community_cards: list[Card]
-    is_first_hand: bool = False
+    is_initial_hand_setup: bool = False
 
     def __post_init__(self) -> None:
         if self.hand_number < 1:
@@ -122,10 +122,10 @@ class HandState:
             raise ValueError(
                 f"Cannot have more than 5 community cards: {len(self.community_cards)}"
             )
-        expected_cards = self.current_phase.card_count
-        if len(self.community_cards) != expected_cards:
+        valid_card_counts = {0, 3, 4, 5}
+        if len(self.community_cards) not in valid_card_counts:
             raise ValueError(
-                f"Phase {self.current_phase.value} requires {expected_cards} community cards, got {len(self.community_cards)}"
+                f"Community card count must be one of {valid_card_counts}, got {len(self.community_cards)}"
             )
 
 
@@ -157,9 +157,12 @@ class BlindState:
 
 @dataclass(slots=True)
 class GameResults:
+    hand_number: int
     winners: list[tuple[PlayerId, ChipAmount]]
 
     def __post_init__(self) -> None:
+        if self.hand_number < 1:
+            raise ValueError(f"Hand number must be at least 1: {self.hand_number}")
         if not self.winners:
             return
         total_payout = sum(payout.value for _, payout in self.winners)

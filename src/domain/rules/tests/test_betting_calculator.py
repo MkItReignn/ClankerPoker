@@ -6,7 +6,8 @@ from collections.abc import Callable
 
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game
-from src.domain.models.player import BettingRoundActionStatus, HandParticipationStatus, Player
+from src.domain.models.player import (BettingRoundActionStatus,
+                                      HandParticipationStatus, Player)
 from src.domain.models.seat import Seat
 from src.domain.rules.betting_calculator import BettingCalculator
 

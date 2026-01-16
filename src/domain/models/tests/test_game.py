@@ -6,16 +6,12 @@ from collections.abc import Callable
 
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game, GamePhase
-from src.domain.models.player import BettingRoundActionStatus, HandParticipationStatus, Player
+from src.domain.models.player import (BettingRoundActionStatus,
+                                      HandParticipationStatus, Player)
 from src.domain.models.seat import Seat
 
-from .conftest import (
-    BIG_BLIND_STANDARD,
-    LARGE_CHIPS,
-    MEDIUM_CHIPS,
-    SMALL_BLIND_STANDARD,
-    ZERO_CHIPS,
-)
+from .conftest import (BIG_BLIND_STANDARD, LARGE_CHIPS, MEDIUM_CHIPS,
+                       SMALL_BLIND_STANDARD, ZERO_CHIPS)
 
 
 class TestIsHandComplete:
