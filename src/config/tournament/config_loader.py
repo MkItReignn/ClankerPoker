@@ -12,108 +12,12 @@ from typing import Any, final, override
 import structlog
 
 from src.config.base.config_loader import BaseConfigLoader
-from src.config.tournament.config import (BlindScheduleConfig,
-                                          BlindScheduleEntry, PayoutStructure,
-                                          TournamentConfig)
+from src.config.blind_schedule.registry_loader import BlindScheduleModeRegistryLoader
+from src.config.tournament.config import PayoutStructure, TournamentConfig
 from src.config.utils.type_extractors import ConfigTypeExtractor
-from src.constants.config import (BLIND_SCHEDULE_CONFIG_PATH,
-                                  TOURNAMENT_CONFIG_PATH)
-from src.domain.models.blinds import BlindLevel
+from src.constants.config import BLIND_SCHEDULE_CONFIG_PATH, TOURNAMENT_CONFIG_PATH
 from src.domain.models.chips import ChipAmount
 from src.logger.factories import get_generic_logger
-
-
-@final
-class BlindScheduleConfigLoader(BaseConfigLoader[BlindScheduleConfig]):
-    """Loads blind schedule configuration from JSON."""
-
-    def __init__(
-        self,
-        config_path: Path | None = None,
-        logger: structlog.BoundLogger | None = None,
-        *,
-        json_loader: Any = None,
-    ) -> None:
-        """Initialize blind schedule config loader.
-
-        Args:
-            config_path: Path to config file. Defaults to BLIND_SCHEDULE_CONFIG_PATH.
-            logger: Optional logger. Defaults to creating one.
-            json_loader: Optional JSON loader (for testing).
-        """
-        resolved_path = config_path or BLIND_SCHEDULE_CONFIG_PATH
-        resolved_logger = logger or get_generic_logger(__name__.removeprefix("src."))
-        super().__init__(
-            config_path=resolved_path,
-            logger=resolved_logger,
-            json_loader=json_loader,
-        )
-
-    @override
-    def _load_config(self) -> BlindScheduleConfig:
-        """Load blind schedule configuration from JSON.
-
-        Returns:
-            BlindScheduleConfig object.
-
-        Raises:
-            FileNotFoundError: If config file does not exist.
-            ValueError: If config cannot be parsed or required fields are missing.
-        """
-        payload = self._json_loader.load()
-        extractor = ConfigTypeExtractor(logger=self._logger)
-
-        entries_raw = payload.get("entries")
-        if entries_raw is None:
-            raise ValueError("entries is required in configuration")
-        if not isinstance(entries_raw, list):
-            raise ValueError("entries must be a list")
-        if not entries_raw:
-            raise ValueError("Blind schedule must have at least one entry")
-
-        entries: list[BlindScheduleEntry] = []
-        for i, entry_data in enumerate(entries_raw):
-            if not isinstance(entry_data, dict):
-                raise ValueError(
-                    f"entries[{i}] must be a JSON object, got {type(entry_data).__name__}"
-                )
-            level_data = extractor.get_required_dict(entry_data, "level", context=f"entries[{i}]")
-            small_blind_value = extractor.get_required_int(
-                level_data, "small_blind", context=f"entries[{i}].level"
-            )
-            big_blind_value = extractor.get_required_int(
-                level_data, "big_blind", context=f"entries[{i}].level"
-            )
-            level_number = extractor.get_required_int(
-                level_data, "level", context=f"entries[{i}].level"
-            )
-
-            start_hand = extractor.get_required_int(
-                entry_data, "start_hand", context=f"entries[{i}]"
-            )
-            duration_hands = extractor.get_required_int(
-                entry_data, "duration_hands", context=f"entries[{i}]"
-            )
-
-            blind_level = BlindLevel(
-                small_blind=ChipAmount(small_blind_value),
-                big_blind=ChipAmount(big_blind_value),
-                level=level_number,
-            )
-
-            entry = BlindScheduleEntry(
-                level=blind_level,
-                start_hand=start_hand,
-                duration_hands=duration_hands,
-            )
-            entries.append(entry)
-
-        config = BlindScheduleConfig(entries=tuple(entries))
-        self._logger.info(
-            "blind_schedule_config_loaded",
-            num_entries=len(config.entries),
-        )
-        return config
 
 
 @final
@@ -126,7 +30,7 @@ class TournamentConfigLoader(BaseConfigLoader[TournamentConfig]):
         logger: structlog.BoundLogger | None = None,
         *,
         json_loader: Any = None,
-        blind_schedule_loader: BlindScheduleConfigLoader | None = None,
+        blind_schedule_loader: BlindScheduleModeRegistryLoader | None = None,
     ) -> None:
         """Initialize tournament config loader.
 
@@ -134,7 +38,7 @@ class TournamentConfigLoader(BaseConfigLoader[TournamentConfig]):
             config_path: Path to config file. Defaults to TOURNAMENT_CONFIG_PATH.
             logger: Optional logger. Defaults to creating one.
             json_loader: Optional JSON loader (for testing).
-            blind_schedule_loader: Optional blind schedule loader (for testing).
+            blind_schedule_loader: Optional blind schedule registry loader (for testing).
         """
         resolved_path = config_path or TOURNAMENT_CONFIG_PATH
         resolved_logger = logger or get_generic_logger(__name__.removeprefix("src."))
@@ -154,7 +58,8 @@ class TournamentConfigLoader(BaseConfigLoader[TournamentConfig]):
 
         Raises:
             FileNotFoundError: If config file does not exist.
-            ValueError: If config cannot be parsed or required fields are missing.
+            ValueError: If config cannot be parsed, required fields are missing,
+                or blind schedule cannot be loaded.
         """
         payload = self._json_loader.load()
         extractor = ConfigTypeExtractor(logger=self._logger)
@@ -172,19 +77,23 @@ class TournamentConfigLoader(BaseConfigLoader[TournamentConfig]):
                 f"Valid values: {valid_values}"
             )
 
-        blind_schedule: BlindScheduleConfig | None = None
+        # Blind schedule is required - fail if not found
+        loader = self._blind_schedule_loader or BlindScheduleModeRegistryLoader(
+            config_path=BLIND_SCHEDULE_CONFIG_PATH,
+            logger=self._logger,
+        )
         try:
-            loader = self._blind_schedule_loader or BlindScheduleConfigLoader(
-                config_path=BLIND_SCHEDULE_CONFIG_PATH,
-                logger=self._logger,
-            )
-            blind_schedule = loader.load()
-        except FileNotFoundError:
-            self._logger.debug(
-                "blind_schedule_config_not_found",
+            registry = loader.load()
+            blind_schedule = registry.get_default()
+        except FileNotFoundError as e:
+            self._logger.error(
+                "blind_schedule_config_required",
                 path=str(BLIND_SCHEDULE_CONFIG_PATH),
+                error=str(e),
             )
-            blind_schedule = None
+            raise ValueError(
+                f"Blind schedule configuration is required but not found: {BLIND_SCHEDULE_CONFIG_PATH}"
+            ) from e
 
         config = TournamentConfig(
             buy_in_amount=buy_in_amount,
@@ -197,6 +106,5 @@ class TournamentConfigLoader(BaseConfigLoader[TournamentConfig]):
             buy_in=buy_in_amount.value,
             starting_chips=starting_chip_stack.value,
             payout_structure=payout_structure.value,
-            has_blind_schedule=blind_schedule is not None,
         )
         return config

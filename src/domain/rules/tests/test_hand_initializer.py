@@ -17,8 +17,7 @@ from dataclasses import replace
 
 import pytest
 
-from src.config.tournament.config import (BlindScheduleConfig,
-                                          BlindScheduleEntry)
+from src.config.blind_schedule.config import BlindScheduleConfig, BlindScheduleEntry
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.chips import ChipAmount
 from src.domain.models.deck import Deck
@@ -632,11 +631,21 @@ class TestBlindSchedule:
         assert new_game.blind_state.current_blind_level.big_blind == ChipAmount(50)
         assert new_game.blind_state.current_blind_level.level == 2
 
-    def test_uses_default_blinds_when_no_schedule_provided(
+    def test_uses_schedule_for_initial_hand(
         self,
         sample_player_factory: Callable[..., Player],
         minimal_game_factory: Callable[..., Game],
     ) -> None:
+        """Test that initial hand uses the first level from the schedule."""
+        blind_schedule = BlindScheduleConfig(
+            entries=(
+                BlindScheduleEntry(
+                    level=BlindLevel(small_blind=ChipAmount(10), big_blind=ChipAmount(20), level=1),
+                    start_hand=1,
+                    duration_hands=2,
+                ),
+            )
+        )
         players = [
             sample_player_factory("p1", Seat.SEAT_0, STARTING_CHIPS),
             sample_player_factory("p2", Seat.SEAT_1, STARTING_CHIPS),
@@ -644,7 +653,7 @@ class TestBlindSchedule:
         game = minimal_game_factory(players=Players.from_list(players))
         game = replace(
             game,
-            tournament_config=replace(game.tournament_config, blind_schedule=None),
+            tournament_config=replace(game.tournament_config, blind_schedule=blind_schedule),
         )
         deck = Deck.create_shuffled(seed=42)
 

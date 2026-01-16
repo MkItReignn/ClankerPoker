@@ -7,6 +7,7 @@ from datetime import datetime
 
 import pytest
 
+from src.config.blind_schedule.config import BlindScheduleConfig, BlindScheduleEntry
 from src.config.tournament.config import PayoutStructure, TournamentConfig
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.bot import Bot, BotId, BotType, Prompt
@@ -20,6 +21,7 @@ from src.domain.models.llm_model import LlmModel
 from src.domain.models.player import (BettingRoundActionStatus,
                                       HandParticipationStatus, Player,
                                       PlayerId)
+from src.domain.models.players import Players
 from src.domain.models.pot import Pot, PotState
 from src.domain.models.seat import Seat
 
@@ -117,6 +119,19 @@ def minimal_game_factory() -> Callable[..., Game]:
                 buy_in_amount=ChipAmount(1000),
                 starting_chip_stack=ChipAmount(1000),
                 payout_structure=PayoutStructure.WINNER_TAKES_ALL,
+                blind_schedule=BlindScheduleConfig(
+                    entries=(
+                        BlindScheduleEntry(
+                            level=BlindLevel(
+                                small_blind=SMALL_BLIND_STANDARD,
+                                big_blind=BIG_BLIND_STANDARD,
+                                level=1,
+                            ),
+                            start_hand=1,
+                            duration_hands=1000,  # Long duration for tests
+                        ),
+                    )
+                ),
             ),
             hand_state=HandState(
                 hand_number=1,
@@ -143,7 +158,7 @@ def minimal_game_factory() -> Callable[..., Game]:
                     level=1,
                 )
             ),
-            players=players,
+            players=Players.from_list(players),
             results=None,
         )
 

@@ -1,31 +1,17 @@
 {
-  "entries": [
-    {
-      "level": {
-        "level": 1,
-        "small_blind": 10,
-        "big_blind": 20
-      },
-      "start_hand": 1,
-      "duration_hands": 10
+  "default_mode": "standard",
+  "modes": {
+    "standard": {
+      "description": "Balanced tournament structure with 100 big blind starting stack. Early levels allow deep play, mid-game increases pressure, late game forces action.",
+      "file": "schedules/standard.json"
     },
-    {
-      "level": {
-        "level": 2,
-        "small_blind": 20,
-        "big_blind": 40
-      },
-      "start_hand": 11,
-      "duration_hands": 10
+    "turbo": {
+      "description": "Fast-paced tournament with aggressive blind increases. High action, shorter game duration. Ideal for quick games and side events.",
+      "file": "schedules/turbo.json"
     },
-    {
-      "level": {
-        "level": 3,
-        "small_blind": 50,
-        "big_blind": 100
-      },
-      "start_hand": 21,
-      "duration_hands": 10
+    "marathon": {
+      "description": "Deep stack tournament with slow blind progression. Allows for deep strategic play, longer game duration. Ideal for serious tournaments with large fields.",
+      "file": "schedules/marathon.json"
     }
-  ]
+  }
 }

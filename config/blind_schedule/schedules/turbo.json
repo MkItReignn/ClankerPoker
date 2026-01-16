@@ -1,0 +1,139 @@
+{
+  "entries": [
+    {
+      "level": {
+        "level": 1,
+        "small_blind": 50,
+        "big_blind": 100
+      },
+      "start_hand": 1,
+      "duration_hands": 8
+    },
+    {
+      "level": {
+        "level": 2,
+        "small_blind": 100,
+        "big_blind": 200
+      },
+      "start_hand": 9,
+      "duration_hands": 8
+    },
+    {
+      "level": {
+        "level": 3,
+        "small_blind": 150,
+        "big_blind": 300
+      },
+      "start_hand": 17,
+      "duration_hands": 6
+    },
+    {
+      "level": {
+        "level": 4,
+        "small_blind": 200,
+        "big_blind": 400
+      },
+      "start_hand": 23,
+      "duration_hands": 6
+    },
+    {
+      "level": {
+        "level": 5,
+        "small_blind": 300,
+        "big_blind": 600
+      },
+      "start_hand": 29,
+      "duration_hands": 6
+    },
+    {
+      "level": {
+        "level": 6,
+        "small_blind": 500,
+        "big_blind": 1000
+      },
+      "start_hand": 35,
+      "duration_hands": 5
+    },
+    {
+      "level": {
+        "level": 7,
+        "small_blind": 800,
+        "big_blind": 1600
+      },
+      "start_hand": 40,
+      "duration_hands": 5
+    },
+    {
+      "level": {
+        "level": 8,
+        "small_blind": 1200,
+        "big_blind": 2400
+      },
+      "start_hand": 45,
+      "duration_hands": 4
+    },
+    {
+      "level": {
+        "level": 9,
+        "small_blind": 2000,
+        "big_blind": 4000
+      },
+      "start_hand": 49,
+      "duration_hands": 4
+    },
+    {
+      "level": {
+        "level": 10,
+        "small_blind": 3000,
+        "big_blind": 6000
+      },
+      "start_hand": 53,
+      "duration_hands": 4
+    },
+    {
+      "level": {
+        "level": 11,
+        "small_blind": 5000,
+        "big_blind": 10000
+      },
+      "start_hand": 57,
+      "duration_hands": 3
+    },
+    {
+      "level": {
+        "level": 12,
+        "small_blind": 8000,
+        "big_blind": 16000
+      },
+      "start_hand": 60,
+      "duration_hands": 3
+    },
+    {
+      "level": {
+        "level": 13,
+        "small_blind": 12000,
+        "big_blind": 24000
+      },
+      "start_hand": 63,
+      "duration_hands": 3
+    },
+    {
+      "level": {
+        "level": 14,
+        "small_blind": 20000,
+        "big_blind": 40000
+      },
+      "start_hand": 66,
+      "duration_hands": 3
+    },
+    {
+      "level": {
+        "level": 15,
+        "small_blind": 40000,
+        "big_blind": 80000
+      },
+      "start_hand": 69,
+      "duration_hands": 99999
+    }
+  ]
+}
