@@ -3,8 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from typing import TYPE_CHECKING
 
-from src.domain.models.blinds import BlindLevel, BlindSchedule
+from src.domain.models.blinds import BlindLevel
+
+if TYPE_CHECKING:
+    from src.config.tournament.config import TournamentConfig
 from src.domain.models.card import Card
 from src.domain.models.chips import ChipAmount
 from src.domain.models.player import HandParticipationStatus, Player, PlayerId
@@ -87,25 +91,6 @@ class GameIdentity:
                 raise ValueError("completed_at requires started_at")
             if self.completed_at < self.started_at:
                 raise ValueError("completed_at cannot be before started_at")
-
-
-@dataclass(frozen=True, slots=True)
-class TournamentConfig:
-    buy_in_amount: ChipAmount
-    starting_chip_stack: ChipAmount
-    total_prize_pool: ChipAmount
-    payout_structure: str
-    blind_schedule: BlindSchedule | None = None
-
-    def __post_init__(self) -> None:
-        if self.buy_in_amount.value <= 0:
-            raise ValueError(f"Buy-in must be positive: {self.buy_in_amount.value}")
-        if self.starting_chip_stack.value <= 0:
-            raise ValueError(
-                f"Starting chip stack must be positive: {self.starting_chip_stack.value}"
-            )
-        if self.total_prize_pool.value < 0:
-            raise ValueError(f"Total prize pool cannot be negative: {self.total_prize_pool.value}")
 
 
 @dataclass(slots=True)

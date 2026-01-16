@@ -7,13 +7,14 @@ from datetime import datetime
 
 import pytest
 
+from src.config.tournament.config import TournamentConfig
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.bot import Bot, BotId, BotType, Prompt
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import (BettingState, BlindState, Game,
                                     GameIdentity, GamePhase, GameStatus,
-                                    HandState, TournamentConfig)
+                                    HandState)
 from src.domain.models.hand import Hand
 from src.domain.models.llm_model import LlmModel
 from src.domain.models.player import (BettingRoundActionStatus,

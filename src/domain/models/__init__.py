@@ -14,7 +14,7 @@ from src.domain.models.events import EventId, GameEvent, GameEventType
 from src.domain.models.game import (NO_POSITION_TO_ACT, BettingState,
                                     BlindState, Game, GameId, GameIdentity,
                                     GamePhase, GameResults, GameStatus,
-                                    HandState, TournamentConfig)
+                                    HandState)
 from src.domain.models.hand import Hand
 from src.domain.models.llm_model import LlmModel
 from src.domain.models.narration import Narration
@@ -69,5 +69,4 @@ __all__ = [
     "Seat",
     "Suit",
     "TablePositionMapping",
-    "TournamentConfig",
 ]

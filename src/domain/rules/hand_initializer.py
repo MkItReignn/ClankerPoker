@@ -3,11 +3,12 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import replace
 
-from src.domain.models.blinds import BlindLevel, BlindSchedule
+from src.config.tournament.config import BlindScheduleConfig
+from src.domain.models.blinds import BlindLevel
 from src.domain.models.chips import ChipAmount
 from src.domain.models.deck import Deck
-from src.domain.models.game import (BettingState,
-                                    BlindState, Game, GamePhase, HandState)
+from src.domain.models.game import (BettingState, BlindState, Game, GamePhase,
+                                    HandState)
 from src.domain.models.hand import Hand
 from src.domain.models.player import (BettingRoundActionStatus,
                                       HandParticipationStatus, Player)
@@ -18,7 +19,7 @@ from src.domain.rules.position_manager import PositionManager
 class HandInitializer:
     @staticmethod
     def _get_blind_level_for_hand(
-        hand_number: int, blind_schedule: BlindSchedule | None
+        hand_number: int, blind_schedule: BlindScheduleConfig | None
     ) -> BlindLevel:
         if blind_schedule is not None:
             return blind_schedule.get_blind_level_for_hand(hand_number)

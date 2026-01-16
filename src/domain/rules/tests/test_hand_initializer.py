@@ -17,10 +17,12 @@ from dataclasses import replace
 
 import pytest
 
-from src.domain.models.blinds import BlindLevel, BlindSchedule
+from src.config.tournament.config import (BlindScheduleConfig,
+                                          BlindScheduleEntry)
+from src.domain.models.blinds import BlindLevel
 from src.domain.models.chips import ChipAmount
 from src.domain.models.deck import Deck
-from src.domain.models.game import (Game, GamePhase, HandState)
+from src.domain.models.game import Game, GamePhase, HandState
 from src.domain.models.player import (BettingRoundActionStatus,
                                       HandParticipationStatus, Player)
 from src.domain.models.players import Players
@@ -593,9 +595,7 @@ class TestBlindSchedule:
         sample_player_factory: Callable[..., Player],
         minimal_game_factory: Callable[..., Game],
     ) -> None:
-        from src.domain.models.blinds import BlindScheduleEntry
-
-        blind_schedule = BlindSchedule(
+        blind_schedule = BlindScheduleConfig(
             entries=(
                 BlindScheduleEntry(
                     level=BlindLevel(small_blind=ChipAmount(10), big_blind=ChipAmount(20), level=1),

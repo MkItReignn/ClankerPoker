@@ -1,0 +1,31 @@
+{
+  "entries": [
+    {
+      "level": {
+        "level": 1,
+        "small_blind": 10,
+        "big_blind": 20
+      },
+      "start_hand": 1,
+      "duration_hands": 10
+    },
+    {
+      "level": {
+        "level": 2,
+        "small_blind": 20,
+        "big_blind": 40
+      },
+      "start_hand": 11,
+      "duration_hands": 10
+    },
+    {
+      "level": {
+        "level": 3,
+        "small_blind": 50,
+        "big_blind": 100
+      },
+      "start_hand": 21,
+      "duration_hands": 10
+    }
+  ]
+}
