@@ -18,27 +18,33 @@ class OpenRouterModelMapper:
     }
 
     @classmethod
-    def to_openrouter_model(cls, model_id: str) -> str:
-        try:
-            internal_model = LlmModel(model_id)
-        except ValueError as e:
-            valid_models = [model.value for model in LlmModel]
+    def to_openrouter_model(cls, model: LlmModel) -> str:
+        if model not in cls._MODEL_MAP:
             raise ValueError(
-                f"Unknown model_id: {model_id}. Supported models: {valid_models}"
-            ) from e
-
-        if internal_model not in cls._MODEL_MAP:
-            raise ValueError(
-                f"Model {internal_model.value} is not mapped to an OpenRouter model. "
+                f"Model {model.value} is not mapped to an OpenRouter model. "
                 f"Please add it to OpenRouterModelMapper._MODEL_MAP"
             )
 
-        return cls._MODEL_MAP[internal_model]
+        return cls._MODEL_MAP[model]
+
+    @classmethod
+    def from_openrouter_model(cls, openrouter_model: str) -> LlmModel:
+        # Create reverse mapping
+        reverse_map: dict[str, LlmModel] = {v: k for k, v in cls._MODEL_MAP.items()}
+
+        if openrouter_model not in reverse_map:
+            valid_models = [model.value for model in LlmModel]
+            raise ValueError(
+                f"Unknown OpenRouter model: {openrouter_model}. "
+                f"Supported models: {valid_models}"
+            )
+
+        return reverse_map[openrouter_model]
 
     @classmethod
     def is_valid_model(cls, model_id: str) -> bool:
         try:
-            cls.to_openrouter_model(model_id)
-            return True
+            model = LlmModel(model_id)
+            return model in cls._MODEL_MAP
         except ValueError:
             return False

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from src.application.protocols.llm import LlmApiError, LlmRequest, LlmResponse
+from src.infrastructure.llm.open_router.model_mapper import OpenRouterModelMapper
 from src.infrastructure.llm.open_router.response import (
     OpenRouterApiResponse, OpenRouterResponseChoice, OpenRouterResponseMessage,
     OpenRouterResponseUsage)
@@ -87,8 +88,8 @@ class OpenRouterResponseParser:
 
         prompt_tokens = api_response.usage.prompt_tokens if api_response.usage else 0
         completion_tokens = api_response.usage.completion_tokens if api_response.usage else 0
+        model_id = OpenRouterModelMapper.from_openrouter_model(api_response.model)
 
-        model_id = api_response.model or request.model_id
 
         return LlmResponse(
             content=content,
