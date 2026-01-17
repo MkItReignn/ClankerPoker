@@ -121,6 +121,7 @@ def minimal_game_factory() -> Callable[..., Game]:
                 started_at=now,
                 completed_at=None,
                 status=GameStatus.IN_PROGRESS,
+                seed=42,  # Test seed for deterministic behavior
             ),
             tournament_config=TournamentConfig(
                 buy_in_amount=ChipAmount(1000),

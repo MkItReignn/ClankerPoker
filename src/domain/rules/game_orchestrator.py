@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from copy import deepcopy
-
 from src.domain.models.card import Card
 from src.domain.models.deck import Deck
 from src.domain.models.game import Game
 from src.domain.models.player import Player
+from src.domain.utils.seed_sequence import SeedSequence
 
 
 class GameOrchestrator:
@@ -48,7 +47,7 @@ class GameOrchestrator:
         return winner
 
     @staticmethod
-    def initialize_game(game: Game, deck: Deck) -> tuple[Game, Deck]:
+    def initialize_game(game: Game) -> Game:
         """
         Initialize game with high card draw for initial button assignment.
 
@@ -57,8 +56,13 @@ class GameOrchestrator:
         - Highest card receives the dealer button
         - Suit tiebreaker: Spades > Hearts > Diamonds > Clubs
 
+        The deck is created deterministically using the game's seed (seed sequence index 0).
+
+        Args:
+            game: The game state to initialize.
+
         Returns:
-            (updated_game_with_button_set, updated_deck)
+            Updated game with button_seat assigned based on high card draw.
         """
         active_players = game.get_active_players()
         if len(active_players) < 2:
@@ -66,11 +70,14 @@ class GameOrchestrator:
                 f"Cannot initialize game: need at least 2 players, got {len(active_players)}"
             )
 
-        updated_deck = deepcopy(deck)
+        # Create deck deterministically using seed sequence index 0
+        seed_sequence = SeedSequence(base_seed=game.identity.seed)
+        shuffle_seed = seed_sequence.get_shuffle_seed_for_button_init()
+        deck = Deck.create_shuffled(seed=shuffle_seed)
 
         player_cards: list[tuple[Player, Card]] = []
         for player in active_players:
-            card = updated_deck.deal_card()
+            card = deck.deal_card()
             player_cards.append((player, card))
 
         winner = GameOrchestrator._find_high_card_winner(player_cards)
@@ -87,7 +94,7 @@ class GameOrchestrator:
             results=game.results,
         )
 
-        return updated_game, updated_deck
+        return updated_game
 
     @staticmethod
     def is_game_complete(game: Game) -> bool:

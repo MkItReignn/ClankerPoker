@@ -76,6 +76,7 @@ class GameIdentity:
     started_at: datetime | None
     completed_at: datetime | None
     status: GameStatus
+    seed: int
 
     def __post_init__(self) -> None:
         if not self.id:
@@ -278,25 +279,28 @@ class Game:
         Check if hand is complete.
 
         A hand is complete when:
-        1. We've reached showdown phase → betting complete, proceed to determine winners
-        2. Only one player remains (all others folded) → early win, no showdown needed
+        1. We've reached showdown phase
+        2. Only one player remains (all others folded)
         """
         if self.current_phase == GamePhase.SHOWDOWN:
             return True
 
-        players_in_hand = [p for p in self.players if p.is_in_hand()]
-        return len(players_in_hand) == 1
+        return len(self.players_in_hand()) == 1
 
     def is_round_complete(self) -> bool:
         """
         Determine if current betting round is complete.
 
         Framework:
-        1. If only 1 player remains (not folded) → hand ends → round complete
-        2. If all players in hand have acted AND investments are equal → round complete
-        3. If all players in hand are all-in → round complete (no more betting)
-        4. Otherwise → round continues
+        1. SHOWDOWN has no betting → always complete
+        2. If only 1 player remains (not folded) → hand ends → round complete
+        3. If all players in hand have acted AND investments are equal → round complete
+        4. If all players in hand are all-in → round complete (no more betting)
+        5. Otherwise → round continues
         """
+        if self.current_phase == GamePhase.SHOWDOWN:
+            return True
+
         from src.domain.rules.betting_calculator import BettingCalculator
 
         players_in_hand = self.players_in_hand()

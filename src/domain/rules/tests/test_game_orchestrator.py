@@ -7,6 +7,8 @@ and tournament completion logic.
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import pytest
 
 from src.domain.models.card import Card, Rank, Suit
@@ -61,7 +63,7 @@ class TestInitializeGame:
         game = minimal_game_factory(players)
 
         # Deck ordered: 5♠, K♥, 7♣ (King is highest)
-        deck = create_deck_with_top_cards(
+        test_deck = create_deck_with_top_cards(
             [
                 Card(suit=Suit.SPADES, rank=Rank.FIVE),
                 Card(suit=Suit.HEARTS, rank=Rank.KING),
@@ -69,8 +71,12 @@ class TestInitializeGame:
             ]
         )
 
-        # Act
-        updated_game, updated_deck = GameOrchestrator.initialize_game(game, deck)
+        # Mock Deck.create_shuffled to return our test deck
+        with patch(
+            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+        ):
+            # Act
+            updated_game = GameOrchestrator.initialize_game(game)
 
         # Assert: Player at SEAT_1 (who got King) should have button
         assert updated_game.button_seat == Seat.SEAT_1
@@ -94,7 +100,7 @@ class TestInitializeGame:
         game = minimal_game_factory(players)
 
         # Deck: A♦, A♠, A♣ (Spades wins suit tiebreaker)
-        deck = create_deck_with_top_cards(
+        test_deck = create_deck_with_top_cards(
             [
                 Card(suit=Suit.DIAMONDS, rank=Rank.ACE),
                 Card(suit=Suit.SPADES, rank=Rank.ACE),  # Highest suit
@@ -102,8 +108,12 @@ class TestInitializeGame:
             ]
         )
 
-        # Act
-        updated_game, updated_deck = GameOrchestrator.initialize_game(game, deck)
+        # Mock Deck.create_shuffled to return our test deck
+        with patch(
+            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+        ):
+            # Act
+            updated_game = GameOrchestrator.initialize_game(game)
 
         # Assert: A♠ beats A♦ and A♣
         assert updated_game.button_seat == Seat.SEAT_1
@@ -121,15 +131,19 @@ class TestInitializeGame:
         ]
         game = minimal_game_factory(players)
 
-        deck = create_deck_with_top_cards(
+        test_deck = create_deck_with_top_cards(
             [
                 Card(suit=Suit.DIAMONDS, rank=Rank.KING),
                 Card(suit=Suit.HEARTS, rank=Rank.KING),  # Hearts beats Diamonds
             ]
         )
 
-        # Act
-        updated_game, _ = GameOrchestrator.initialize_game(game, deck)
+        # Mock Deck.create_shuffled to return our test deck
+        with patch(
+            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+        ):
+            # Act
+            updated_game = GameOrchestrator.initialize_game(game)
 
         # Assert
         assert updated_game.button_seat == Seat.SEAT_1
@@ -147,15 +161,19 @@ class TestInitializeGame:
         ]
         game = minimal_game_factory(players)
 
-        deck = create_deck_with_top_cards(
+        test_deck = create_deck_with_top_cards(
             [
                 Card(suit=Suit.CLUBS, rank=Rank.QUEEN),
                 Card(suit=Suit.DIAMONDS, rank=Rank.QUEEN),  # Diamonds beats Clubs
             ]
         )
 
-        # Act
-        updated_game, _ = GameOrchestrator.initialize_game(game, deck)
+        # Mock Deck.create_shuffled to return our test deck
+        with patch(
+            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+        ):
+            # Act
+            updated_game = GameOrchestrator.initialize_game(game)
 
         # Assert
         assert updated_game.button_seat == Seat.SEAT_1
@@ -173,15 +191,19 @@ class TestInitializeGame:
         ]
         game = minimal_game_factory(players)
 
-        deck = create_deck_with_top_cards(
+        test_deck = create_deck_with_top_cards(
             [
                 Card(suit=Suit.CLUBS, rank=Rank.THREE),
                 Card(suit=Suit.HEARTS, rank=Rank.NINE),  # Higher card
             ]
         )
 
-        # Act
-        updated_game, _ = GameOrchestrator.initialize_game(game, deck)
+        # Mock Deck.create_shuffled to return our test deck
+        with patch(
+            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+        ):
+            # Act
+            updated_game = GameOrchestrator.initialize_game(game)
 
         # Assert: Player 2 with 9♥ wins
         assert updated_game.button_seat == Seat.SEAT_1
@@ -208,11 +230,10 @@ class TestInitializeGame:
             ),
         ]
         game = minimal_game_factory(players)
-        deck = Deck.create_shuffled(seed=42)
 
         # Act & Assert: Only 1 active player (non-eliminated)
         with pytest.raises(ValueError, match="need at least 2 players"):
-            GameOrchestrator.initialize_game(game, deck)
+            GameOrchestrator.initialize_game(game)
 
     def test_rejects_game_with_all_players_eliminated(
         self,
@@ -236,11 +257,10 @@ class TestInitializeGame:
             ),
         ]
         game = minimal_game_factory(players)
-        deck = Deck.create_shuffled(seed=42)
 
         # Act & Assert: 0 active players
         with pytest.raises(ValueError, match="need at least 2 players"):
-            GameOrchestrator.initialize_game(game, deck)
+            GameOrchestrator.initialize_game(game)
 
     def test_only_considers_active_players_for_high_card_draw(
         self,
@@ -272,15 +292,19 @@ class TestInitializeGame:
         game = minimal_game_factory(players)
 
         # Only p1 and p3 should receive cards (p2 is eliminated)
-        deck = create_deck_with_top_cards(
+        test_deck = create_deck_with_top_cards(
             [
                 Card(suit=Suit.CLUBS, rank=Rank.FIVE),  # p1
                 Card(suit=Suit.SPADES, rank=Rank.KING),  # p3 (highest)
             ]
         )
 
-        # Act
-        updated_game, _ = GameOrchestrator.initialize_game(game, deck)
+        # Mock Deck.create_shuffled to return our test deck
+        with patch(
+            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+        ):
+            # Act
+            updated_game = GameOrchestrator.initialize_game(game)
 
         # Assert: p3 (SEAT_2) should win
         assert updated_game.button_seat == Seat.SEAT_2
@@ -298,14 +322,27 @@ class TestInitializeGame:
             sample_player_factory(PlayerId("p3"), Seat.SEAT_2, ChipAmount(1000)),
         ]
         game = minimal_game_factory(players)
-        deck = Deck.create_shuffled(seed=42)
-        initial_cards_remaining = deck.cards_remaining()
+        test_deck = create_deck_with_top_cards(
+            [
+                Card(suit=Suit.SPADES, rank=Rank.ACE),
+                Card(suit=Suit.HEARTS, rank=Rank.KING),
+                Card(suit=Suit.CLUBS, rank=Rank.QUEEN),
+            ]
+        )
+        initial_cards_remaining = test_deck.cards_remaining()
 
-        # Act
-        _, updated_deck = GameOrchestrator.initialize_game(game, deck)
+        # Mock Deck.create_shuffled to return our test deck
+        with patch(
+            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+        ):
+            # Act
+            updated_game = GameOrchestrator.initialize_game(game)
 
-        # Assert: 3 cards dealt
-        assert updated_deck.cards_remaining() == initial_cards_remaining - 3
+        # Assert: 3 cards dealt (deck should have advanced by 3)
+        # The deck is used inside the function, so we can verify it was mutated
+        assert test_deck.cards_remaining() == initial_cards_remaining - 3
+        # Also verify button was assigned (confirms cards were dealt)
+        assert updated_game.button_seat in (Seat.SEAT_0, Seat.SEAT_1, Seat.SEAT_2)
 
     def test_returns_updated_game_with_button_assigned(
         self,
@@ -321,15 +358,19 @@ class TestInitializeGame:
         game = minimal_game_factory(players)
         original_button = game.button_seat
 
-        deck = create_deck_with_top_cards(
+        test_deck = create_deck_with_top_cards(
             [
                 Card(suit=Suit.CLUBS, rank=Rank.TWO),
                 Card(suit=Suit.SPADES, rank=Rank.ACE),  # Winner
             ]
         )
 
-        # Act
-        updated_game, _ = GameOrchestrator.initialize_game(game, deck)
+        # Mock Deck.create_shuffled to return our test deck
+        with patch(
+            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+        ):
+            # Act
+            updated_game = GameOrchestrator.initialize_game(game)
 
         # Assert: New game instance with updated button
         assert updated_game is not game  # Immutable pattern
@@ -348,10 +389,19 @@ class TestInitializeGame:
             sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
         ]
         game = minimal_game_factory(players)
-        deck = Deck.create_shuffled(seed=42)
+        test_deck = create_deck_with_top_cards(
+            [
+                Card(suit=Suit.CLUBS, rank=Rank.TWO),
+                Card(suit=Suit.SPADES, rank=Rank.ACE),
+            ]
+        )
 
-        # Act
-        updated_game, _ = GameOrchestrator.initialize_game(game, deck)
+        # Mock Deck.create_shuffled to return our test deck
+        with patch(
+            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+        ):
+            # Act
+            updated_game = GameOrchestrator.initialize_game(game)
 
         # Assert: Everything except button_seat is preserved
         assert updated_game.identity == game.identity
@@ -377,7 +427,7 @@ class TestInitializeGame:
         ]
         game = minimal_game_factory(players)
 
-        deck = create_deck_with_top_cards(
+        test_deck = create_deck_with_top_cards(
             [
                 Card(suit=Suit.SPADES, rank=Rank.KING),
                 Card(suit=Suit.CLUBS, rank=Rank.ACE),  # Highest rank
@@ -385,8 +435,12 @@ class TestInitializeGame:
             ]
         )
 
-        # Act
-        updated_game, _ = GameOrchestrator.initialize_game(game, deck)
+        # Mock Deck.create_shuffled to return our test deck
+        with patch(
+            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+        ):
+            # Act
+            updated_game = GameOrchestrator.initialize_game(game)
 
         # Assert
         assert updated_game.button_seat == Seat.SEAT_1
@@ -404,15 +458,19 @@ class TestInitializeGame:
         ]
         game = minimal_game_factory(players)
 
-        deck = create_deck_with_top_cards(
+        test_deck = create_deck_with_top_cards(
             [
                 Card(suit=Suit.SPADES, rank=Rank.TWO),
                 Card(suit=Suit.CLUBS, rank=Rank.THREE),  # Beats Two
             ]
         )
 
-        # Act
-        updated_game, _ = GameOrchestrator.initialize_game(game, deck)
+        # Mock Deck.create_shuffled to return our test deck
+        with patch(
+            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+        ):
+            # Act
+            updated_game = GameOrchestrator.initialize_game(game)
 
         # Assert
         assert updated_game.button_seat == Seat.SEAT_1
