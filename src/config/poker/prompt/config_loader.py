@@ -70,18 +70,28 @@ class PokerPromptConfigLoader:
 
         system_prompt_raw = extractor.get_required_dict(payload, "system_prompt", context="root")
 
-        base = extractor.get_required_string(system_prompt_raw, "base", context="system_prompt")
+        identity = extractor.get_required_string(
+            system_prompt_raw, "identity", context="system_prompt"
+        )
+        context_format_guide = extractor.get_required_string(
+            system_prompt_raw, "context_format_guide", context="system_prompt"
+        )
+        history_notation = extractor.get_required_string(
+            system_prompt_raw, "history_notation", context="system_prompt"
+        )
+        decision_framework = extractor.get_required_string(
+            system_prompt_raw, "decision_framework", context="system_prompt"
+        )
         personality_section = extractor.get_required_string(
             system_prompt_raw, "personality_section", context="system_prompt"
         )
-        history_format_guide = extractor.get_required_string(
-            system_prompt_raw, "history_format_guide", context="system_prompt"
-        )
 
         return SystemPromptComponents(
-            base=base,
+            identity=identity,
+            context_format_guide=context_format_guide,
+            history_notation=history_notation,
+            decision_framework=decision_framework,
             personality_section=personality_section,
-            history_format_guide=history_format_guide,
         )
 
     def _load_user_prompt_components(
@@ -103,12 +113,16 @@ class PokerPromptConfigLoader:
 
         user_prompt_raw = extractor.get_required_dict(payload, "user_prompt", context="root")
 
-        action_format_instructions = extractor.get_required_string(
-            user_prompt_raw, "action_format_instructions", context="user_prompt"
+        response_format = extractor.get_required_string(
+            user_prompt_raw, "response_format", context="user_prompt"
+        )
+        complete_example = extractor.get_required_string(
+            user_prompt_raw, "complete_example", context="user_prompt"
         )
 
         return UserPromptComponents(
-            action_format_instructions=action_format_instructions,
+            response_format=response_format,
+            complete_example=complete_example,
         )
 
     def _load_retry_prompt_components(

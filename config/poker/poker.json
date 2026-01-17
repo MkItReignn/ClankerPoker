@@ -1,6 +1,6 @@
 {
     "player_configs": {
         "player1": {"name": "ChatGPT-4o", "model_id": "openai/gpt-4o"},
-        "player2": {"name": "Claude 3.5 Sonnet", "model_id": "anthropic/claude-3.5-sonnet"},
+        "player2": {"name": "Claude 3.5 Sonnet", "model_id": "anthropic/claude-3.5-sonnet"}
     }
 }

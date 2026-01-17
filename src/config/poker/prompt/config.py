@@ -13,22 +13,30 @@ class SystemPromptComponents:
     """System prompt components that can be composed together.
 
     Attributes:
-        base: Base system prompt with player identity and goals.
+        identity: Elite player identity, expertise, and mission.
+        context_format_guide: Complete guide to reading structured context.
+        history_notation: Action shorthand and position abbreviations.
+        decision_framework: 9-category systematic decision framework.
         personality_section: Template for personality injection.
-        history_format_guide: Guide for reading hand history format.
     """
 
-    base: str
+    identity: str
+    context_format_guide: str
+    history_notation: str
+    decision_framework: str
     personality_section: str
-    history_format_guide: str
 
     def __post_init__(self) -> None:
-        if not self.base:
-            raise ValueError("base cannot be empty")
+        if not self.identity:
+            raise ValueError("identity cannot be empty")
+        if not self.context_format_guide:
+            raise ValueError("context_format_guide cannot be empty")
+        if not self.history_notation:
+            raise ValueError("history_notation cannot be empty")
+        if not self.decision_framework:
+            raise ValueError("decision_framework cannot be empty")
         if not self.personality_section:
             raise ValueError("personality_section cannot be empty")
-        if not self.history_format_guide:
-            raise ValueError("history_format_guide cannot be empty")
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,14 +44,18 @@ class UserPromptComponents:
     """User prompt components.
 
     Attributes:
-        action_format_instructions: Instructions for action response format.
+        response_format: How to format the response (ACTION + REASONING).
+        complete_example: Full example showing proper format and reasoning.
     """
 
-    action_format_instructions: str
+    response_format: str
+    complete_example: str
 
     def __post_init__(self) -> None:
-        if not self.action_format_instructions:
-            raise ValueError("action_format_instructions cannot be empty")
+        if not self.response_format:
+            raise ValueError("response_format cannot be empty")
+        if not self.complete_example:
+            raise ValueError("complete_example cannot be empty")
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,7 +66,7 @@ class RetryPromptComponents:
         header: Retry header message.
         error_section: Template for error message.
         response_section: Template for previous response snippet.
-        footer: Retry footer message.
+        footer: Retry footer message with common errors and fixes.
     """
 
     header: str
