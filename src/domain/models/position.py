@@ -87,3 +87,19 @@ class TablePositionMapping:
             return self.utg_plus_one_seat
         elif position_name == PositionName.CUTOFF:
             return self.cutoff_seat
+
+    def get_position_for_seat(self, seat: Seat) -> PositionName | None:
+        if self.button_seat == seat:
+            return PositionName.BUTTON
+        if self.small_blind_seat == seat:
+            return PositionName.SMALL_BLIND
+        if self.big_blind_seat == seat:
+            return PositionName.BIG_BLIND
+        if self.utg_seat == seat:
+            return PositionName.UNDER_THE_GUN
+        if self.utg_plus_one_seat == seat:
+            return PositionName.UTG_PLUS_ONE
+        if self.cutoff_seat == seat:
+            return PositionName.CUTOFF
+
+        return None

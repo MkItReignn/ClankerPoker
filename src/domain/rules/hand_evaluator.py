@@ -83,6 +83,23 @@ class HandEvaluation:
 
         return 0
 
+    def to_dict(self) -> dict:
+        """Convert HandEvaluation to dictionary for serialization."""
+        return {
+            "rank": self.rank.value,
+            "cards_used": [card.to_dict() for card in self.cards_used],
+            "kickers": [kicker.value for kicker in self.kickers],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> HandEvaluation:
+        """Reconstruct HandEvaluation from dictionary."""
+        return cls(
+            rank=HandRank(data["rank"]),
+            cards_used=tuple(Card.from_dict(c) for c in data["cards_used"]),
+            kickers=tuple(Rank(k) for k in data["kickers"]),
+        )
+
 
 class HandEvaluator:
     """Evaluates poker hands and finds best 5-card combination."""

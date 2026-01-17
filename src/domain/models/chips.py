@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,3 +47,16 @@ class ChipAmount:
 
     def __hash__(self) -> int:
         return hash(self.value)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert chip amount to dictionary for JSON serialization.
+
+        Note: ChipAmount is typically serialized directly as int in event metadata.
+        This method exists for consistency with other domain models.
+        """
+        return {"value": self.value}
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ChipAmount:
+        """Reconstruct chip amount from dictionary."""
+        return cls(value=data["value"])

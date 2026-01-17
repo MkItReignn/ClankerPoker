@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 from src.domain.models.chips import ChipAmount
 
@@ -31,3 +32,18 @@ class Action:
         elif self.action_type in (ActionType.FOLD, ActionType.CHECK, ActionType.CALL):
             if self.amount is not None and self.amount.value > 0:
                 raise ValueError(f"{self.action_type.value} cannot have an amount")
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert action to dictionary for JSON serialization."""
+        return {
+            "action_type": self.action_type.value,
+            "amount": self.amount.value if self.amount else None,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Action:
+        """Reconstruct action from dictionary."""
+        return cls(
+            action_type=ActionType(data["action_type"]),
+            amount=ChipAmount(data["amount"]) if data["amount"] is not None else None,
+        )

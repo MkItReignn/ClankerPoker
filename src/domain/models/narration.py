@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import NewType
+from typing import Any, NewType
 
 NarrationText = NewType("NarrationText", str)
 
@@ -37,6 +37,35 @@ class Narration:
             raise ValueError("meta_considerations cannot be empty")
         if not self.final_decision.strip():
             raise ValueError("final_decision cannot be empty")
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert narration to dictionary for JSON serialization."""
+        return {
+            "game_stage_assessment": self.game_stage_assessment,
+            "positional_context": self.positional_context,
+            "range_analysis": self.range_analysis,
+            "equity_assessment": self.equity_assessment,
+            "opponent_modeling": self.opponent_modeling,
+            "bet_sizing_rationale": self.bet_sizing_rationale,
+            "multi_street_plan": self.multi_street_plan,
+            "meta_considerations": self.meta_considerations,
+            "final_decision": self.final_decision,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Narration:
+        """Reconstruct narration from dictionary."""
+        return cls(
+            game_stage_assessment=NarrationText(data["game_stage_assessment"]),
+            positional_context=NarrationText(data["positional_context"]),
+            range_analysis=NarrationText(data["range_analysis"]),
+            equity_assessment=NarrationText(data["equity_assessment"]),
+            opponent_modeling=NarrationText(data["opponent_modeling"]),
+            bet_sizing_rationale=NarrationText(data["bet_sizing_rationale"]),
+            multi_street_plan=NarrationText(data["multi_street_plan"]),
+            meta_considerations=NarrationText(data["meta_considerations"]),
+            final_decision=NarrationText(data["final_decision"]),
+        )
 
 
 # Narration Field Specifications
