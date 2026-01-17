@@ -18,9 +18,7 @@ from src.domain.rules.position_manager import PositionManager
 
 class HandInitializer:
     @staticmethod
-    def _get_blind_level_for_hand(
-        hand_number: int, blind_schedule: BlindSchedule
-    ) -> BlindLevel:
+    def _get_blind_level_for_hand(hand_number: int, blind_schedule: BlindSchedule) -> BlindLevel:
         """Get the blind level for a given hand number from the schedule.
 
         Args:
