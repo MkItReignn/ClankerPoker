@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import IntEnum
 from itertools import combinations
+from typing import ClassVar
 
 from src.domain.models.card import Card, Rank
 from src.domain.models.hand import Hand
@@ -51,6 +52,22 @@ class HandRank(IntEnum):
     FOUR_OF_A_KIND = 8
     STRAIGHT_FLUSH = 9
     ROYAL_FLUSH = 10
+
+    def __str__(self) -> str:
+        """Get the human-readable label for this hand rank."""
+        _names: dict[HandRank, str] = {
+            HandRank.ROYAL_FLUSH: "Royal Flush",
+            HandRank.STRAIGHT_FLUSH: "Straight Flush",
+            HandRank.FOUR_OF_A_KIND: "Four of a Kind",
+            HandRank.FULL_HOUSE: "Full House",
+            HandRank.FLUSH: "Flush",
+            HandRank.STRAIGHT: "Straight",
+            HandRank.THREE_OF_A_KIND: "Three of a Kind",
+            HandRank.TWO_PAIR: "Two Pair",
+            HandRank.PAIR: "Pair",
+            HandRank.HIGH_CARD: "High Card",
+        }
+        return _names[self]
 
 
 @dataclass(frozen=True, slots=True)
