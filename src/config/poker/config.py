@@ -16,29 +16,27 @@ class PokerPlayerConfig:
     """Configuration for a poker player.
 
     Defines how an LLM player behaves in poker games, including
-    their model, system prompt, and optional personality traits.
+    their model, optional personality, and optional addon prompt.
 
     Attributes:
         player_id: Unique identifier for the player in the game.
         name: Display name for the player (used in prompts and history).
-        system_prompt: System prompt for the LLM (personality, style, behavior).
         model_id: The LLM model to use for this player.
-        personality: Optional poker-specific personality description.
+        personality: Optional personality description used in system prompt generation.
+        addon_prompt: Optional additional prompt text for future customization.
     """
 
     player_id: str
     name: str
-    system_prompt: str
     model_id: LlmModel
     personality: str | None = None
+    addon_prompt: str | None = None
 
     def __post_init__(self) -> None:
         if not self.player_id:
             raise ValueError("player_id cannot be empty")
         if not self.name:
             raise ValueError("name cannot be empty")
-        if not self.system_prompt:
-            raise ValueError("system_prompt cannot be empty")
 
     def to_player_config(self) -> PlayerConfig:
         """Convert to generic PlayerConfig for use with action providers.
@@ -51,7 +49,8 @@ class PokerPlayerConfig:
         return PlayerConfig(
             player_id=self.player_id,
             name=self.name,
-            system_prompt=self.system_prompt,
+            personality=self.personality,
+            addon_prompt=self.addon_prompt,
             model_id=self.model_id.value,
         )
 

@@ -74,9 +74,6 @@ class PokerGameConfigLoader(BaseConfigLoader[PokerGameConfig]):
             name = extractor.get_required_string(
                 player_data, "name", context=f"player_configs['{player_id}']"
             )
-            system_prompt = extractor.get_required_string(
-                player_data, "system_prompt", context=f"player_configs['{player_id}']"
-            )
             model_id_str = extractor.get_required_string(
                 player_data, "model_id", context=f"player_configs['{player_id}']"
             )
@@ -93,13 +90,16 @@ class PokerGameConfigLoader(BaseConfigLoader[PokerGameConfig]):
             personality = extractor.get_str_or_none(
                 player_data, "personality", context=f"player_configs['{player_id}']"
             )
+            addon_prompt = extractor.get_str_or_none(
+                player_data, "addon_prompt", context=f"player_configs['{player_id}']"
+            )
 
             player_config = PokerPlayerConfig(
                 player_id=player_id,
                 name=name,
-                system_prompt=system_prompt,
                 model_id=model_id,
                 personality=personality,
+                addon_prompt=addon_prompt,
             )
             player_configs[player_id] = player_config
 
