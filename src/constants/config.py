@@ -14,6 +14,7 @@ BLIND_SCHEDULE_CONFIG_PATH = Path("config/blind_schedule/blind_schedule.json")
 
 # Poker game configuration
 POKER_CONFIG_PATH = Path("config/poker/poker.json")
+POKER_PROMPTS_CONFIG_PATH = Path("config/poker/prompts.yaml")
 
 # LLM client configuration
 LLM_CONFIG_PATH = Path("config/llm/openrouter.json")
