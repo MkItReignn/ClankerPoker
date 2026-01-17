@@ -177,7 +177,7 @@ class ConfigTypeExtractor:
         if value is None:
             return None
 
-        if isinstance(value, (int, float)):
+        if isinstance(value, int | float):
             return float(value)
 
         context_prefix = f"{context}: " if context else ""
@@ -222,7 +222,7 @@ class ConfigTypeExtractor:
             raise ValueError(error_msg)
 
         value = data[key]
-        if isinstance(value, (int, float)):
+        if isinstance(value, int | float):
             return float(value)
 
         context_prefix = f"{context}: " if context else ""

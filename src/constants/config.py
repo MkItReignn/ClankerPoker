@@ -6,6 +6,9 @@ This ensures consistency, discoverability, and easier refactoring.
 
 from pathlib import Path
 
+# Application-wide configuration
+ENVIRONMENT_CONFIG_PATH = Path("config/environment.json")
+
 # Tournament configuration
 TOURNAMENT_CONFIG_PATH = Path("config/tournament/tournament.json")
 
