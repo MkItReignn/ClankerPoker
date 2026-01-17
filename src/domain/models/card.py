@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from typing import Any, ClassVar
 
 
 class Suit(Enum):
@@ -77,6 +77,24 @@ class Rank(Enum):
         if s not in mapping:
             raise ValueError(f"Invalid rank string: {s}")
         return mapping[s]
+
+    def to_long_string(self) -> str:
+        """Convert rank to long string representation (Ace, King, Queen, Jack, Ten, Nine, etc.)."""
+        return {
+            Rank.ACE: "Ace",
+            Rank.KING: "King",
+            Rank.QUEEN: "Queen",
+            Rank.JACK: "Jack",
+            Rank.TEN: "Ten",
+            Rank.NINE: "Nine",
+            Rank.EIGHT: "Eight",
+            Rank.SEVEN: "Seven",
+            Rank.SIX: "Six",
+            Rank.FIVE: "Five",
+            Rank.FOUR: "Four",
+            Rank.THREE: "Three",
+            Rank.TWO: "Two",
+        }[self]
 
 
 @dataclass(frozen=True, slots=True)

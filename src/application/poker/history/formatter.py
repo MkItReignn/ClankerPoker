@@ -242,7 +242,7 @@ class HistoryFormatter:
         Returns:
             Human-readable hand description.
         """
-        rank_name = evaluation.rank.display_name()
+        rank_name = str(evaluation.rank)
 
         # For hands that need rank details, add them
         if evaluation.rank == HandRank.ROYAL_FLUSH:
@@ -254,12 +254,12 @@ class HistoryFormatter:
 
         if evaluation.rank == HandRank.FOUR_OF_A_KIND:
             quad_rank = evaluation.kickers[0]
-            return f"Four of a Kind, {quad_rank.to_plural()}"
+            return f"Four of a Kind, {quad_rank.to_long_string()}s"
 
         if evaluation.rank == HandRank.FULL_HOUSE:
             trips_rank = evaluation.kickers[0]
             pair_rank = evaluation.kickers[1]
-            return f"{rank_name}, {trips_rank.to_plural()} over " f"{pair_rank.to_plural()}"
+            return f"{rank_name}, {trips_rank.to_long_string()}s over {pair_rank.to_long_string()}s"
 
         if evaluation.rank == HandRank.FLUSH:
             high_rank = evaluation.kickers[0]
@@ -271,16 +271,16 @@ class HistoryFormatter:
 
         if evaluation.rank == HandRank.THREE_OF_A_KIND:
             trips_rank = evaluation.kickers[0]
-            return f"{rank_name}, {trips_rank.to_plural()}"
+            return f"{rank_name}, {trips_rank.to_long_string()}s"
 
         if evaluation.rank == HandRank.TWO_PAIR:
             high_pair = evaluation.kickers[0]
             low_pair = evaluation.kickers[1]
-            return f"{rank_name}, {high_pair.to_plural()} and " f"{low_pair.to_plural()}"
+            return f"{rank_name}, {high_pair.to_long_string()}s and {low_pair.to_long_string()}s"
 
         if evaluation.rank == HandRank.PAIR:
             pair_rank = evaluation.kickers[0]
-            return f"Pair of {pair_rank.to_plural()}"
+            return f"Pair of {pair_rank.to_long_string()}s"
 
         # HIGH_CARD
         high_rank = evaluation.kickers[0]
