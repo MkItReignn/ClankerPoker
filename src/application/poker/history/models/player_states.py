@@ -184,16 +184,11 @@ class RoundLevelPlayerState(PlayerStateSnapshot):
 
 @dataclass(frozen=True, slots=True)
 class TurnLevelPlayerState(PlayerStateSnapshot):
-    chips_before_action: ChipAmount
     total_invested_before_action: ChipAmount
     can_raise: bool
 
     def __post_init__(self) -> None:
         super(type(self), self).__post_init__()
-        if self.chips_before_action.value < 0:
-            raise ValueError(
-                f"chips_before_action cannot be negative: {self.chips_before_action.value}"
-            )
         if self.total_invested_before_action.value < 0:
             raise ValueError(
                 f"total_invested_before_action cannot be negative: {self.total_invested_before_action.value}"
@@ -206,7 +201,6 @@ class TurnLevelPlayerState(PlayerStateSnapshot):
             "player_name": self.player_name,
             "seat": self.seat.value,
             "chips": self.chips.value,
-            "chips_before_action": self.chips_before_action.value,
             "total_invested_before_action": self.total_invested_before_action.value,
             "can_raise": self.can_raise,
         }
@@ -219,7 +213,6 @@ class TurnLevelPlayerState(PlayerStateSnapshot):
             player_name=data["player_name"],
             seat=Seat.from_int(data["seat"]),
             chips=ChipAmount(data["chips"]),
-            chips_before_action=ChipAmount(data["chips_before_action"]),
             total_invested_before_action=ChipAmount(data["total_invested_before_action"]),
             can_raise=data["can_raise"],
         )
