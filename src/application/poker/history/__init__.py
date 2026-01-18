@@ -11,6 +11,7 @@ from src.application.poker.history.models import (ActionRecord, GameHistory,
                                                   RoundLevelPlayerState,
                                                   ShowdownResult, TurnHistory,
                                                   TurnLevelPlayerState)
+from src.application.poker.history.recorder import HistoryRecorder
 
 __all__ = [
     # Main hierarchy models
@@ -31,4 +32,5 @@ __all__ = [
     "ShowdownResult",
     # Utilities
     "HistoryFormatter",
+    "HistoryRecorder",
 ]
