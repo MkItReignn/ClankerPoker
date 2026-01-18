@@ -31,9 +31,9 @@ class PlayerConfig:
 
     player_id: str
     name: str
+    model_id: str
     personality: str | None = None
     addon_prompt: str | None = None
-    model_id: str
 
     def __post_init__(self) -> None:
         if not self.player_id:

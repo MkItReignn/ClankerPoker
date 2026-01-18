@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Generic, Protocol, TypeVar
+from enum import Enum
+from typing import Any, Generic, Protocol, TypeVar
 
 # Generic type variables
 TAction = TypeVar("TAction")
@@ -11,55 +12,83 @@ TNarration = TypeVar("TNarration")
 TAvailableActions = TypeVar("TAvailableActions", contravariant=True)
 
 
-@dataclass(frozen=True, slots=True)
-class ParseResult(Generic[TAction, TNarration]):
-    """Result of parsing an LLM response.
+class ParseErrorType(str, Enum):
+    """Base error types for parsing failures.
 
-    Either contains a successfully parsed action and optional narration,
-    or an error message explaining why parsing failed.
-
-    Attributes:
-        action: The parsed action, or None if parsing failed.
-        narration: Optional structured narration, or None.
-        reasoning: Optional raw reasoning text from the LLM.
-        error: Error message if parsing failed, or None.
+    Games can extend this or use their own error types.
+    String enum allows easy serialization and extensibility.
     """
 
-    action: TAction | None
-    narration: TNarration | None = None
-    reasoning: str | None = None
-    error: str | None = None
+    NO_ACTION_FOUND = "NO_ACTION_FOUND"
+    INVALID_ACTION_TYPE = "INVALID_ACTION_TYPE"
+    AMOUNT_OUT_OF_RANGE = "AMOUNT_OUT_OF_RANGE"
+    AMOUNT_BELOW_MIN = "AMOUNT_BELOW_MIN"
+    AMOUNT_ABOVE_MAX = "AMOUNT_ABOVE_MAX"
+    ACTION_NOT_AVAILABLE = "ACTION_NOT_AVAILABLE"
+    INVALID_FORMAT = "INVALID_FORMAT"
+    EMPTY_RESPONSE = "EMPTY_RESPONSE"
 
-    def __post_init__(self) -> None:
-        if self.action is None and self.error is None:
-            raise ValueError("ParseResult must have either action or error")
-        if self.action is not None and self.error is not None:
-            raise ValueError("ParseResult cannot have both action and error")
 
-    @property
-    def is_success(self) -> bool:
-        """Whether parsing succeeded."""
-        return self.action is not None
+@dataclass(frozen=True, slots=True)
+class ParseError:
+    """Structured error information for parsing failures.
 
-    @property
-    def is_error(self) -> bool:
-        """Whether parsing failed."""
-        return self.error is not None
+    Contains error type, message, and optional context for better diagnostics.
+    """
+
+    message: str
+    error_type: str  # Use ParseErrorType enum values, or game-specific strings
+    context: dict[str, Any] | None = (
+        None  # Additional context (response snippet, available actions, etc.)
+    )
 
     @classmethod
-    def success(
+    def create(
         cls,
-        action: TAction,
-        narration: TNarration | None = None,
-        reasoning: str | None = None,
-    ) -> ParseResult[TAction, TNarration]:
-        """Create a successful parse result."""
-        return cls(action=action, narration=narration, reasoning=reasoning)
+        error_type: ParseErrorType | str,
+        message: str,
+        context: dict[str, Any] | None = None,
+    ) -> ParseError:
+        """Factory method for creating ParseError."""
+        error_type_str = error_type.value if isinstance(error_type, Enum) else error_type
+        return cls(message=message, error_type=error_type_str, context=context)
 
-    @classmethod
-    def failure(cls, error: str) -> ParseResult[TAction, TNarration]:
-        """Create a failed parse result."""
-        return cls(action=None, error=error)
+
+@dataclass(frozen=True, slots=True)
+class ParseSuccess(Generic[TAction, TNarration]):
+    """Successful parse result.
+
+    Action parsing succeeded, so the game can progress.
+    Narration and reasoning may have failed - caller should handle with logging.
+
+    Attributes:
+        action: The successfully parsed action (guaranteed valid).
+        narration: Parsed narration or ParseError if narration parsing failed.
+        reasoning: Parsed reasoning text or ParseError if reasoning parsing failed.
+    """
+
+    action: TAction
+    narration: TNarration | ParseError
+    reasoning: str | ParseError
+
+
+@dataclass(frozen=True, slots=True)
+class ParseFailure:
+    """Failed parse result.
+
+    Action parsing failed, so the game cannot progress.
+    Caller should retry or fail the request.
+
+    Attributes:
+        error: Structured error information explaining the failure.
+    """
+
+    error: ParseError
+
+
+# Type alias for parse results: discriminated union
+# Use isinstance() to discriminate between success and failure
+type ParseResult[TAction, TNarration] = ParseSuccess[TAction, TNarration] | ParseFailure
 
 
 class ResponseParser(Protocol[TAction, TNarration, TAvailableActions]):
@@ -86,6 +115,7 @@ class ResponseParser(Protocol[TAction, TNarration, TAvailableActions]):
             available_actions: The set of legal actions for validation.
 
         Returns:
-            ParseResult containing the action or an error message.
+            ParseSuccess if action parsing succeeded (narration/reasoning may have failed).
+            ParseFailure if action parsing failed (game cannot progress).
         """
         ...
