@@ -85,6 +85,9 @@ class PokerPromptConfigLoader:
         personality_section = extractor.get_required_string(
             system_prompt_raw, "personality_section", context="system_prompt"
         )
+        addon_section = extractor.get_required_string(
+            system_prompt_raw, "addon_section", context="system_prompt"
+        )
 
         return SystemPromptComponents(
             identity=identity,
@@ -92,6 +95,7 @@ class PokerPromptConfigLoader:
             history_notation=history_notation,
             decision_framework=decision_framework,
             personality_section=personality_section,
+            addon_section=addon_section,
         )
 
     def _load_user_prompt_components(

@@ -18,6 +18,7 @@ class SystemPromptComponents:
         history_notation: Action shorthand and position abbreviations.
         decision_framework: 9-category systematic decision framework.
         personality_section: Template for personality injection.
+        addon_section: Template for addon prompt injection.
     """
 
     identity: str
@@ -25,6 +26,7 @@ class SystemPromptComponents:
     history_notation: str
     decision_framework: str
     personality_section: str
+    addon_section: str
 
     def __post_init__(self) -> None:
         if not self.identity:
@@ -37,6 +39,8 @@ class SystemPromptComponents:
             raise ValueError("decision_framework cannot be empty")
         if not self.personality_section:
             raise ValueError("personality_section cannot be empty")
+        if not self.addon_section:
+            raise ValueError("addon_section cannot be empty")
 
 
 @dataclass(frozen=True, slots=True)
