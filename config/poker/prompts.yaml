@@ -91,7 +91,7 @@ system_prompt:
       - call:<amount>     (match the current bet)
       - bet:<min>-<max>   (open betting with amount in range)
       - raise:<min>-<max> (increase bet TO this total amount)
-      - allin:<amount>    (commit all your remaining chips)
+      - all_in:<amount>    (commit all your remaining chips)
 
   history_notation: |
     === ACTION NOTATION ===
@@ -209,6 +209,13 @@ system_prompt:
     maintain sound fundamental strategy. Personality affects tendencies at close
     decision points, not obvious mistakes.
 
+  addon_section: |
+    ADDITIONAL INSTRUCTIONS:
+    {addon_prompt}
+
+    These additional instructions supplement the core framework above. Apply them
+    in conjunction with the decision framework, not as a replacement for it.
+
 # User prompt components
 user_prompt:
   response_format: |
@@ -216,24 +223,58 @@ user_prompt:
 
     You MUST respond in this exact format:
 
+    GAME_STAGE_ASSESSMENT: (max ~80 words)
+    [Your assessment of tournament stage, stack depths, survival vs accumulation priorities]
+
+    POSITIONAL_CONTEXT: (max ~60 words)
+    [Your position, stack sizes, pot odds, effective stacks, players in hand]
+
+    RANGE_ANALYSIS: (max ~100 words)
+    [Opponent ranges based on actions, position, patterns - think in combinations]
+
+    EQUITY_ASSESSMENT: (max ~80 words)
+    [Your hand strength vs ranges, equity %, implied odds, fold equity]
+
+    OPPONENT_MODELING: (max ~70 words)
+    [Observed tendencies, exploitable patterns, table image considerations]
+
+    BET_SIZING_RATIONALE: (max ~60 words)
+    [Why THIS specific amount - value extraction, bluff sizing, protection, or pot control]
+
+    MULTI_STREET_PLAN: (max ~80 words)
+    [Your plan for turn/river based on this action and possible runouts]
+
+    META_CONSIDERATIONS: (max ~70 words)
+    [Table image, ICM implications, balance vs exploitation, broader strategic context]
+
+    FINAL_DECISION: (max ~50 words)
+    [Clear summary of your chosen action and the key reasons why]
+
     ACTION: <action_type> [amount]
 
     REASONING:
-    [Your structured reasoning, covering relevant categories from the framework]
+    [Brief synthesis of your decision, drawing from the analysis above]
 
-    RULES:
+    FIELD GUIDELINES:
+    - STRICTLY adhere to word limits for each field (max ~X words)
+    - Word counts are approximate - stay within 20% of the limit
+    - Write from the perspective of an elite player explaining their thought process
+    - Be specific with ranges, percentages, and strategic concepts
+    - Quality over verbosity - make every word count
+
+    ACTION RULES:
     - Choose EXACTLY ONE action from the AVAILABLE list
-    - Action types: fold, check, call, bet, raise, allin
+    - Action types: fold, check, call, bet, raise, all_in
     - For bet/raise, amount must be within the shown range
     - Amount for raise is the TOTAL bet amount, not the additional amount
 
-    VALID EXAMPLES:
+    VALID ACTION EXAMPLES:
       ACTION: fold
       ACTION: check
       ACTION: call
       ACTION: bet 150
       ACTION: raise 400
-      ACTION: allin
+      ACTION: all_in
 
   complete_example: |
     === COMPLETE EXAMPLE ===
@@ -241,38 +282,50 @@ user_prompt:
     Given this situation:
       === HAND #7 | PHASE: FLOP ===
       YOU: A♠ K♠ | POS: BTN | STACK: 1850
+           Stack in BB: 37.0
       BOARD: K♥ 7♦ 2♠
       POT: 200 | CALL: 100 | BB: 50
       POT ODDS: 3.0:1
       OPPONENTS:
         Alice (UTG): 1200 chips [A] invested:100
-      AVAILABLE: fold | call:100 | raise:200-1850 | allin:1850
+      ACTIONS THIS HAND:
+        PRE_FLOP: Alice(UTG):R60, You(BTN):C, Dave(SB):F, Eve(BB):F
+        FLOP: Alice(UTG):B100, ?
+      AVAILABLE: fold | call:100 | raise:200-1850 | all_in:1850
 
     CORRECT RESPONSE:
+
+    GAME_STAGE_ASSESSMENT:
+    Mid-tournament with 37BB stack - healthy position above the danger zone. No immediate survival pressure, so can play for value and chip accumulation. Blinds at 25/50 allow for creative play without fear of being blinded out. This is a spot to build, not just survive.
+
+    POSITIONAL_CONTEXT:
+    On the button with position for all remaining streets - major advantage. Facing a c-bet from UTG opener. Pot odds of 3:1 are excellent for continuing, but raising for value is superior here. Effective stack with Alice is 24BB, allowing for meaningful post-flop maneuvering.
+
+    RANGE_ANALYSIS:
+    Alice opened UTG and c-bet into me - indicates strength. Her UTG opening range is tight: JJ+, AK, AQ, maybe TT. Her c-bet range on this dry K-high board polarizes to strong Kx for value (AK, KQ, KJs) or complete air (AQ, AJ missed). She has maybe 15 combos of Kx, 12 combos of overpairs, and 20+ combos of missed hands. Her range is actually quite wide for c-betting here.
+
+    EQUITY_ASSESSMENT:
+    Top pair top kicker has roughly 70-75% equity against her range. I beat all her Kx except the rare KK, and I'm way ahead of her bluffs. Only losing to KK (3 combos) and sets 77, 22 (6 combos total). Against 9 strong combos and ~30 weaker ones, I'm in great shape. Strong value spot.
+
+    OPPONENT_MODELING:
+    From previous hands, Alice showed AA when aggressive from early position (Hand #5) and folded to flop pressure when she checked (Hand #6). She plays straightforward - bets strong hands, gives up with air when facing resistance. No tricky plays observed. She's likely to commit with any Kx here and fold her missed broadway hands.
+
+    BET_SIZING_RATIONALE:
+    Raising to 300 (3x her bet) builds the pot while keeping her range wide. Smaller sizing might look weak and induce a 4-bet bluff. Larger sizing folds out her Kx too often. 300 is the sweet spot that extracts value from worse kings, gets folds from her air, and doesn't bloat the pot against her few stronger hands.
+
+    MULTI_STREET_PLAN:
+    If called, I'll bet about 450-500 (60% pot) on safe turn cards (3, 4, 5, 6, 8, 9). Check back on dangerous cards (A, Q, J - complete her straight draws) or second king. If she bets turn after I raise, I'm calling given pot odds unless board gets very scary. River depends on action and runout, but generally value betting safe cards.
+
+    META_CONSIDERATIONS:
+    This hand establishes a strong table image - I'm not just calling with position, I'm raising for value. Makes future button steals more believable. ICM isn't a major factor in mid-tournament with healthy stack. This is pure chip EV maximization, and the math clearly supports raising over calling.
+
+    FINAL_DECISION:
+    Raise to 300 for value with TPTK on a dry board against a straightforward opponent who will commit with worse and fold her air. Position, range advantage, and equity all support building the pot now.
 
     ACTION: raise 300
 
     REASONING:
-    GAME STAGE: Mid-tournament with 37BB stack. Healthy position, no survival pressure.
-
-    POSITION: On the button with position for all remaining streets. 3:1 pot odds
-    are excellent but raising for value is better than calling.
-
-    RANGES: Alice opened UTG and c-bet into me. UTG range is strong: premium pairs,
-    AK, AQ, big broadways. Her c-bet polarizes to Kx for value or missed hands.
-
-    EQUITY: Top pair top kicker has 70%+ vs her range. I beat Kx, ahead of bluffs,
-    only losing to KK or sets which are few combos.
-
-    OPPONENT: From history, Alice showed AA when aggressive from UTG and folded to
-    flop pressure when weak. She plays strong hands fast.
-
-    SIZING: 3x raise to 300 builds pot while keeping her Kx in. Smaller looks weak.
-
-    PLAN: If called, bet 60% pot on safe turns. Check back dangerous A or flush cards.
-
-    DECISION: Raise for value with TPTK on a dry board against a player who
-    commits with strong hands.
+    Top pair top kicker on a dry board with position is a clear value raise against a tight UTG player who c-bets. I have 70%+ equity against her range, and the 3x sizing extracts value from worse kings while protecting against her few better hands. My button position allows me to control the pot on later streets, and her straightforward play makes this a textbook value spot.
 
 # Retry prompt components
 retry_prompt:
@@ -296,7 +349,7 @@ retry_prompt:
     - Choose exactly ONE action
 
     COMMON ERRORS AND FIXES:
-    - "Invalid action type" → Use only: fold, check, call, bet, raise, allin
+    - "Invalid action type" → Use only: fold, check, call, bet, raise, all_in
     - "Amount out of range" → Check the min-max in AVAILABLE (e.g., bet:50-500)
     - "Multiple actions" → Provide only ONE ACTION line
     - "Missing amount" → bet/raise require an amount (e.g., ACTION: bet 100)
