@@ -20,6 +20,17 @@ class PositionName(Enum):
     UTG_PLUS_ONE = "utg_plus_one"
     CUTOFF = "cutoff"
 
+    def to_short_string(self) -> str:
+        """Convert position name to short string representation (BTN, SB, BB, UTG, UTG+1, CO)."""
+        return {
+            PositionName.BUTTON: "BTN",
+            PositionName.SMALL_BLIND: "SB",
+            PositionName.BIG_BLIND: "BB",
+            PositionName.UNDER_THE_GUN: "UTG",
+            PositionName.UTG_PLUS_ONE: "UTG+1",
+            PositionName.CUTOFF: "CO",
+        }[self]
+
 
 @dataclass(frozen=True, slots=True)
 class TablePositionMapping:
