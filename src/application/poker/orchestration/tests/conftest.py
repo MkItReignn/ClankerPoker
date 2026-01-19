@@ -15,7 +15,7 @@ from typing import Any
 import pytest
 
 from src.application.protocols.player import ActionResponse, PlayerConfig
-from src.application.use_cases.poker_runner import PokerGameRunner
+from src.application.poker.orchestration.runner import PokerGameRunner
 from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.config.poker.config import PokerGameConfig, PokerPlayerConfig
 from src.config.tournament.config import PayoutStructure, TournamentConfig

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.application.use_cases.poker_runner import PokerGameRunner
+from src.application.poker.orchestration.runner import PokerGameRunner
 from src.config.poker.config import PokerGameConfig
 from src.domain.models.actions import ActionType
 from src.domain.models.chips import ChipAmount
