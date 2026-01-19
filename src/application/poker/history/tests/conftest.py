@@ -36,6 +36,7 @@ from src.domain.models.player import (
 from src.domain.models.players import Players
 from src.domain.models.pot import Pot, PotState
 from src.domain.models.seat import Seat
+from src.config.poker.config import PokerPlayerConfig
 
 SMALL_BLIND = ChipAmount(10)
 BIG_BLIND = ChipAmount(20)
@@ -98,6 +99,19 @@ def player_names() -> dict[str, str]:
         "player-4": "Diana",
         "player-5": "Eve",
         "player-6": "Frank",
+    }
+
+
+@pytest.fixture
+def player_configs(player_names: dict[str, str]) -> dict[str, PokerPlayerConfig]:
+    """Create player configs from player names for history recorder tests."""
+    return {
+        player_id: PokerPlayerConfig(
+            player_id=player_id,
+            name=name,
+            model_id=LlmModel.OPENAI_GPT4O_MINI,
+        )
+        for player_id, name in player_names.items()
     }
 
 
@@ -248,9 +262,9 @@ def game_factory(
 
 
 @pytest.fixture
-def recorder(player_names: dict[str, str]) -> HistoryRecorder:
+def recorder(player_configs: dict[str, PokerPlayerConfig]) -> HistoryRecorder:
     """Create a fresh HistoryRecorder instance."""
-    return HistoryRecorder(player_names=player_names)
+    return HistoryRecorder(player_configs=player_configs)
 
 
 @pytest.fixture

@@ -7,6 +7,7 @@ from typing import Any
 
 from src.domain.models.chips import ChipAmount
 from src.domain.models.hand import Hand
+from src.domain.models.llm_model import LlmModel
 from src.domain.models.player import HandParticipationStatus
 from src.domain.models.position import PositionName
 from src.domain.models.seat import Seat
@@ -18,6 +19,7 @@ class PlayerStateSnapshot:
     player_name: str
     seat: Seat
     chips: ChipAmount
+    model_id: LlmModel
 
     def __post_init__(self) -> None:
         if not self.player_id:
@@ -26,10 +28,36 @@ class PlayerStateSnapshot:
             raise ValueError("player_name cannot be empty")
         if self.chips.value < 0:
             raise ValueError(f"chips cannot be negative: {self.chips.value}")
+        if not isinstance(self.model_id, LlmModel):
+            raise ValueError(f"model_id must be an LlmModel enum, got {type(self.model_id)}")
+
+
+@dataclass(frozen=True, slots=True)
+class PlayerConfig:
+    """Configuration for player (personality/prompts only)."""
+
+    personality: str | None = None
+    addon_prompt: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize to dictionary for JSON storage."""
+        return {
+            "personality": self.personality,
+            "addon_prompt": self.addon_prompt,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> PlayerConfig:
+        """Deserialize from dictionary."""
+        return cls(
+            personality=data.get("personality"),
+            addon_prompt=data.get("addon_prompt"),
+        )
 
 
 @dataclass(frozen=True, slots=True)
 class GameLevelPlayerState(PlayerStateSnapshot):
+    player_config: PlayerConfig
     hands_played: int = 0
     is_eliminated: bool = False
     elimination_hand_number: int | None = None
@@ -47,10 +75,12 @@ class GameLevelPlayerState(PlayerStateSnapshot):
             "player_name": self.player_name,
             "seat": self.seat.value,
             "chips": self.chips.value,
+            "model_id": self.model_id.value,
             "hands_played": self.hands_played,
             "is_eliminated": self.is_eliminated,
             "elimination_hand_number": self.elimination_hand_number,
             "table_finish_position": self.table_finish_position,
+            "player_config": self.player_config.to_dict(),
         }
 
     @classmethod
@@ -61,6 +91,8 @@ class GameLevelPlayerState(PlayerStateSnapshot):
             player_name=data["player_name"],
             seat=Seat.from_int(data["seat"]),
             chips=ChipAmount(data["chips"]),
+            model_id=LlmModel(data["model_id"]),
+            player_config=PlayerConfig.from_dict(data["player_config"]),
             hands_played=data.get("hands_played", 0),
             is_eliminated=data.get("is_eliminated", False),
             elimination_hand_number=data.get("elimination_hand_number"),
@@ -89,6 +121,7 @@ class HandLevelPlayerState(PlayerStateSnapshot):
             "player_name": self.player_name,
             "seat": self.seat.value,
             "chips": self.chips.value,
+            "model_id": self.model_id.value,
             "hole_cards": (
                 [self.hole_cards.card1.to_dict(), self.hole_cards.card2.to_dict()]
                 if self.hole_cards
@@ -120,6 +153,7 @@ class HandLevelPlayerState(PlayerStateSnapshot):
             player_name=data["player_name"],
             seat=Seat.from_int(data["seat"]),
             chips=ChipAmount(data["chips"]),
+            model_id=LlmModel(data["model_id"]),
             hole_cards=hole_cards,
             position=position,
             starting_chips=ChipAmount(data["starting_chips"]),
@@ -157,6 +191,7 @@ class RoundLevelPlayerState(PlayerStateSnapshot):
             "player_name": self.player_name,
             "seat": self.seat.value,
             "chips": self.chips.value,
+            "model_id": self.model_id.value,
             "chips_at_round_start": self.chips_at_round_start.value,
             "total_invested_in_hand": self.total_invested_in_hand.value,
             "total_invested_in_round": self.total_invested_in_round.value,
@@ -174,6 +209,7 @@ class RoundLevelPlayerState(PlayerStateSnapshot):
             player_name=data["player_name"],
             seat=Seat.from_int(data["seat"]),
             chips=ChipAmount(data["chips"]),
+            model_id=LlmModel(data["model_id"]),
             chips_at_round_start=ChipAmount(data["chips_at_round_start"]),
             total_invested_in_hand=ChipAmount(data["total_invested_in_hand"]),
             total_invested_in_round=ChipAmount(data.get("total_invested_in_round", 0)),
@@ -201,6 +237,7 @@ class TurnLevelPlayerState(PlayerStateSnapshot):
             "player_name": self.player_name,
             "seat": self.seat.value,
             "chips": self.chips.value,
+            "model_id": self.model_id.value,
             "total_invested_before_action": self.total_invested_before_action.value,
             "can_raise": self.can_raise,
         }
@@ -213,6 +250,7 @@ class TurnLevelPlayerState(PlayerStateSnapshot):
             player_name=data["player_name"],
             seat=Seat.from_int(data["seat"]),
             chips=ChipAmount(data["chips"]),
+            model_id=LlmModel(data["model_id"]),
             total_invested_before_action=ChipAmount(data["total_invested_before_action"]),
             can_raise=data["can_raise"],
         )

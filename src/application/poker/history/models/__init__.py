@@ -4,8 +4,8 @@ from .game_history import GameHistory, GameMetadata
 from .hand_history import HandHistory
 from .outcomes import ActionRecord, HandOutcome, PlayerOutcome, ShowdownResult
 from .player_states import (GameLevelPlayerState, HandLevelPlayerState,
-                            PlayerStateSnapshot, RoundLevelPlayerState,
-                            TurnLevelPlayerState)
+                            PlayerConfig, PlayerStateSnapshot,
+                            RoundLevelPlayerState, TurnLevelPlayerState)
 from .round_history import RoundHistory
 from .turn_history import TurnHistory
 
@@ -22,6 +22,8 @@ __all__ = [
     "HandLevelPlayerState",
     "RoundLevelPlayerState",
     "TurnLevelPlayerState",
+    # Player configuration
+    "PlayerConfig",
     # Outcomes and actions
     "ActionRecord",
     "HandOutcome",

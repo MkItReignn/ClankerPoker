@@ -10,6 +10,7 @@ from src.application.poker.history.models import (
     GameMetadata,
     HandLevelPlayerState,
     HandOutcome,
+    PlayerConfig,
     PlayerOutcome,
     RoundHistory,
     RoundLevelPlayerState,
@@ -17,9 +18,11 @@ from src.application.poker.history.models import (
     TurnHistory,
     TurnLevelPlayerState,
 )
+from src.config.poker.config import PokerPlayerConfig
 from src.domain.models.actions import Action
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game, GamePhase
+from src.domain.models.llm_model import LlmModel
 from src.domain.models.player import HandParticipationStatus, Player
 from src.domain.models.position import PositionName, TablePositionMapping
 from src.domain.rules.betting_calculator import BettingCalculator
@@ -38,13 +41,13 @@ class HistoryRecorder:
     - Turn level: individual actions with pot changes
     """
 
-    def __init__(self, player_names: dict[str, str]) -> None:
+    def __init__(self, player_configs: dict[str, PokerPlayerConfig]) -> None:
         """Initialize the history recorder.
 
         Args:
-            player_names: Dictionary mapping player_id to display name.
+            player_configs: Dictionary mapping player_id to player configuration.
         """
-        self._player_names = player_names
+        self._player_configs = player_configs
         self._history: GameHistory | None = None
         self._logger = get_generic_logger(__name__.removeprefix("src."))
 
@@ -54,20 +57,24 @@ class HistoryRecorder:
         return self._history
 
     def _get_player_name(self, player_id: str) -> str:
-        if player_id not in self._player_names:
-            self._logger.error(
-                "Player ID not found in player_names",
-                player_id=player_id,
-                available_player_ids=list(self._player_names.keys()),
-            )
-            raise KeyError(f"Player ID '{player_id}' not found in player_names")
-        return self._player_names[player_id]
+        if player_id not in self._player_configs:
+            raise KeyError(f"Player ID '{player_id}' not found in player_configs")
+        return self._player_configs[player_id].name
+
+    def _get_player_model_id(self, player_id: str) -> LlmModel:
+        if player_id not in self._player_configs:
+            raise KeyError(f"Player ID '{player_id}' not found in player_configs")
+        return self._player_configs[player_id].model_id
 
     # =========================================================================
     # Game Lifecycle
     # =========================================================================
 
-    def initialize_history(self, state: Game, metadata: GameMetadata) -> None:
+    def initialize_history(
+        self,
+        state: Game,
+        metadata: GameMetadata,
+    ) -> None:
         """Initialize game history with metadata and register all players.
 
         Args:
@@ -76,14 +83,24 @@ class HistoryRecorder:
         """
         self._history = GameHistory(state.id, metadata)
 
-        # Register all players with initial state
+        # Register all players with initial state and LLM config
         for player in state.players:
             player_name = self._get_player_name(player.id)
+            poker_config = self._player_configs[player.id]
+
+            # Convert PokerPlayerConfig to PlayerConfig DTO (personality/prompts only)
+            player_config = PlayerConfig(
+                personality=poker_config.personality,
+                addon_prompt=poker_config.addon_prompt,
+            )
+
             self._history.register_player(
                 player_id=player.id,
                 name=player_name,
                 initial_chips=player.remaining_chips,
                 seat=player.seat,
+                model_id=poker_config.model_id,
+                player_config=player_config,
             )
 
     def complete_game(self, completed_at: datetime) -> None:
@@ -132,6 +149,7 @@ class HistoryRecorder:
                     player_name=player_name,
                     seat=player.seat,
                     chips=player.remaining_chips,
+                    model_id=self._get_player_model_id(player.id),
                     hole_cards=player.hole_cards,
                     position=position_name,
                     starting_chips=player.remaining_chips,
@@ -219,6 +237,7 @@ class HistoryRecorder:
                 player_name=player_name,
                 seat=player.seat,
                 chips=player.remaining_chips,
+                model_id=self._get_player_model_id(player.id),
                 chips_at_round_start=player.remaining_chips,
                 total_invested_in_hand=total_invested,
                 total_invested_in_round=total_invested_in_round,
@@ -304,6 +323,7 @@ class HistoryRecorder:
             player_name=player_name,
             seat=player.seat,
             chips=ChipAmount(chips_before),
+            model_id=self._get_player_model_id(player_id),
             total_invested_before_action=ChipAmount(invested_before),
             can_raise=player.can_raise,
         )

@@ -10,11 +10,12 @@ from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.config.tournament.config import PayoutStructure
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.chips import ChipAmount
+from src.domain.models.llm_model import LlmModel
 from src.domain.models.seat import Seat
 
 from .hand_history import HandHistory
 from .outcomes import HandOutcome
-from .player_states import GameLevelPlayerState, HandLevelPlayerState
+from .player_states import GameLevelPlayerState, HandLevelPlayerState, PlayerConfig
 from .turn_history import TurnHistory
 
 
@@ -108,12 +109,16 @@ class GameHistory:
         name: str,
         initial_chips: ChipAmount,
         seat: Seat,
+        model_id: LlmModel,
+        player_config: PlayerConfig,
     ) -> None:
         self.player_states[player_id] = GameLevelPlayerState(
             player_id=player_id,
             player_name=name,
             seat=seat,
             chips=initial_chips,
+            model_id=model_id,
+            player_config=player_config,
             hands_played=0,
             is_eliminated=False,
             elimination_hand_number=None,
@@ -154,6 +159,8 @@ class GameHistory:
                     player_name=old_state.player_name,
                     seat=old_state.seat,
                     chips=player_outcome.final_stack,
+                    model_id=old_state.model_id,
+                    player_config=old_state.player_config,
                     hands_played=old_state.hands_played + 1,
                     is_eliminated=player_outcome.was_eliminated,
                     elimination_hand_number=(

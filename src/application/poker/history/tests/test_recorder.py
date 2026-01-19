@@ -13,6 +13,7 @@ import pytest
 
 from src.application.poker.history.models import GameMetadata
 from src.application.poker.history.recorder import HistoryRecorder
+from src.config.poker.config import PokerPlayerConfig
 from src.domain.models.actions import Action, ActionType
 from src.domain.models.card import Rank
 from src.domain.models.chips import ChipAmount
@@ -96,9 +97,18 @@ class TestGameLifecycle:
         two_player_game: Game,
         game_metadata: GameMetadata,
     ) -> None:
-        """Raises KeyError when a player ID is not in the player_names mapping."""
-        incomplete_names = {"player-1": "Alice"}  # Missing player-2
-        recorder = HistoryRecorder(player_names=incomplete_names)
+        """Raises KeyError when a player ID is not in the player_configs mapping."""
+        from src.config.poker.config import PokerPlayerConfig
+        from src.domain.models.llm_model import LlmModel
+
+        incomplete_configs = {
+            "player-1": PokerPlayerConfig(
+                player_id="player-1",
+                name="Alice",
+                model_id=LlmModel.OPENAI_GPT4O_MINI,
+            )
+        }  # Missing player-2
+        recorder = HistoryRecorder(player_configs=incomplete_configs)
 
         with pytest.raises(KeyError, match="player-2"):
             recorder.initialize_history(two_player_game, game_metadata)
