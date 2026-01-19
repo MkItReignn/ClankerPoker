@@ -70,7 +70,7 @@ class PokerGameRunner(
             self._config = config
 
         self._deck: Deck | None = None
-        player_names = {pid: cfg.name for pid, cfg in self._config.player_configs.items()}
+        player_names = self.player_names
         self._context_builder: PokerContextBuilder = PokerContextBuilder(player_names=player_names)
 
         # Initialize history recorder with player names dict
@@ -84,6 +84,11 @@ class PokerGameRunner(
     def history(self) -> GameHistory | None:
         """Get the current game history."""
         return self._recorder.history
+
+    @property
+    def player_names(self) -> dict[str, str]:
+        """Get the player names mapping."""
+        return {pid: cfg.name for pid, cfg in self._config.player_configs.items()}
 
     def get_current_player_id(self, state: Game) -> str | None:
         """Get the ID of the player who needs to act."""
