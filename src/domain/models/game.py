@@ -323,3 +323,29 @@ class Game:
                 return False
 
         return True
+
+    def get_current_player_id(self) -> PlayerId | None:
+        """Get the ID of the player who needs to act.
+
+        Returns:
+            The player ID if there's a player who needs to act, None otherwise.
+        """
+        if self.status != GameStatus.IN_PROGRESS:
+            return None
+
+        if self.is_hand_complete():
+            return None
+
+        if self.position_to_act == NO_POSITION_TO_ACT:
+            return None
+
+        seat = Seat.from_int(self.position_to_act)
+        player = self.get_player_by_seat(seat)
+
+        if player is None:
+            return None
+
+        if not player.can_act():
+            return None
+
+        return player.id
