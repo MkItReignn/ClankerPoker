@@ -76,10 +76,10 @@ class HandInitializer:
         )
         updated_blind_state = BlindState(current_blind_level=blind_level)
 
-        position_mapping = PositionManager.resolve_positions_for_new_hand(
+        position_mapping = PositionManager.resolve_positions_for_hand(
             all_players=list(updated_players),
             previous_button_seat=game.button_seat,
-            is_initial_hand_setup=game.hand_state.is_initial_hand_setup,
+            advance_button=not game.hand_state.is_initial_hand_setup,
         )
 
         small_blind_seat = position_mapping.small_blind_seat

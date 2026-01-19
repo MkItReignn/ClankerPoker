@@ -73,22 +73,21 @@ class PositionManager:
     }
 
     @staticmethod
-    def resolve_positions_for_new_hand(
+    def resolve_positions_for_hand(
         all_players: list[Player],
         previous_button_seat: Seat,
-        is_initial_hand_setup: bool = False,
+        advance_button: bool = False,
     ) -> TablePositionMapping:
-        """Resolve all positions for a new hand.
+        """Resolve all positions for a hand.
 
-        Computes complete position mapping including:
-        - Button seat (advanced if not initial hand setup)
-        - Small blind seat
-        - Big blind seat
-        - Heads-up status
-        - Total seats at table
+        Args:
+            all_players: List of all players at the table.
+            previous_button_seat: The button seat from the previous hand.
+            advance_button: If True, advance button to next active player.
+                           If False (default), use previous_button_seat as-is.
 
         Returns:
-            Complete position mapping for the new hand.
+            Complete position mapping for the hand.
         """
         if len(all_players) < 2:
             raise ValueError(f"Need at least 2 players, got {len(all_players)}")
@@ -99,13 +98,13 @@ class PositionManager:
         if active_count < 2:
             raise ValueError(f"Need at least 2 active players, got {active_count}")
 
-        if is_initial_hand_setup:
-            button_seat = previous_button_seat
-        else:
+        if advance_button:
             button_seat = PositionManager.advance_button(
                 all_players=all_players,
                 current_button_seat=previous_button_seat,
             )
+        else:
+            button_seat = previous_button_seat
 
         small_blind_seat, big_blind_seat = PositionManager._calculate_blind_positions(
             all_players, button_seat

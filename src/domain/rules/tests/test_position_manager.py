@@ -38,10 +38,10 @@ class TestPositionAssignmentTwoPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.button_seat == mapping.small_blind_seat
@@ -59,10 +59,10 @@ class TestPositionAssignmentTwoPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.big_blind_seat == Seat.SEAT_1
@@ -80,10 +80,10 @@ class TestPositionAssignmentTwoPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.utg_seat is None
@@ -109,10 +109,10 @@ class TestPositionAssignmentThreePlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.button_seat == Seat.SEAT_0
@@ -134,10 +134,10 @@ class TestPositionAssignmentThreePlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.utg_seat is None
@@ -160,10 +160,10 @@ class TestPositionAssignmentThreePlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.button_seat != mapping.small_blind_seat
@@ -190,10 +190,10 @@ class TestPositionAssignmentFourPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.button_seat == Seat.SEAT_0
@@ -219,10 +219,10 @@ class TestPositionAssignmentFourPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.utg_plus_one_seat is None
@@ -253,10 +253,10 @@ class TestPositionAssignmentFivePlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.button_seat == Seat.SEAT_0
@@ -286,10 +286,10 @@ class TestPositionAssignmentFivePlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.utg_plus_one_seat is None
@@ -313,10 +313,10 @@ class TestPositionAssignmentFivePlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         # Cutoff is previous seat from button (counter-clockwise)
@@ -350,10 +350,10 @@ class TestPositionAssignmentSixPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.button_seat == Seat.SEAT_0
@@ -387,10 +387,10 @@ class TestPositionAssignmentSixPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_4,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.button_seat == Seat.SEAT_4
@@ -428,10 +428,10 @@ class TestActionOrderPreflop:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         betting_order = PositionManager.get_betting_order(
@@ -466,10 +466,10 @@ class TestActionOrderPreflop:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         betting_order = PositionManager.get_betting_order(
@@ -504,10 +504,10 @@ class TestActionOrderPreflop:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         betting_order = PositionManager.get_betting_order(
@@ -554,10 +554,10 @@ class TestActionOrderPostflop:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         betting_order = PositionManager.get_betting_order(
@@ -592,10 +592,10 @@ class TestActionOrderPostflop:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         betting_order = PositionManager.get_betting_order(
@@ -630,10 +630,10 @@ class TestActionOrderPostflop:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         betting_order = PositionManager.get_betting_order(
@@ -670,10 +670,10 @@ class TestActionOrderPostflop:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         flop_order = PositionManager.get_betting_order(mapping, GamePhase.FLOP, players)
@@ -698,10 +698,10 @@ class TestHeadsUpActionOrder:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         betting_order = PositionManager.get_betting_order(
@@ -725,10 +725,10 @@ class TestHeadsUpActionOrder:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         betting_order = PositionManager.get_betting_order(
@@ -752,10 +752,10 @@ class TestHeadsUpActionOrder:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         for phase in [GamePhase.FLOP, GamePhase.TURN, GamePhase.RIVER]:
@@ -820,10 +820,10 @@ class TestButtonRotation:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.button_seat == Seat.SEAT_0
@@ -840,10 +840,10 @@ class TestButtonRotation:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=False,
+            advance_button=True,
         )
 
         assert mapping.button_seat == Seat.SEAT_1
@@ -898,10 +898,10 @@ class TestSkipEliminatedPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.small_blind_seat == Seat.SEAT_2  # Skips seat 1
@@ -927,10 +927,10 @@ class TestSkipEliminatedPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.big_blind_seat == Seat.SEAT_3  # Skips seat 2
@@ -953,10 +953,10 @@ class TestSkipEliminatedPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         players_in_hand = [p for p in players if p.is_in_hand()]
@@ -1003,10 +1003,10 @@ class TestSkipEliminatedPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.is_heads_up is True
@@ -1034,10 +1034,10 @@ class TestFoldedPlayersInBettingOrder:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         players_in_hand = [p for p in players if p.is_in_hand()]
@@ -1105,10 +1105,10 @@ class TestPositionManagerValidation:
         ]
 
         with pytest.raises(ValueError, match="Need at least 2 players"):
-            _ = PositionManager.resolve_positions_for_new_hand(
+            _ = PositionManager.resolve_positions_for_hand(
                 all_players=players,
                 previous_button_seat=Seat.SEAT_0,
-                is_initial_hand_setup=True,
+                advance_button=False,
             )
 
     def test_requires_at_least_two_active_players(
@@ -1127,10 +1127,10 @@ class TestPositionManagerValidation:
         ]
 
         with pytest.raises(ValueError, match="Need at least 2 active players"):
-            _ = PositionManager.resolve_positions_for_new_hand(
+            _ = PositionManager.resolve_positions_for_hand(
                 all_players=players,
                 previous_button_seat=Seat.SEAT_0,
-                is_initial_hand_setup=True,
+                advance_button=False,
             )
 
 
@@ -1153,10 +1153,10 @@ class TestGetSeatForPosition:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.get_seat_for_position(PositionName.BUTTON) == Seat.SEAT_0
@@ -1177,10 +1177,10 @@ class TestGetSeatForPosition:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.get_seat_for_position(PositionName.SMALL_BLIND) == Seat.SEAT_1
@@ -1201,10 +1201,10 @@ class TestGetSeatForPosition:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.get_seat_for_position(PositionName.BIG_BLIND) == Seat.SEAT_2
@@ -1224,10 +1224,10 @@ class TestGetSeatForPosition:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.get_seat_for_position(PositionName.UNDER_THE_GUN) is None
@@ -1259,10 +1259,10 @@ class TestPositionMappingWithNonContiguousSeats:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.button_seat == Seat.SEAT_0
@@ -1300,10 +1300,10 @@ class TestPositionMappingWithNonContiguousSeats:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.active_players_count == 4
@@ -1408,10 +1408,10 @@ class TestActionOrderWithFewPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         betting_order = PositionManager.get_betting_order(mapping, GamePhase.PRE_FLOP, players)
@@ -1434,10 +1434,10 @@ class TestActionOrderWithFewPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         betting_order = PositionManager.get_betting_order(mapping, GamePhase.FLOP, players)
@@ -1462,10 +1462,10 @@ class TestActionOrderWithFewPlayers:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         betting_order = PositionManager.get_betting_order(mapping, GamePhase.PRE_FLOP, players)
@@ -1496,10 +1496,10 @@ class TestTransitionToHeadsUp:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.is_heads_up is True
@@ -1523,10 +1523,10 @@ class TestTransitionToHeadsUp:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         active_players = [p for p in players if p.is_in_hand()]
@@ -1555,10 +1555,10 @@ class TestBettingOrderPhaseValidity:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         with pytest.raises(ValueError, match="No betting order rule"):
@@ -1587,10 +1587,10 @@ class TestHeadsUpTransitionButtonEliminated:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=False,
+            advance_button=True,
         )
 
         assert mapping.button_seat == Seat.SEAT_1
@@ -1615,10 +1615,10 @@ class TestHeadsUpTransitionButtonEliminated:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=False,
+            advance_button=True,
         )
 
         assert mapping.button_seat == mapping.small_blind_seat
@@ -1643,10 +1643,10 @@ class TestHeadsUpTransitionButtonEliminated:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=False,
+            advance_button=True,
         )
 
         active_players = [p for p in players if p.is_in_hand()]
@@ -1685,10 +1685,10 @@ class TestBettingOrderWithMidHandFolds:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         players_in_hand = [p for p in players if p.is_in_hand()]
@@ -1719,10 +1719,10 @@ class TestBettingOrderWithMidHandFolds:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         players_in_hand = [p for p in players if p.is_in_hand()]
@@ -1754,10 +1754,10 @@ class TestBettingOrderWithMidHandFolds:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         players_in_hand = [p for p in players if p.is_in_hand()]
@@ -1793,10 +1793,10 @@ class TestBettingOrderWithMidHandFolds:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         players_in_hand = [p for p in players if p.is_in_hand()]
@@ -1829,10 +1829,10 @@ class TestAllInPlayersInBettingOrder:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         # Caller includes all-in player (is_in_hand() returns True for all-in)
@@ -1860,10 +1860,10 @@ class TestAllInPlayersInBettingOrder:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_0,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         # Caller explicitly excludes all-in players
@@ -1995,10 +1995,10 @@ class TestPositionAssignmentWithWraparound:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_2,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.button_seat == Seat.SEAT_2
@@ -2022,10 +2022,10 @@ class TestPositionAssignmentWithWraparound:
             ),
         ]
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=Seat.SEAT_2,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.button_seat == Seat.SEAT_2
@@ -2093,10 +2093,10 @@ class TestMultiHandTournamentScenario:
         # =========================================================
         # HAND 1: 6 players, first hand (button at seat 0)
         # =========================================================
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=current_button_seat,
-            is_initial_hand_setup=True,
+            advance_button=False,
         )
 
         assert mapping.button_seat == Seat.SEAT_0, "Hand 1: Button should be at seat 0"
@@ -2139,10 +2139,10 @@ class TestMultiHandTournamentScenario:
         # =========================================================
         # HAND 2: 6 players, button advances to seat 1
         # =========================================================
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=current_button_seat,
-            is_initial_hand_setup=False,
+            advance_button=True,
         )
 
         assert mapping.button_seat == Seat.SEAT_1, "Hand 2: Button should advance to seat 1"
@@ -2160,10 +2160,10 @@ class TestMultiHandTournamentScenario:
         eliminate_player("dan")
         assert len(get_active_players()) == 5
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=current_button_seat,
-            is_initial_hand_setup=False,
+            advance_button=True,
         )
 
         assert mapping.button_seat == Seat.SEAT_2, "Hand 3: Button should advance to seat 2"
@@ -2195,10 +2195,10 @@ class TestMultiHandTournamentScenario:
         eliminate_player("frank")
         assert len(get_active_players()) == 3
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=current_button_seat,
-            is_initial_hand_setup=False,
+            advance_button=True,
         )
 
         # Button should skip seats 3, 4, 5 (all eliminated) and land on seat 0
@@ -2237,10 +2237,10 @@ class TestMultiHandTournamentScenario:
         # =========================================================
         # HAND 5: Button advances, still 3 players
         # =========================================================
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=current_button_seat,
-            is_initial_hand_setup=False,
+            advance_button=True,
         )
 
         assert mapping.button_seat == Seat.SEAT_1, "Hand 5: Button advances to seat 1"
@@ -2255,10 +2255,10 @@ class TestMultiHandTournamentScenario:
         eliminate_player("carol")
         assert len(get_active_players()) == 2
 
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=current_button_seat,
-            is_initial_hand_setup=False,
+            advance_button=True,
         )
 
         # Button advances, skipping eliminated seat 2
@@ -2285,10 +2285,10 @@ class TestMultiHandTournamentScenario:
         # =========================================================
         # HAND 7: Heads-up continues, button alternates
         # =========================================================
-        mapping = PositionManager.resolve_positions_for_new_hand(
+        mapping = PositionManager.resolve_positions_for_hand(
             all_players=players,
             previous_button_seat=current_button_seat,
-            is_initial_hand_setup=False,
+            advance_button=True,
         )
 
         assert mapping.button_seat == Seat.SEAT_1, "Hand 7: Button alternates to seat 1"
@@ -2327,8 +2327,8 @@ class TestMultiHandTournamentScenario:
 
         # Verify we cannot start a new hand with only 1 player
         with pytest.raises(ValueError, match="Need at least 2 active players"):
-            _ = PositionManager.resolve_positions_for_new_hand(
+            _ = PositionManager.resolve_positions_for_hand(
                 all_players=players,
                 previous_button_seat=current_button_seat,
-                is_initial_hand_setup=False,
+                advance_button=True,
             )

@@ -38,10 +38,10 @@ class RoundManager:
             is_initial_hand_setup=game.hand_state.is_initial_hand_setup,
         )
 
-        position_mapping: TablePositionMapping = PositionManager.resolve_positions_for_new_hand(
+        position_mapping: TablePositionMapping = PositionManager.resolve_positions_for_hand(
             all_players=list(updated_players),
             previous_button_seat=game.button_seat,
-            is_initial_hand_setup=False,
+            advance_button=False,  # Same hand, don't advance
         )
         players_in_hand_for_next_phase: tuple[Player, ...] = updated_players.in_hand()
         betting_order: list[Seat] = PositionManager.get_betting_order(
