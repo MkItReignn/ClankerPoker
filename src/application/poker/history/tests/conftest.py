@@ -150,20 +150,30 @@ def tournament_config() -> TournamentConfig:
 
 
 def make_community_cards(phase: GamePhase) -> list[Card]:
-    """Create community cards for testing.
+    """Create community cards for testing based on phase.
 
-    RoundHistory only accepts 0 or 5 cards. PRE_FLOP has 0 cards,
-    all other phases have 5 cards (cards dealt upfront).
+    Returns the correct number of cards for each phase:
+    - PRE_FLOP: 0 cards
+    - FLOP: 3 cards
+    - TURN: 4 cards
+    - RIVER: 5 cards
+    - SHOWDOWN: 5 cards
     """
-    if phase == GamePhase.PRE_FLOP:
+    card_count = phase.card_count
+
+    if card_count == 0:
         return []
-    return [
+
+    # Create cards based on required count
+    all_cards = [
         Card(rank=Rank.ACE, suit=Suit.SPADES),
         Card(rank=Rank.KING, suit=Suit.HEARTS),
         Card(rank=Rank.QUEEN, suit=Suit.DIAMONDS),
         Card(rank=Rank.JACK, suit=Suit.CLUBS),
         Card(rank=Rank.TEN, suit=Suit.SPADES),
     ]
+
+    return all_cards[:card_count]
 
 
 def make_hole_cards(rank1: Rank = Rank.ACE, rank2: Rank = Rank.KING) -> Hand:

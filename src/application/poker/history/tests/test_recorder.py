@@ -500,8 +500,6 @@ class TestRoundLifecycle:
         assert len(hand.rounds) == 1
 
         round_history = hand.rounds[0]
-        # FLOP has 3 community cards but we store 0 or 5 per RoundHistory validation
-        # The fixture creates 5 cards for any phase with card_count > 0
         assert round_history.phase == GamePhase.FLOP
 
     def test_tracks_player_participation_status(

@@ -23,9 +23,9 @@ class RoundHistory:
     completed_at: datetime | None = None
 
     def __post_init__(self) -> None:
-        if len(self.community_cards) not in (0, 5):
+        if len(self.community_cards) not in (0, 3, 4, 5):
             raise ValueError(
-                f"community_cards must be 0 or 5 cards, got {len(self.community_cards)}"
+                f"community_cards must be 0, 3, 4, or 5 cards, got {len(self.community_cards)}"
             )
 
     def add_turn(self, turn: TurnHistory) -> None:
