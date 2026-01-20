@@ -52,7 +52,7 @@ def _create_formatter(dev_mode: bool = True) -> structlog.stdlib.ProcessorFormat
                  If False, use JSON output for production.
     """
     if dev_mode:
-        renderer = structlog.dev.ConsoleRenderer(colors=False, sort_keys=False)
+        renderer = structlog.dev.ConsoleRenderer(colors=True, sort_keys=False)
     else:
         renderer = structlog.processors.JSONRenderer()
 
