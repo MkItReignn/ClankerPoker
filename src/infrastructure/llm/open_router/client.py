@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -17,10 +16,11 @@ from src.infrastructure.llm.open_router.requests import (
     OpenRouterRequestMessage, ResponseFormat)
 from src.infrastructure.llm.open_router.response_parser import \
     OpenRouterResponseParser
+from src.logger.factories import get_generic_logger
 
 
 class OpenRouterClient:
-    _logger = logging.getLogger(__name__.removeprefix("src."))
+    _logger = get_generic_logger(__name__.removeprefix("src."))
     _config: OpenRouterConfig
     _http_client: httpx.AsyncClient | None
     _is_connected: bool
