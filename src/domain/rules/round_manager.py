@@ -22,7 +22,12 @@ class RoundManager:
         if not players_in_hand:
             raise ValueError("Cannot advance betting round: no players in hand")
 
-        updated_pot_state: PotState = PotCalculator.calculate_pot_state(players_in_hand)
+        # Get ALL players with investments for pot calculation (including folded)
+        all_players_with_investments = game.players.get_all_players_invested_in_current_hand()
+
+        updated_pot_state: PotState = PotCalculator.calculate_pot_state(
+            all_players_with_investments
+        )
 
         updated_players: Players = game.players.transform_all(lambda p: p.reset_for_new_round())
 

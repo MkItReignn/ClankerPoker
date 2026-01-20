@@ -392,7 +392,7 @@ class TestEdgeCases:
         assert len(result.side_pots) == 0
 
     def test_empty_player_list_raises_value_error(self) -> None:
-        with pytest.raises(ValueError, match="Cannot calculate pot state: no players in hand"):
+        with pytest.raises(ValueError, match="Cannot calculate pot state: no players provided"):
             PotCalculator.calculate_pot_state([])
 
     def test_player_order_does_not_affect_pot_calculation(

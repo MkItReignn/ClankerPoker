@@ -10,7 +10,7 @@ from src.domain.models.player import (BettingRoundActionStatus,
                                       HandParticipationStatus, Player,
                                       PlayerId)
 from src.domain.models.players import Players
-from src.domain.models.pot import Pot
+from src.domain.models.pot import Pot, PotState
 from src.domain.rules.chip_distributor import ChipDistributor
 from src.domain.rules.hand_evaluator import HandEvaluation, HandEvaluator
 from src.domain.rules.pot_calculator import PotCalculator
@@ -163,7 +163,24 @@ class HandCompleter:
 
     @staticmethod
     def _complete_early_win(game: Game, winner: Player) -> Game:
-        total_pot = game.pot_state.total_amount()
+        # Always recalculate pot to ensure correctness
+        # (No uncalled returns in early win - only 1 player remains)
+        all_players_with_investments = game.players.get_all_players_invested_in_current_hand()
+
+        if all_players_with_investments:
+            updated_pot_state = PotCalculator.calculate_pot_state(all_players_with_investments)
+            total_pot = updated_pot_state.total_amount()
+        else:
+            HandCompleter._logger.error(
+                "Invalid game state: pot exists but no players have investments",
+                hand_number=game.hand_state.hand_number,
+                pot_total=game.pot_state.total_amount().value,
+                players_count=len(game.players),
+            )
+            raise ValueError(
+                "Invalid game state: pot exists but no players have investments. "
+                "This indicates a critical bug in game state management."
+            )
 
         updated_winner = replace(
             winner,
@@ -184,7 +201,7 @@ class HandCompleter:
             identity=game.identity,
             tournament_config=game.tournament_config,
             hand_state=game.hand_state,
-            pot_state=game.pot_state,
+            pot_state=updated_pot_state,
             betting_state=game.betting_state,
             button_seat=game.button_seat,
             blind_state=game.blind_state,
@@ -198,22 +215,32 @@ class HandCompleter:
             ChipDistributor.calculate_uncalled_bet_returns(players_in_hand)
         )
 
-        # Create adjusted players for pot calculation
-        adjusted_players_in_hand: list[Player] = []
-        for player in players_in_hand:
+        # Always recalculate pot after adjusting for uncalled returns
+        # This ensures pot structure is correct regardless of when hand completes
+        all_players: list[Player] = list(game.players)
+        adjusted_all_players: list[Player] = []
+
+        for player in all_players:
             if player.id in uncalled_returns:
                 adjusted_investment = (
                     player.total_invested_this_hand.value - uncalled_returns[player.id].value
                 )
-                adjusted_player = replace(
+                adjusted_player: Player = replace(
                     player,
                     total_invested_this_hand=ChipAmount(adjusted_investment),
                 )
-                adjusted_players_in_hand.append(adjusted_player)
+                adjusted_all_players.append(adjusted_player)
             else:
-                adjusted_players_in_hand.append(player)
+                adjusted_all_players.append(player)
 
-        updated_pot_state = PotCalculator.calculate_pot_state(adjusted_players_in_hand)
+        # Filter to only players with investments for pot calculation
+        adjusted_players_with_investments: list[Player] = [
+            p for p in adjusted_all_players if p.total_invested_this_hand.value > 0
+        ]
+
+        updated_pot_state: PotState = PotCalculator.calculate_pot_state(
+            adjusted_players_with_investments
+        )
 
         game_with_updated_pots = Game(
             identity=game.identity,

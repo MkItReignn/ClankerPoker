@@ -88,6 +88,10 @@ class Players:
             players = [p for p in players if p.id != excluded_player_id]
         return tuple(players)
 
+    def get_all_players_invested_in_current_hand(self) -> list[Player]:
+        """Get all players who have invested chips in the current hand (including folded)."""
+        return [p for p in self._players.values() if p.total_invested_this_hand.value > 0]
+
     def replace_player(self, player_id: PlayerId, updated_player: Player) -> Players:
         """Replace a single player. Returns new Players instance.
 

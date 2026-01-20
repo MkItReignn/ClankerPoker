@@ -101,11 +101,12 @@ class TestEarlyWinScenarios:
         remaining after a hand is complete."
         """
         # Arrange: P1 wins, P2 went all-in and lost (has 0 chips)
+        # P1 must invest at least as much as P2 to avoid creating pots with no eligible players
         p1 = sample_player_factory(
             PlayerId("p1"),
             Seat.SEAT_0,
             ChipAmount(500),
-            total_invested_this_hand=ChipAmount(50),
+            total_invested_this_hand=ChipAmount(100),
             participation_status=HandParticipationStatus.IN_HAND,
         )
         p2 = sample_player_factory(
@@ -150,16 +151,19 @@ class TestEarlyWinScenarios:
     ) -> None:
         """Early win creates GameResults documenting winner and pot amount."""
         # Arrange
+        # P1 invested 100, P2 invested 50, total pot = 150
         p1 = sample_player_factory(
             PlayerId("p1"),
             Seat.SEAT_0,
             ChipAmount(500),
+            total_invested_this_hand=ChipAmount(100),
             participation_status=HandParticipationStatus.IN_HAND,
         )
         p2 = sample_player_factory(
             PlayerId("p2"),
             Seat.SEAT_1,
             ChipAmount(300),
+            total_invested_this_hand=ChipAmount(50),
             participation_status=HandParticipationStatus.FOLDED,
         )
 
@@ -988,6 +992,7 @@ class TestPlayerElimination:
             PlayerId("p1"),
             Seat.SEAT_0,
             ChipAmount(500),
+            total_invested_this_hand=ChipAmount(100),
             participation_status=HandParticipationStatus.IN_HAND,
             hole_cards=make_hand(
                 make_card(Rank.ACE, Suit.HEARTS),
@@ -998,6 +1003,7 @@ class TestPlayerElimination:
             PlayerId("p2"),
             Seat.SEAT_1,
             ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
             participation_status=HandParticipationStatus.IN_HAND,
             hole_cards=make_hand(
                 make_card(Rank.KING, Suit.HEARTS),
@@ -1378,6 +1384,7 @@ class TestEdgeCases:
             PlayerId("p1"),
             Seat.SEAT_0,
             ChipAmount(500),
+            total_invested_this_hand=ChipAmount(100),
             participation_status=HandParticipationStatus.IN_HAND,
             hole_cards=None,  # Invalid!
         )
@@ -1385,6 +1392,7 @@ class TestEdgeCases:
             PlayerId("p2"),
             Seat.SEAT_1,
             ChipAmount(500),
+            total_invested_this_hand=ChipAmount(100),
             participation_status=HandParticipationStatus.IN_HAND,
             hole_cards=make_hand(
                 make_card(Rank.KING, Suit.HEARTS),
@@ -1505,12 +1513,730 @@ class TestEdgeCases:
 
         # Assert: Only P1 and P2 in hand (P3 folded)
         # P2's uncalled bet: 300 - 100 = 200 returned
-        # Pot after uncalled return: 100 + 100 = 200
-        # P1 wins with AA: 0 + 200 = 200
+        # Pot after uncalled return: 100 + 100 + 100 = 300 (includes P3's folded chips)
+        # P1 wins with AA: 0 + 300 = 300
         # P2: 100 (initial) + 200 (uncalled) + 0 (lost) = 300
+        # P3: 200 (unchanged, folded)
         player1 = completed_game.players.get_by_id(p1.id)
         player2 = completed_game.players.get_by_id(p2.id)
+        player3 = completed_game.players.get_by_id(p3.id)
         assert player1 is not None
         assert player2 is not None
-        assert player1.remaining_chips.value == 200
+        assert player3 is not None
+        assert player1.remaining_chips.value == 300  # Fixed: includes P3's folded chips
         assert player2.remaining_chips.value == 300
+        assert player3.remaining_chips.value == 200  # Unchanged
+
+
+class TestChipConservationWithStalePot:
+    """Test that chips are conserved even when pot_state is stale.
+
+    This tests the bug where pot_state is not recalculated before hand completion,
+    causing chips from folded players and recent bets to disappear.
+    """
+
+    def test_early_win_with_stale_pot_conserves_all_chips(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Chips from folded players should be included in pot even with stale pot_state.
+
+        Scenario: Pre-flop betting where players invest chips and some fold,
+        but the hand ends before RoundManager.advance() recalculates the pot.
+        The pot_state remains at ChipAmount(0) from initialization, but
+        total_invested_this_hand tracks all investments.
+        """
+        # Arrange: 6 players start with 10,000 chips each
+        starting_chips = 10000
+
+        # P1: winner (in hand), invested 350
+        p1 = sample_player_factory(
+            PlayerId("p1"),
+            Seat.SEAT_0,
+            ChipAmount(starting_chips - 350),
+            total_invested_this_hand=ChipAmount(350),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+
+        # P2: folded, invested 100 (big blind)
+        p2 = sample_player_factory(
+            PlayerId("p2"),
+            Seat.SEAT_1,
+            ChipAmount(starting_chips - 100),
+            total_invested_this_hand=ChipAmount(100),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        # P3: folded, invested 100
+        p3 = sample_player_factory(
+            PlayerId("p3"),
+            Seat.SEAT_2,
+            ChipAmount(starting_chips - 100),
+            total_invested_this_hand=ChipAmount(100),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        # P4: folded, invested 100
+        p4 = sample_player_factory(
+            PlayerId("p4"),
+            Seat.SEAT_3,
+            ChipAmount(starting_chips - 100),
+            total_invested_this_hand=ChipAmount(100),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        # P5: folded, invested 50 (small blind)
+        p5 = sample_player_factory(
+            PlayerId("p5"),
+            Seat.SEAT_4,
+            ChipAmount(starting_chips - 50),
+            total_invested_this_hand=ChipAmount(50),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        # P6: never invested
+        p6 = sample_player_factory(
+            PlayerId("p6"),
+            Seat.SEAT_5,
+            ChipAmount(starting_chips),
+            total_invested_this_hand=ChipAmount(0),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        players = Players.from_list([p1, p2, p3, p4, p5, p6])
+        game = minimal_game_factory(players=list(players))
+
+        # CRITICAL: pot_state is stale (not yet recalculated after betting)
+        # This simulates what happens when hand ends before RoundManager.advance()
+        pot_state = PotState(
+            main_pot=Pot(
+                amount=ChipAmount(0),  # Stale! Should be 800 (350+100+100+100+50+100)
+                eligible_player_ids=frozenset({p1.id, p2.id, p3.id, p4.id, p5.id, p6.id}),
+            ),
+            side_pots=[],
+        )
+
+        game: Game = replace(
+            game,
+            players=players,
+            pot_state=pot_state,
+            hand_state=replace(game.hand_state, current_phase=GamePhase.PRE_FLOP),
+        )
+
+        # Calculate total chips before hand completion
+        total_chips_before = sum(p.remaining_chips.value for p in game.players)
+        total_invested = sum(p.total_invested_this_hand.value for p in game.players)
+        expected_total = total_chips_before + total_invested
+
+        # Act
+        completed_game = HandCompleter.complete(game)
+
+        # Assert: Chips must be conserved
+        total_chips_after = sum(p.remaining_chips.value for p in completed_game.players)
+
+        # Expected: P1 should have 9650 + 800 = 10450
+        # Others should have their remaining amounts unchanged
+        # Total should be 6 * 10000 = 60000
+        winner = completed_game.players.get_by_id(p1.id)
+        assert winner is not None
+
+        # This is the bug: winner gets 0 chips because pot_state.total_amount() is 0
+        # Expected: 9650 + 800 = 10450
+        # Actual (buggy): 9650 + 0 = 9650
+        print(f"Winner chips: {winner.remaining_chips.value} (expected: 10450)")
+        print(f"Total chips after: {total_chips_after} (expected: {expected_total})")
+        print(f"Chips lost: {expected_total - total_chips_after}")
+
+        # Total chips must be conserved
+        assert total_chips_after == expected_total, (
+            f"Chips disappeared! Expected {expected_total}, got {total_chips_after}. "
+            f"Lost {expected_total - total_chips_after} chips."
+        )
+
+    def test_showdown_with_stale_pot_conserves_all_chips(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Chips from folded players should be included in showdown pot calculation.
+
+        Scenario: Some players fold after betting, then remaining players go to showdown.
+        The pot recalculation in _complete_showdown must include folded players' chips.
+        """
+        starting_chips: int = 1000
+        # Arrange: 3 players
+        # P1: 1000 chips, invested 200, in hand (AA)
+        p1 = sample_player_factory(
+            PlayerId("p1"),
+            Seat.SEAT_0,
+            ChipAmount(starting_chips - 200),
+            total_invested_this_hand=ChipAmount(200),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.ACE, Suit.HEARTS),
+                make_card(Rank.ACE, Suit.SPADES),
+            ),
+        )
+
+        # P2: 1000 chips, invested 200, in hand (KK)
+        p2 = sample_player_factory(
+            PlayerId("p2"),
+            Seat.SEAT_1,
+            ChipAmount(starting_chips - 200),
+            total_invested_this_hand=ChipAmount(200),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.KING, Suit.HEARTS),
+                make_card(Rank.KING, Suit.SPADES),
+            ),
+        )
+
+        # P3: 1000 chips, invested 150, folded
+        p3 = sample_player_factory(
+            PlayerId("p3"),
+            Seat.SEAT_2,
+            ChipAmount(starting_chips - 150),
+            total_invested_this_hand=ChipAmount(150),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        players = Players.from_list([p1, p2, p3])
+        game = minimal_game_factory(players=list(players))
+
+        community_cards = [
+            make_card(Rank.TWO, Suit.CLUBS),
+            make_card(Rank.FIVE, Suit.DIAMONDS),
+            make_card(Rank.SEVEN, Suit.SPADES),
+            make_card(Rank.NINE, Suit.HEARTS),
+            make_card(Rank.THREE, Suit.CLUBS),
+        ]
+
+        # Stale pot_state (doesn't include P3's folded chips)
+        pot_state = PotState(
+            main_pot=Pot(
+                amount=ChipAmount(400),  # Only P1 + P2, missing P3's 150
+                eligible_player_ids=frozenset({p1.id, p2.id}),
+            ),
+            side_pots=[],
+        )
+
+        game = replace(
+            game,
+            players=players,
+            pot_state=pot_state,
+            hand_state=replace(
+                game.hand_state,
+                current_phase=GamePhase.SHOWDOWN,
+                community_cards=community_cards,
+            ),
+        )
+
+        # Calculate total chips before
+        total_chips_before = sum(p.remaining_chips.value for p in game.players)
+        total_invested = sum(p.total_invested_this_hand.value for p in game.players)
+        expected_total = total_chips_before + total_invested  # 3000
+
+        # Act
+        completed_game = HandCompleter.complete(game)
+
+        # Assert: Chips must be conserved
+        total_chips_after = sum(p.remaining_chips.value for p in completed_game.players)
+
+        print(f"Total chips after: {total_chips_after} (expected: {expected_total})")
+        print(f"Chips lost: {expected_total - total_chips_after}")
+
+        # P1 should win with AA: 800 + 550 = 1350
+        # P2 should lose: 800 (no change)
+        # P3 should keep: 850 (no change)
+        winner = completed_game.players.get_by_id(p1.id)
+        assert winner is not None
+
+        print(f"P1 chips: {winner.remaining_chips.value} (expected: 1350)")
+
+        # Total chips must be conserved
+        assert total_chips_after == expected_total, (
+            f"Chips disappeared! Expected {expected_total}, got {total_chips_after}. "
+            f"Lost {expected_total - total_chips_after} chips."
+        )
+
+
+class TestPotDistributionChipConservation:
+    """Test that pot distribution correctly conserves chips and distributes correctly.
+
+    Verifies:
+    1. All players who invested contribute to pot
+    2. Chip conservation: (chips_before + investments) == chips_after
+    3. Players receive correct distribution amounts
+    """
+
+    def test_core_behavior_showdown_with_folded_players_conserves_chips_and_distributes_correctly(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Core behavior: Showdown with folded players - all investments go to pot, correct distribution.
+
+        Scenario:
+        - 4 players: P1 (winner), P2 (loser), P3 (folded), P4 (folded)
+        - P1 and P2 go to showdown, P3 and P4 folded after investing
+        - All investments must be in pot, winner gets correct amount
+        """
+        starting_chips = 1000
+
+        # P1: Winner with best hand, invested 300
+        p1 = sample_player_factory(
+            PlayerId("p1"),
+            Seat.SEAT_0,
+            ChipAmount(starting_chips - 300),
+            total_invested_this_hand=ChipAmount(300),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.ACE, Suit.HEARTS),
+                make_card(Rank.ACE, Suit.SPADES),
+            ),
+        )
+
+        # P2: Loser, invested 300
+        p2 = sample_player_factory(
+            PlayerId("p2"),
+            Seat.SEAT_1,
+            ChipAmount(starting_chips - 300),
+            total_invested_this_hand=ChipAmount(300),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.KING, Suit.HEARTS),
+                make_card(Rank.KING, Suit.SPADES),
+            ),
+        )
+
+        # P3: Folded, invested 200
+        p3 = sample_player_factory(
+            PlayerId("p3"),
+            Seat.SEAT_2,
+            ChipAmount(starting_chips - 200),
+            total_invested_this_hand=ChipAmount(200),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        # P4: Folded, invested 150
+        p4 = sample_player_factory(
+            PlayerId("p4"),
+            Seat.SEAT_3,
+            ChipAmount(starting_chips - 150),
+            total_invested_this_hand=ChipAmount(150),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        players = Players.from_list([p1, p2, p3, p4])
+        game = minimal_game_factory(players=list(players))
+
+        community_cards = [
+            make_card(Rank.TWO, Suit.CLUBS),
+            make_card(Rank.FIVE, Suit.DIAMONDS),
+            make_card(Rank.SEVEN, Suit.SPADES),
+            make_card(Rank.NINE, Suit.HEARTS),
+            make_card(Rank.THREE, Suit.CLUBS),
+        ]
+
+        # Pot state will be recalculated, but set stale to test recalculation
+        pot_state = PotState(
+            main_pot=Pot(
+                amount=ChipAmount(0),  # Stale - will be recalculated
+                eligible_player_ids=frozenset({p1.id, p2.id, p3.id, p4.id}),
+            ),
+            side_pots=[],
+        )
+
+        game = replace(
+            game,
+            players=players,
+            pot_state=pot_state,
+            hand_state=replace(
+                game.hand_state,
+                current_phase=GamePhase.SHOWDOWN,
+                community_cards=community_cards,
+            ),
+        )
+
+        # Calculate totals before
+        total_chips_before = sum(p.remaining_chips.value for p in game.players)
+        total_invested = sum(p.total_invested_this_hand.value for p in game.players)
+        expected_total_after = total_chips_before + total_invested
+
+        # Expected pot: 300 + 300 + 200 + 150 = 950
+        expected_pot = 950
+
+        # Act
+        completed_game = HandCompleter.complete(game)
+
+        # Assert: Chip conservation
+        total_chips_after = sum(p.remaining_chips.value for p in completed_game.players)
+        assert total_chips_after == expected_total_after, (
+            f"Chips not conserved! Before: {total_chips_before}, "
+            f"Invested: {total_invested}, Expected after: {expected_total_after}, "
+            f"Got: {total_chips_after}"
+        )
+
+        # Assert: Pot contains all investments
+        actual_pot = completed_game.pot_state.total_amount().value
+        assert (
+            actual_pot == expected_pot
+        ), f"Pot does not contain all investments! Expected: {expected_pot}, Got: {actual_pot}"
+
+        # Assert: Correct distribution
+        # P1 (winner): 700 + 950 = 1650
+        # P2 (loser): 700 + 0 = 700
+        # P3 (folded): 800 + 0 = 800
+        # P4 (folded): 850 + 0 = 850
+        player1 = completed_game.players.get_by_id(p1.id)
+        player2 = completed_game.players.get_by_id(p2.id)
+        player3 = completed_game.players.get_by_id(p3.id)
+        player4 = completed_game.players.get_by_id(p4.id)
+
+        assert player1 is not None
+        assert player2 is not None
+        assert player3 is not None
+        assert player4 is not None
+
+        assert (
+            player1.remaining_chips.value == 1650
+        ), f"P1 (winner) should have 1650 chips, got {player1.remaining_chips.value}"
+        assert (
+            player2.remaining_chips.value == 700
+        ), f"P2 (loser) should have 700 chips, got {player2.remaining_chips.value}"
+        assert (
+            player3.remaining_chips.value == 800
+        ), f"P3 (folded) should have 800 chips, got {player3.remaining_chips.value}"
+        assert (
+            player4.remaining_chips.value == 850
+        ), f"P4 (folded) should have 850 chips, got {player4.remaining_chips.value}"
+
+    def test_edge_case_all_players_all_in_at_different_levels_with_folded_players(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Edge case: Multiple all-in levels with folded players - complex side pot distribution.
+
+        Scenario:
+        - P1: All-in 100 (best hand) -> wins main pot
+        - P2: All-in 300 (second best) -> wins side pots 1, 2, 3
+        - P3: All-in 500 (third best) -> wins side pot 4
+        - P4: All-in 500 (worst) -> wins nothing
+        - P5: Folded after investing 200 -> chips in pot but not eligible
+        - P6: Folded after investing 150 -> chips in pot but not eligible
+
+        Pot calculation (per level):
+        - Level 100: 100 × 6 = 600 (all 6 players, eligible: P1, P2, P3, P4) -> MAIN POT
+        - Level 150: 50 × 5 = 250 (P2, P3, P4, P5, P6, eligible: P2, P3, P4) -> SIDE POT 1
+        - Level 200: 50 × 4 = 200 (P2, P3, P4, P5, eligible: P2, P3, P4) -> SIDE POT 2
+        - Level 300: 100 × 3 = 300 (P2, P3, P4, eligible: P2, P3, P4) -> SIDE POT 3
+        - Level 500: 200 × 2 = 400 (P3, P4, eligible: P3, P4) -> SIDE POT 4
+        Total: 1750 (matches total investments)
+        """
+        starting_chips = 1000
+
+        # P1: All-in 100, best hand (AA)
+        p1 = sample_player_factory(
+            PlayerId("p1"),
+            Seat.SEAT_0,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.ACE, Suit.HEARTS),
+                make_card(Rank.ACE, Suit.SPADES),
+            ),
+        )
+
+        # P2: All-in 300, second best (KK)
+        p2 = sample_player_factory(
+            PlayerId("p2"),
+            Seat.SEAT_1,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(300),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.KING, Suit.HEARTS),
+                make_card(Rank.KING, Suit.SPADES),
+            ),
+        )
+
+        # P3: All-in 500, third best (QQ)
+        p3 = sample_player_factory(
+            PlayerId("p3"),
+            Seat.SEAT_2,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.QUEEN, Suit.HEARTS),
+                make_card(Rank.QUEEN, Suit.SPADES),
+            ),
+        )
+
+        # P4: All-in 500, worst (JJ)
+        p4 = sample_player_factory(
+            PlayerId("p4"),
+            Seat.SEAT_3,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.JACK, Suit.HEARTS),
+                make_card(Rank.JACK, Suit.SPADES),
+            ),
+        )
+
+        # P5: Folded, invested 200
+        p5 = sample_player_factory(
+            PlayerId("p5"),
+            Seat.SEAT_4,
+            ChipAmount(starting_chips - 200),
+            total_invested_this_hand=ChipAmount(200),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        # P6: Folded, invested 150
+        p6 = sample_player_factory(
+            PlayerId("p6"),
+            Seat.SEAT_5,
+            ChipAmount(starting_chips - 150),
+            total_invested_this_hand=ChipAmount(150),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        players = Players.from_list([p1, p2, p3, p4, p5, p6])
+        game = minimal_game_factory(players=list(players))
+
+        community_cards = [
+            make_card(Rank.TWO, Suit.CLUBS),
+            make_card(Rank.FIVE, Suit.DIAMONDS),
+            make_card(Rank.SEVEN, Suit.SPADES),
+            make_card(Rank.NINE, Suit.HEARTS),
+            make_card(Rank.THREE, Suit.CLUBS),
+        ]
+
+        # Pot state will be recalculated
+        pot_state = PotState(
+            main_pot=Pot(
+                amount=ChipAmount(0),  # Stale
+                eligible_player_ids=frozenset({p1.id, p2.id, p3.id, p4.id, p5.id, p6.id}),
+            ),
+            side_pots=[],
+        )
+
+        game = replace(
+            game,
+            players=players,
+            pot_state=pot_state,
+            hand_state=replace(
+                game.hand_state,
+                current_phase=GamePhase.SHOWDOWN,
+                community_cards=community_cards,
+            ),
+        )
+
+        # Calculate totals before
+        total_chips_before = sum(p.remaining_chips.value for p in game.players)
+        total_invested = sum(p.total_invested_this_hand.value for p in game.players)
+        expected_total_after = total_chips_before + total_invested
+
+        # Expected pot: 100 + 300 + 500 + 500 + 200 + 150 = 1750
+        expected_pot = 1750
+
+        # Act
+        completed_game = HandCompleter.complete(game)
+
+        # Assert: Chip conservation
+        total_chips_after = sum(p.remaining_chips.value for p in completed_game.players)
+        assert total_chips_after == expected_total_after, (
+            f"Chips not conserved! Before: {total_chips_before}, "
+            f"Invested: {total_invested}, Expected after: {expected_total_after}, "
+            f"Got: {total_chips_after}"
+        )
+
+        # Assert: Pot contains all investments
+        actual_pot = completed_game.pot_state.total_amount().value
+        assert (
+            actual_pot == expected_pot
+        ), f"Pot does not contain all investments! Expected: {expected_pot}, Got: {actual_pot}"
+
+        # Assert: Correct distribution
+        # P1: 0 + main_pot (600) = 600
+        # P2: 0 + side_pot_1+2+3 (250+200+300) = 750
+        # P3: 0 + side_pot_4 (400) = 400
+        # P4: 0 + 0 = 0
+        # P5: 800 + 0 = 800
+        # P6: 850 + 0 = 850
+        player1 = completed_game.players.get_by_id(p1.id)
+        player2 = completed_game.players.get_by_id(p2.id)
+        player3 = completed_game.players.get_by_id(p3.id)
+        player4 = completed_game.players.get_by_id(p4.id)
+        player5 = completed_game.players.get_by_id(p5.id)
+        player6 = completed_game.players.get_by_id(p6.id)
+
+        assert player1 is not None
+        assert player2 is not None
+        assert player3 is not None
+        assert player4 is not None
+        assert player5 is not None
+        assert player6 is not None
+
+        # Verify winners get correct amounts
+        assert (
+            player1.remaining_chips.value == 600
+        ), f"P1 (main pot winner) should have 600 chips, got {player1.remaining_chips.value}"
+        assert (
+            player2.remaining_chips.value == 750
+        ), f"P2 (side pots 1+2+3 winner) should have 750 chips, got {player2.remaining_chips.value}"
+        assert (
+            player3.remaining_chips.value == 400
+        ), f"P3 (side pot 2 winner) should have 400 chips, got {player3.remaining_chips.value}"
+        assert (
+            player4.remaining_chips.value == 0
+        ), f"P4 (no pot) should have 0 chips, got {player4.remaining_chips.value}"
+        assert (
+            player5.remaining_chips.value == 800
+        ), f"P5 (folded) should have 800 chips, got {player5.remaining_chips.value}"
+        assert (
+            player6.remaining_chips.value == 850
+        ), f"P6 (folded) should have 850 chips, got {player6.remaining_chips.value}"
+
+    def test_edge_case_early_win_with_multiple_folded_players_investments(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Edge case: Early win with multiple folded players - all investments must be in pot.
+
+        Scenario:
+        - P1: Only player in hand, wins by default
+        - P2, P3, P4, P5: All folded after investing various amounts
+        - All investments must go to P1, chips must be conserved
+        """
+        starting_chips = 5000
+
+        # P1: Winner (only one in hand), invested 500
+        p1 = sample_player_factory(
+            PlayerId("p1"),
+            Seat.SEAT_0,
+            ChipAmount(starting_chips - 500),
+            total_invested_this_hand=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+
+        # P2: Folded, invested 300
+        p2 = sample_player_factory(
+            PlayerId("p2"),
+            Seat.SEAT_1,
+            ChipAmount(starting_chips - 300),
+            total_invested_this_hand=ChipAmount(300),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        # P3: Folded, invested 200
+        p3 = sample_player_factory(
+            PlayerId("p3"),
+            Seat.SEAT_2,
+            ChipAmount(starting_chips - 200),
+            total_invested_this_hand=ChipAmount(200),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        # P4: Folded, invested 150
+        p4 = sample_player_factory(
+            PlayerId("p4"),
+            Seat.SEAT_3,
+            ChipAmount(starting_chips - 150),
+            total_invested_this_hand=ChipAmount(150),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        # P5: Folded, invested 100
+        p5 = sample_player_factory(
+            PlayerId("p5"),
+            Seat.SEAT_4,
+            ChipAmount(starting_chips - 100),
+            total_invested_this_hand=ChipAmount(100),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        players = Players.from_list([p1, p2, p3, p4, p5])
+        game = minimal_game_factory(players=list(players))
+
+        # Pot state is stale (0) - will be recalculated
+        pot_state = PotState(
+            main_pot=Pot(
+                amount=ChipAmount(0),  # Stale - will be recalculated
+                eligible_player_ids=frozenset({p1.id, p2.id, p3.id, p4.id, p5.id}),
+            ),
+            side_pots=[],
+        )
+
+        game = replace(
+            game,
+            players=players,
+            pot_state=pot_state,
+            hand_state=replace(game.hand_state, current_phase=GamePhase.PRE_FLOP),
+        )
+
+        # Calculate totals before
+        total_chips_before = sum(p.remaining_chips.value for p in game.players)
+        total_invested = sum(p.total_invested_this_hand.value for p in game.players)
+        expected_total_after = total_chips_before + total_invested
+
+        # Expected pot: 500 + 300 + 200 + 150 + 100 = 1250
+        expected_pot = 1250
+
+        # Act
+        completed_game = HandCompleter.complete(game)
+
+        # Assert: Chip conservation
+        total_chips_after = sum(p.remaining_chips.value for p in completed_game.players)
+        assert total_chips_after == expected_total_after, (
+            f"Chips not conserved! Before: {total_chips_before}, "
+            f"Invested: {total_invested}, Expected after: {expected_total_after}, "
+            f"Got: {total_chips_after}"
+        )
+
+        # Assert: Pot contains all investments
+        actual_pot = completed_game.pot_state.total_amount().value
+        assert (
+            actual_pot == expected_pot
+        ), f"Pot does not contain all investments! Expected: {expected_pot}, Got: {actual_pot}"
+
+        # Assert: Correct distribution
+        # P1 (winner): 4500 + 1250 = 5750
+        # P2 (folded): 4700 + 0 = 4700
+        # P3 (folded): 4800 + 0 = 4800
+        # P4 (folded): 4850 + 0 = 4850
+        # P5 (folded): 4900 + 0 = 4900
+        player1 = completed_game.players.get_by_id(p1.id)
+        player2 = completed_game.players.get_by_id(p2.id)
+        player3 = completed_game.players.get_by_id(p3.id)
+        player4 = completed_game.players.get_by_id(p4.id)
+        player5 = completed_game.players.get_by_id(p5.id)
+
+        assert player1 is not None
+        assert player2 is not None
+        assert player3 is not None
+        assert player4 is not None
+        assert player5 is not None
+
+        assert (
+            player1.remaining_chips.value == 5750
+        ), f"P1 (winner) should have 5750 chips, got {player1.remaining_chips.value}"
+        assert (
+            player2.remaining_chips.value == 4700
+        ), f"P2 (folded) should have 4700 chips, got {player2.remaining_chips.value}"
+        assert (
+            player3.remaining_chips.value == 4800
+        ), f"P3 (folded) should have 4800 chips, got {player3.remaining_chips.value}"
+        assert (
+            player4.remaining_chips.value == 4850
+        ), f"P4 (folded) should have 4850 chips, got {player4.remaining_chips.value}"
+        assert (
+            player5.remaining_chips.value == 4900
+        ), f"P5 (folded) should have 4900 chips, got {player5.remaining_chips.value}"
