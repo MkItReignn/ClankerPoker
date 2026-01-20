@@ -12,6 +12,7 @@ from typing import final
 import structlog
 
 from src.config.poker.prompt.config import (PokerPromptConfig,
+                                            ResponseGuidelines,
                                             RetryPromptComponents,
                                             SystemPromptComponents,
                                             UserPromptComponents)
@@ -120,13 +121,27 @@ class PokerPromptConfigLoader:
         response_format = extractor.get_required_string(
             user_prompt_raw, "response_format", context="user_prompt"
         )
-        complete_example = extractor.get_required_string(
-            user_prompt_raw, "complete_example", context="user_prompt"
+
+        # Extract response_guidelines
+        response_guidelines_raw = extractor.get_required_dict(
+            user_prompt_raw, "response_guidelines", context="user_prompt"
+        )
+
+        thought_process_guidelines = extractor.get_required_string(
+            response_guidelines_raw, "thought_process_guidelines", context="response_guidelines"
+        )
+        action_guidelines = extractor.get_required_string(
+            response_guidelines_raw, "action_guidelines", context="response_guidelines"
+        )
+
+        response_guidelines = ResponseGuidelines(
+            thought_process_guidelines=thought_process_guidelines,
+            action_guidelines=action_guidelines,
         )
 
         return UserPromptComponents(
             response_format=response_format,
-            complete_example=complete_example,
+            response_guidelines=response_guidelines,
         )
 
     def _load_retry_prompt_components(

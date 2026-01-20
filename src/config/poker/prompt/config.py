@@ -44,22 +44,39 @@ class SystemPromptComponents:
 
 
 @dataclass(frozen=True, slots=True)
+class ResponseGuidelines:
+    """Guidelines for writing response components.
+
+    Attributes:
+        thought_process_guidelines: How to write the thought process (perspective, style, etc.).
+        action_guidelines: How to format and choose actions.
+    """
+
+    thought_process_guidelines: str
+    action_guidelines: str
+
+    def __post_init__(self) -> None:
+        if not self.thought_process_guidelines:
+            raise ValueError("thought_process_guidelines cannot be empty")
+        if not self.action_guidelines:
+            raise ValueError("action_guidelines cannot be empty")
+
+
+@dataclass(frozen=True, slots=True)
 class UserPromptComponents:
     """User prompt components.
 
     Attributes:
-        response_format: How to format the response (ACTION + REASONING).
-        complete_example: Full example showing proper format and reasoning.
+        response_format: How to format the response (THOUGHT_PROCESS + ACTION).
+        response_guidelines: Guidelines for writing each response component.
     """
 
     response_format: str
-    complete_example: str
+    response_guidelines: ResponseGuidelines
 
     def __post_init__(self) -> None:
         if not self.response_format:
             raise ValueError("response_format cannot be empty")
-        if not self.complete_example:
-            raise ValueError("complete_example cannot be empty")
 
 
 @dataclass(frozen=True, slots=True)

@@ -2,18 +2,17 @@
 
 from __future__ import annotations
 
-from src.application.poker.context import OpponentCurrentState, PokerDecisionContext
+from src.application.poker.context import (OpponentCurrentState,
+                                           PokerDecisionContext)
 from src.application.protocols.player import PlayerConfig
 from src.config.poker.prompt import PokerPromptConfig
-from src.domain.models.available_action import (
-    AvailableActions,
-    AvailableAllInAction,
-    AvailableBetAction,
-    AvailableCallAction,
-    AvailableCheckAction,
-    AvailableFoldAction,
-    AvailableRaiseAction,
-)
+from src.domain.models.available_action import (AvailableActions,
+                                                AvailableAllInAction,
+                                                AvailableBetAction,
+                                                AvailableCallAction,
+                                                AvailableCheckAction,
+                                                AvailableFoldAction,
+                                                AvailableRaiseAction)
 
 
 class PokerPromptFormatter:
@@ -31,7 +30,6 @@ class PokerPromptFormatter:
         if not cards:
             return "-"
         return " ".join(str(c) for c in cards)
-
 
     @staticmethod
     def _format_opponent_status(opponent: OpponentCurrentState) -> str:
@@ -92,7 +90,9 @@ class PokerPromptFormatter:
             if context.acting_player.position is not None
             else "?"
         )
-        lines.append(f"YOU: {hole_cards} | POS: {position} | STACK: {context.acting_player.stack.value}")
+        lines.append(
+            f"YOU: {hole_cards} | POS: {position} | STACK: {context.acting_player.stack.value}"
+        )
         lines.append(f"     Stack in BB: {context.stack_in_bb:.1f}")
         lines.append("")
 
@@ -122,8 +122,14 @@ class PokerPromptFormatter:
             for opp in context.opponents:
                 pos = opp.position.to_short_string() if opp.position is not None else "?"
                 status = self._format_opponent_status(opp)
-                invested = f"invested:{opp.invested_this_hand.value}" if opp.invested_this_hand.value > 0 else ""
-                lines.append(f"  {opp.name} ({pos}): {opp.stack.value} chips [{status}] {invested}".strip())
+                invested = (
+                    f"invested:{opp.invested_this_hand.value}"
+                    if opp.invested_this_hand.value > 0
+                    else ""
+                )
+                lines.append(
+                    f"  {opp.name} ({pos}): {opp.stack.value} chips [{status}] {invested}".strip()
+                )
             lines.append("")
 
         # Actions this hand
@@ -141,19 +147,18 @@ class PokerPromptFormatter:
         lines.append(f"AVAILABLE: {actions_str}")
         lines.append("")
 
-        # Use response format and complete example from config
+        # Add response guidelines and format from config
         user_components = self._prompt_config.user_prompt
-        lines.append(user_components.response_format)
+        lines.append(user_components.response_guidelines.thought_process_guidelines)
         lines.append("")
-        lines.append(user_components.complete_example)
+        lines.append(user_components.response_guidelines.action_guidelines)
+        lines.append("")
+        lines.append(user_components.response_format)
 
         return "\n".join(lines)
 
     def _format_system_prompt(
-        self, 
-        player_name: str, 
-        personality: str | None = None, 
-        addon_prompt: str | None = None
+        self, player_name: str, personality: str | None = None, addon_prompt: str | None = None
     ) -> str:
         """Format a system prompt for the poker player.
 
