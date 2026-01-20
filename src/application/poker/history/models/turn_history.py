@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Any
 
 from src.domain.models.chips import ChipAmount
+from src.domain.models.narration import Narration
 
 from .outcomes import ActionRecord
 from .player_states import TurnLevelPlayerState
@@ -22,6 +23,7 @@ class TurnHistory:
     pot_after: ChipAmount
     current_bet_before: ChipAmount
     current_bet_after: ChipAmount
+    narration: Narration | None = None
 
     def __post_init__(self) -> None:
         if self.turn_number < 1:
@@ -50,6 +52,7 @@ class TurnHistory:
             "pot_after": self.pot_after.value,
             "current_bet_before": self.current_bet_before.value,
             "current_bet_after": self.current_bet_after.value,
+            "narration": self.narration.to_dict() if self.narration else None,
         }
 
     @classmethod
@@ -57,6 +60,8 @@ class TurnHistory:
         """Deserialize a dictionary to TurnHistory."""
         player_state = TurnLevelPlayerState.from_dict(data["player_state"])
         action = ActionRecord.from_dict(data["action"])
+        narration_data = data.get("narration")
+        narration = Narration.from_dict(narration_data) if narration_data else None
 
         return cls(
             turn_number=data["turn_number"],
@@ -67,4 +72,5 @@ class TurnHistory:
             pot_after=ChipAmount(data["pot_after"]),
             current_bet_before=ChipAmount(data["current_bet_before"]),
             current_bet_after=ChipAmount(data["current_bet_after"]),
+            narration=narration,
         )
