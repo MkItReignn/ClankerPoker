@@ -1,17 +1,17 @@
 {
-  "default_mode": "standard",
+  "default_mode": "turbo",
   "modes": {
     "standard": {
       "description": "Balanced tournament structure with 100 big blind starting stack. Early levels allow deep play, mid-game increases pressure, late game forces action.",
-      "file": "schedules/standard.json"
+      "file": "standard.json"
     },
     "turbo": {
       "description": "Fast-paced tournament with aggressive blind increases. High action, shorter game duration. Ideal for quick games and side events.",
-      "file": "schedules/turbo.json"
+      "file": "turbo.json"
     },
     "marathon": {
       "description": "Deep stack tournament with slow blind progression. Allows for deep strategic play, longer game duration. Ideal for serious tournaments with large fields.",
-      "file": "schedules/marathon.json"
+      "file": "marathon.json"
     }
   }
 }
