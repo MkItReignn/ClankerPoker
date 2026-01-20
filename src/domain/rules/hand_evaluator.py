@@ -78,6 +78,12 @@ class HandEvaluation:
     cards_used: tuple[Card, ...]
     kickers: tuple[Rank, ...]
 
+    def __str__(self) -> str:
+        """Human-readable hand evaluation string."""
+        cards_str = " ".join(str(card) for card in self.cards_used)
+        kickers_str = " ".join(k.to_short_string() for k in self.kickers)
+        return f"{self.rank} | ({cards_str}) | kickers: {kickers_str}"
+
     def compare(self, other: HandEvaluation) -> int:
         """
         Compare this hand to another hand.

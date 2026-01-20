@@ -7,14 +7,8 @@ from src.domain.models.player import Player
 from src.domain.utils.seed_sequence import SeedSequence
 
 
-class GameOrchestrator:
-    """
-    Orchestrates game-level operations.
-
-    Handles:
-    - initialize_game: High card draw for initial button assignment
-    - is_game_complete: Check if tournament is over (one player remaining)
-    """
+class ButtonAssigner:
+    """Determines initial dealer button position via high card draw."""
 
     @staticmethod
     def _compare_cards_for_high_card_draw(card1: Card, card2: Card) -> int:
@@ -40,16 +34,16 @@ class GameOrchestrator:
 
         winner, best_card = player_cards[0]
         for player, card in player_cards[1:]:
-            if GameOrchestrator._compare_cards_for_high_card_draw(card, best_card) > 0:
+            if ButtonAssigner._compare_cards_for_high_card_draw(card, best_card) > 0:
                 winner = player
                 best_card = card
 
         return winner
 
     @staticmethod
-    def initialize_game(game: Game) -> Game:
+    def assign_button(game: Game) -> Game:
         """
-        Initialize game with high card draw for initial button assignment.
+        Assign initial button via high card draw.
 
         Per RULE_BOOK Section 14.1:
         - Each player receives one card face-up from a shuffled deck
@@ -67,7 +61,7 @@ class GameOrchestrator:
         active_players = game.get_active_players()
         if len(active_players) < 2:
             raise ValueError(
-                f"Cannot initialize game: need at least 2 players, got {len(active_players)}"
+                f"Cannot assign button: need at least 2 players, got {len(active_players)}"
             )
 
         # Create deck deterministically using seed sequence index 0
@@ -80,7 +74,7 @@ class GameOrchestrator:
             card = deck.deal_card()
             player_cards.append((player, card))
 
-        winner = GameOrchestrator._find_high_card_winner(player_cards)
+        winner = ButtonAssigner._find_high_card_winner(player_cards)
 
         updated_game = Game(
             identity=game.identity,
@@ -95,13 +89,3 @@ class GameOrchestrator:
         )
 
         return updated_game
-
-    @staticmethod
-    def is_game_complete(game: Game) -> bool:
-        """
-        Check if the tournament is complete.
-
-        Tournament ends when only one player has chips remaining.
-        """
-        active_players = game.get_active_players()
-        return len(active_players) <= 1

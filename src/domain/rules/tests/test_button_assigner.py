@@ -1,8 +1,7 @@
 """
-Behavioral tests for GameOrchestrator.
+Behavioral tests for ButtonAssigner.
 
-Tests document RULE_BOOK Section 14.1 (Initial Button Assignment via High Card Draw)
-and tournament completion logic.
+Tests document RULE_BOOK Section 14.1 (Initial Button Assignment via High Card Draw).
 """
 
 from __future__ import annotations
@@ -16,7 +15,7 @@ from src.domain.models.chips import ChipAmount
 from src.domain.models.deck import STANDARD_DECK, Deck
 from src.domain.models.player import HandParticipationStatus, PlayerId
 from src.domain.models.seat import Seat
-from src.domain.rules.game_orchestrator import GameOrchestrator
+from src.domain.rules.button_assigner import ButtonAssigner
 
 
 def create_deck_with_top_cards(top_cards: list[Card]) -> Deck:
@@ -37,9 +36,9 @@ def create_deck_with_top_cards(top_cards: list[Card]) -> Deck:
     return Deck(cards=all_cards)
 
 
-class TestInitializeGame:
+class TestAssignButton:
     """
-    Tests for initialize_game documenting RULE_BOOK Section 14.1.
+    Tests for assign_button documenting RULE_BOOK Section 14.1.
 
     Per RULE_BOOK 14.1: Initial Button Assignment
     - Each player receives one card face-up from a shuffled deck
@@ -73,10 +72,10 @@ class TestInitializeGame:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
         ):
             # Act
-            updated_game = GameOrchestrator.initialize_game(game)
+            updated_game = ButtonAssigner.assign_button(game)
 
         # Assert: Player at SEAT_1 (who got King) should have button
         assert updated_game.button_seat == Seat.SEAT_1
@@ -110,10 +109,10 @@ class TestInitializeGame:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
         ):
             # Act
-            updated_game = GameOrchestrator.initialize_game(game)
+            updated_game = ButtonAssigner.assign_button(game)
 
         # Assert: A♠ beats A♦ and A♣
         assert updated_game.button_seat == Seat.SEAT_1
@@ -140,10 +139,10 @@ class TestInitializeGame:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
         ):
             # Act
-            updated_game = GameOrchestrator.initialize_game(game)
+            updated_game = ButtonAssigner.assign_button(game)
 
         # Assert
         assert updated_game.button_seat == Seat.SEAT_1
@@ -170,10 +169,10 @@ class TestInitializeGame:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
         ):
             # Act
-            updated_game = GameOrchestrator.initialize_game(game)
+            updated_game = ButtonAssigner.assign_button(game)
 
         # Assert
         assert updated_game.button_seat == Seat.SEAT_1
@@ -200,10 +199,10 @@ class TestInitializeGame:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
         ):
             # Act
-            updated_game = GameOrchestrator.initialize_game(game)
+            updated_game = ButtonAssigner.assign_button(game)
 
         # Assert: Player 2 with 9♥ wins
         assert updated_game.button_seat == Seat.SEAT_1
@@ -213,7 +212,7 @@ class TestInitializeGame:
         minimal_game_factory,
         sample_player_factory,
     ):
-        """Cannot initialize with fewer than 2 active players per RULE_BOOK 14.1."""
+        """Cannot assign button with fewer than 2 active players per RULE_BOOK 14.1."""
         # Arrange: 2 players but 1 is eliminated
         players = [
             sample_player_factory(
@@ -233,14 +232,14 @@ class TestInitializeGame:
 
         # Act & Assert: Only 1 active player (non-eliminated)
         with pytest.raises(ValueError, match="need at least 2 players"):
-            GameOrchestrator.initialize_game(game)
+            ButtonAssigner.assign_button(game)
 
     def test_rejects_game_with_all_players_eliminated(
         self,
         minimal_game_factory,
         sample_player_factory,
     ):
-        """Cannot initialize when all players are eliminated."""
+        """Cannot assign button when all players are eliminated."""
         # Arrange: All players eliminated
         players = [
             sample_player_factory(
@@ -260,7 +259,7 @@ class TestInitializeGame:
 
         # Act & Assert: 0 active players
         with pytest.raises(ValueError, match="need at least 2 players"):
-            GameOrchestrator.initialize_game(game)
+            ButtonAssigner.assign_button(game)
 
     def test_only_considers_active_players_for_high_card_draw(
         self,
@@ -301,10 +300,10 @@ class TestInitializeGame:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
         ):
             # Act
-            updated_game = GameOrchestrator.initialize_game(game)
+            updated_game = ButtonAssigner.assign_button(game)
 
         # Assert: p3 (SEAT_2) should win
         assert updated_game.button_seat == Seat.SEAT_2
@@ -333,10 +332,10 @@ class TestInitializeGame:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
         ):
             # Act
-            updated_game = GameOrchestrator.initialize_game(game)
+            updated_game = ButtonAssigner.assign_button(game)
 
         # Assert: 3 cards dealt (deck should have advanced by 3)
         # The deck is used inside the function, so we can verify it was mutated
@@ -349,7 +348,7 @@ class TestInitializeGame:
         minimal_game_factory,
         sample_player_factory,
     ):
-        """initialize_game returns new Game instance with button_seat set."""
+        """assign_button returns new Game instance with button_seat set."""
         # Arrange
         players = [
             sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
@@ -367,10 +366,10 @@ class TestInitializeGame:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
         ):
             # Act
-            updated_game = GameOrchestrator.initialize_game(game)
+            updated_game = ButtonAssigner.assign_button(game)
 
         # Assert: New game instance with updated button
         assert updated_game is not game  # Immutable pattern
@@ -382,7 +381,7 @@ class TestInitializeGame:
         minimal_game_factory,
         sample_player_factory,
     ):
-        """initialize_game only modifies button_seat, preserving all other state."""
+        """assign_button only modifies button_seat, preserving all other state."""
         # Arrange
         players = [
             sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
@@ -398,10 +397,10 @@ class TestInitializeGame:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
         ):
             # Act
-            updated_game = GameOrchestrator.initialize_game(game)
+            updated_game = ButtonAssigner.assign_button(game)
 
         # Assert: Everything except button_seat is preserved
         assert updated_game.identity == game.identity
@@ -437,10 +436,10 @@ class TestInitializeGame:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
         ):
             # Act
-            updated_game = GameOrchestrator.initialize_game(game)
+            updated_game = ButtonAssigner.assign_button(game)
 
         # Assert
         assert updated_game.button_seat == Seat.SEAT_1
@@ -467,196 +466,10 @@ class TestInitializeGame:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.game_orchestrator.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
         ):
             # Act
-            updated_game = GameOrchestrator.initialize_game(game)
+            updated_game = ButtonAssigner.assign_button(game)
 
         # Assert
         assert updated_game.button_seat == Seat.SEAT_1
-
-
-class TestIsGameComplete:
-    """
-    Tests for tournament completion logic.
-
-    Per RULE_BOOK Section 16.1: Tournament ends when one player has all chips.
-    """
-
-    def test_game_complete_with_one_player_remaining(
-        self,
-        minimal_game_factory,
-        sample_player_factory,
-    ):
-        """Tournament is complete when only one active player remains."""
-        # Arrange: 1 active player, 1 eliminated
-        players = [
-            sample_player_factory(
-                PlayerId("p1"),
-                Seat.SEAT_0,
-                ChipAmount(6000),
-                participation_status=HandParticipationStatus.IN_HAND,
-            ),
-            sample_player_factory(
-                PlayerId("p2"),
-                Seat.SEAT_1,
-                ChipAmount(0),
-                participation_status=HandParticipationStatus.ELIMINATED,
-            ),
-        ]
-        game = minimal_game_factory(players)
-
-        # Act
-        is_complete = GameOrchestrator.is_game_complete(game)
-
-        # Assert
-        assert is_complete is True
-
-    def test_game_complete_with_all_players_eliminated(
-        self,
-        minimal_game_factory,
-        sample_player_factory,
-    ):
-        """Game is complete when all players are eliminated."""
-        # Arrange: All players eliminated
-        players = [
-            sample_player_factory(
-                PlayerId("p1"),
-                Seat.SEAT_0,
-                ChipAmount(0),
-                participation_status=HandParticipationStatus.ELIMINATED,
-            ),
-            sample_player_factory(
-                PlayerId("p2"),
-                Seat.SEAT_1,
-                ChipAmount(0),
-                participation_status=HandParticipationStatus.ELIMINATED,
-            ),
-        ]
-        game = minimal_game_factory(players)
-
-        # Act
-        is_complete = GameOrchestrator.is_game_complete(game)
-
-        # Assert: 0 active players means game is over
-        assert is_complete is True
-
-    def test_game_not_complete_with_two_players_remaining(
-        self,
-        minimal_game_factory,
-        sample_player_factory,
-    ):
-        """Tournament continues with 2+ active players."""
-        # Arrange: 2 players with chips
-        players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
-        ]
-        game = minimal_game_factory(players)
-
-        # Act
-        is_complete = GameOrchestrator.is_game_complete(game)
-
-        # Assert
-        assert is_complete is False
-
-    def test_game_not_complete_with_multiple_players_remaining(
-        self,
-        minimal_game_factory,
-        sample_player_factory,
-    ):
-        """Tournament continues with multiple active players."""
-        # Arrange: 4 players with chips
-        players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(500)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1500)),
-            sample_player_factory(PlayerId("p3"), Seat.SEAT_2, ChipAmount(2000)),
-            sample_player_factory(PlayerId("p4"), Seat.SEAT_3, ChipAmount(1000)),
-        ]
-        game = minimal_game_factory(players)
-
-        # Act
-        is_complete = GameOrchestrator.is_game_complete(game)
-
-        # Assert
-        assert is_complete is False
-
-    def test_game_complete_ignores_eliminated_players(
-        self,
-        minimal_game_factory,
-        sample_player_factory,
-    ):
-        """Only counts active (non-eliminated) players."""
-        # Arrange: 1 active player, 3 eliminated
-        players = [
-            sample_player_factory(
-                PlayerId("p1"),
-                Seat.SEAT_0,
-                ChipAmount(6000),
-                participation_status=HandParticipationStatus.IN_HAND,
-            ),
-            sample_player_factory(
-                PlayerId("p2"),
-                Seat.SEAT_1,
-                ChipAmount(0),
-                participation_status=HandParticipationStatus.ELIMINATED,
-            ),
-            sample_player_factory(
-                PlayerId("p3"),
-                Seat.SEAT_2,
-                ChipAmount(0),
-                participation_status=HandParticipationStatus.ELIMINATED,
-            ),
-            sample_player_factory(
-                PlayerId("p4"),
-                Seat.SEAT_3,
-                ChipAmount(0),
-                participation_status=HandParticipationStatus.ELIMINATED,
-            ),
-        ]
-        game = minimal_game_factory(players)
-
-        # Act
-        is_complete = GameOrchestrator.is_game_complete(game)
-
-        # Assert
-        assert is_complete is True
-
-    def test_game_not_complete_when_chips_are_unequal(
-        self,
-        minimal_game_factory,
-        sample_player_factory,
-    ):
-        """Tournament continues even if chip counts are very unequal."""
-        # Arrange: One player has most chips but not all
-        players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(5900)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(100)),
-        ]
-        game = minimal_game_factory(players)
-
-        # Act
-        is_complete = GameOrchestrator.is_game_complete(game)
-
-        # Assert: Still 2 active players
-        assert is_complete is False
-
-    def test_game_not_complete_when_short_stacks_remain(
-        self,
-        minimal_game_factory,
-        sample_player_factory,
-    ):
-        """Tournament continues even with very short stacks (1 chip)."""
-        # Arrange: Multiple players with minimal chips
-        players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(5998)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1)),
-            sample_player_factory(PlayerId("p3"), Seat.SEAT_2, ChipAmount(1)),
-        ]
-        game = minimal_game_factory(players)
-
-        # Act
-        is_complete = GameOrchestrator.is_game_complete(game)
-
-        # Assert: 3 active players remain
-        assert is_complete is False

@@ -3,7 +3,7 @@ from src.domain.rules.available_action_calculator import \
     AvailableActionCalculator
 from src.domain.rules.betting_calculator import BettingCalculator
 from src.domain.rules.chip_distributor import ChipDistributor
-from src.domain.rules.game_orchestrator import GameOrchestrator
+from src.domain.rules.button_assigner import ButtonAssigner
 from src.domain.rules.hand_completer import HandCompleter
 from src.domain.rules.hand_engine import HandEngine
 from src.domain.rules.hand_evaluator import (HandEvaluation, HandEvaluator,
@@ -18,7 +18,7 @@ __all__ = [
     "AvailableActionCalculator",
     "BettingCalculator",
     "ChipDistributor",
-    "GameOrchestrator",
+    "ButtonAssigner",
     "HandCompleter",
     "HandEngine",
     "HandEvaluation",
