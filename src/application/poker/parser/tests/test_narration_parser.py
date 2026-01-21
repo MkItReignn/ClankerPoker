@@ -1,287 +1,167 @@
-"""Tests for StructuredNarrationParser behavior and edge cases."""
+"""Tests for ThoughtProcessNarrationParser behavior and edge cases."""
 
 import pytest
 
-from src.application.poker.parser.narration_parser import \
-    StructuredNarrationParser
+from src.application.poker.parser.narration_parser import ThoughtProcessNarrationParser
 from src.application.protocols.response import ParseError
 from src.domain.models.narration import Narration
 
 
 @pytest.fixture
 def parser():
-    return StructuredNarrationParser()
+    return ThoughtProcessNarrationParser()
 
 
-class TestNarrationExtraction:
-    """Tests for extracting complete narration from response."""
+class TestThoughtProcessExtraction:
+    """Tests for extracting THOUGHT_PROCESS from response."""
 
-    def test_extracts_all_nine_fields(self, parser, full_narration_response):
-        result = parser.parse(full_narration_response)
-
-        assert isinstance(result, Narration)
-        assert "Mid-tournament" in result.game_stage_assessment
-        assert "Button position" in result.positional_context
-        assert "UTG range" in result.range_analysis
-        assert "TPTK" in result.equity_assessment
-        assert "Alice plays" in result.opponent_modeling
-        assert "3x raise" in result.bet_sizing_rationale
-        assert "60% pot" in result.multi_street_plan
-        assert "table image" in result.meta_considerations
-        assert "Raise for value" in result.final_decision
-
-    def test_returns_narration_object_type(self, parser, full_narration_response):
-        result = parser.parse(full_narration_response)
+    def test_extracts_thought_process(self, parser, full_thought_process_response):
+        result = parser.parse(full_thought_process_response)
 
         assert isinstance(result, Narration)
-        assert hasattr(result, "game_stage_assessment")
-        assert hasattr(result, "positional_context")
-        assert hasattr(result, "final_decision")
+        assert "37 big blind stack" in result.thought_process
+        assert "button" in result.thought_process
+        assert "70-75%" in result.thought_process
 
+    def test_returns_narration_object_type(self, parser, full_thought_process_response):
+        result = parser.parse(full_thought_process_response)
 
-class TestMissingFields:
-    """Tests for handling missing narration fields."""
+        assert isinstance(result, Narration)
+        assert hasattr(result, "thought_process")
 
-    def test_missing_first_field_returns_error(self, parser):
+    def test_extracts_until_action(self, parser):
         response = """
-POSITIONAL_CONTEXT:
-Button position.
+THOUGHT_PROCESS:
+This is my analysis of the hand.
 
-RANGE_ANALYSIS:
-UTG range.
+ACTION: fold
+"""
+        result = parser.parse(response)
 
-EQUITY_ASSESSMENT:
-70% equity.
+        assert isinstance(result, Narration)
+        assert "ACTION" not in result.thought_process
+        assert "fold" not in result.thought_process
+        assert "analysis of the hand" in result.thought_process
 
-OPPONENT_MODELING:
-Plays tight.
 
-BET_SIZING_RATIONALE:
-Standard sizing.
+class TestMissingField:
+    """Tests for handling missing THOUGHT_PROCESS field."""
 
-MULTI_STREET_PLAN:
-Bet turn.
-
-META_CONSIDERATIONS:
-Table image.
-
-FINAL_DECISION:
-Raise for value.
+    def test_missing_thought_process_returns_error(self, parser):
+        response = """
+ACTION: fold
 """
         result = parser.parse(response)
 
         assert isinstance(result, ParseError)
-        assert "game_stage_assessment" in result.message.lower()
+        assert "THOUGHT_PROCESS" in result.message
 
-    def test_missing_middle_field_returns_error(self, parser):
+    def test_empty_thought_process_returns_error(self, parser):
         response = """
-GAME_STAGE_ASSESSMENT:
-Mid-tournament.
+THOUGHT_PROCESS:
 
-POSITIONAL_CONTEXT:
-Button position.
-
-RANGE_ANALYSIS:
-UTG range.
-
-OPPONENT_MODELING:
-Plays tight.
-
-BET_SIZING_RATIONALE:
-Standard sizing.
-
-MULTI_STREET_PLAN:
-Bet turn.
-
-META_CONSIDERATIONS:
-Table image.
-
-FINAL_DECISION:
-Raise for value.
+ACTION: fold
 """
         result = parser.parse(response)
 
         assert isinstance(result, ParseError)
-        assert "equity_assessment" in result.message.lower()
+        assert "empty" in result.message.lower()
 
-    def test_missing_last_field_returns_error(self, parser):
+    def test_empty_with_only_whitespace_returns_error(self, parser):
+        """THOUGHT_PROCESS with only spaces/tabs before ACTION returns error."""
         response = """
-GAME_STAGE_ASSESSMENT:
-Mid-tournament.
+THOUGHT_PROCESS:
 
-POSITIONAL_CONTEXT:
-Button position.
-
-RANGE_ANALYSIS:
-UTG range.
-
-EQUITY_ASSESSMENT:
-70% equity.
-
-OPPONENT_MODELING:
-Plays tight.
-
-BET_SIZING_RATIONALE:
-Standard sizing.
-
-MULTI_STREET_PLAN:
-Bet turn.
-
-META_CONSIDERATIONS:
-Table image.
+ACTION: fold
 """
         result = parser.parse(response)
 
         assert isinstance(result, ParseError)
-        assert "final_decision" in result.message.lower()
+        assert "empty" in result.message.lower()
+
+    def test_empty_with_multiple_blank_lines_returns_error(self, parser):
+        """THOUGHT_PROCESS with multiple blank lines before ACTION returns error."""
+        response = """
+THOUGHT_PROCESS:
+
+
+
+ACTION: fold
+"""
+        result = parser.parse(response)
+
+        assert isinstance(result, ParseError)
+        assert "empty" in result.message.lower()
+
+    def test_does_not_capture_action_line_as_content(self, parser):
+        """Verify ACTION: line is never captured as thought process content."""
+        response = """
+THOUGHT_PROCESS:
+
+ACTION: fold
+"""
+        result = parser.parse(response)
+
+        # Should be an error, not a Narration with "ACTION: fold" as content
+        assert isinstance(result, ParseError)
+        if hasattr(result, 'context') and result.context:
+            # If there's context, it should not show ACTION as the captured content
+            pass  # The error itself proves ACTION wasn't treated as content
 
 
 class TestCaseInsensitivity:
     """Tests for case-insensitive field name parsing."""
 
-    def test_lowercase_field_names(self, parser):
+    def test_lowercase_field_name(self, parser):
         response = """
-game_stage_assessment:
-Mid-tournament.
-
-positional_context:
-Button position.
-
-range_analysis:
-UTG range.
-
-equity_assessment:
-70% equity.
-
-opponent_modeling:
-Plays tight.
-
-bet_sizing_rationale:
-Standard sizing.
-
-multi_street_plan:
-Bet turn.
-
-meta_considerations:
-Table image.
-
-final_decision:
-Raise for value.
+thought_process:
+This is my analysis.
 
 ACTION: fold
 """
         result = parser.parse(response)
 
         assert isinstance(result, Narration)
+        assert "analysis" in result.thought_process
 
-    def test_mixed_case_field_names(self, parser):
+    def test_mixed_case_field_name(self, parser):
         response = """
-Game_Stage_Assessment:
-Mid-tournament.
-
-Positional_Context:
-Button position.
-
-Range_Analysis:
-UTG range.
-
-Equity_Assessment:
-70% equity.
-
-Opponent_Modeling:
-Plays tight.
-
-Bet_Sizing_Rationale:
-Standard sizing.
-
-Multi_Street_Plan:
-Bet turn.
-
-Meta_Considerations:
-Table image.
-
-Final_Decision:
-Raise for value.
+Thought_Process:
+This is my analysis.
 
 ACTION: fold
 """
         result = parser.parse(response)
 
         assert isinstance(result, Narration)
+        assert "analysis" in result.thought_process
 
 
 class TestWordLimitTrimming:
     """Tests for word limit enforcement and trimming."""
 
-    def test_field_within_limit_passes(self, parser):
-        short_content = "This is a short assessment."
+    def test_content_within_limit_passes(self, parser):
+        short_content = "This is a short thought process. It should pass without trimming."
         response = f"""
-GAME_STAGE_ASSESSMENT:
+THOUGHT_PROCESS:
 {short_content}
 
-POSITIONAL_CONTEXT:
-Button position.
-
-RANGE_ANALYSIS:
-UTG range.
-
-EQUITY_ASSESSMENT:
-70% equity.
-
-OPPONENT_MODELING:
-Plays tight.
-
-BET_SIZING_RATIONALE:
-Standard sizing.
-
-MULTI_STREET_PLAN:
-Bet turn.
-
-META_CONSIDERATIONS:
-Table image.
-
-FINAL_DECISION:
-Raise for value.
+ACTION: fold
 """
         result = parser.parse(response)
 
         assert isinstance(result, Narration)
-        assert short_content in result.game_stage_assessment
+        assert "short thought process" in result.thought_process
 
-    def test_field_over_limit_gets_trimmed(self, parser):
-        # final_decision has 60 word limit (50 + 20%)
-        # Create content with multiple sentences, one of which pushes over limit
-        sentence1 = " ".join(["word"] * 20) + "."
-        sentence2 = " ".join(["word"] * 25) + "."
-        sentence3 = " ".join(["word"] * 30) + "."  # This should get trimmed
+    def test_content_over_limit_gets_trimmed(self, parser):
+        # Create content with multiple sentences, last one pushes over limit
+        sentence1 = " ".join(["word"] * 200) + "."
+        sentence2 = " ".join(["word"] * 200) + "."
+        sentence3 = " ".join(["word"] * 250) + "."  # This should get trimmed
         over_limit_content = f"{sentence1} {sentence2} {sentence3}"
 
         response = f"""
-GAME_STAGE_ASSESSMENT:
-Mid-tournament.
-
-POSITIONAL_CONTEXT:
-Button position.
-
-RANGE_ANALYSIS:
-UTG range.
-
-EQUITY_ASSESSMENT:
-70% equity.
-
-OPPONENT_MODELING:
-Plays tight.
-
-BET_SIZING_RATIONALE:
-Standard sizing.
-
-MULTI_STREET_PLAN:
-Bet turn.
-
-META_CONSIDERATIONS:
-Table image.
-
-FINAL_DECISION:
+THOUGHT_PROCESS:
 {over_limit_content}
 
 ACTION: fold
@@ -289,40 +169,17 @@ ACTION: fold
         result = parser.parse(response)
 
         assert isinstance(result, Narration)
-        assert len(result.final_decision.split()) <= 60
-        assert len(result.final_decision.split()) < 75  # Confirms trimming occurred
+        # Should be trimmed to within 600 word limit
+        word_count = len(result.thought_process.split())
+        assert word_count <= 550
 
     def test_single_long_sentence_trimmed_to_empty_returns_error(self, parser):
-        # A single sentence with 100+ words that exceeds limit
+        # A single sentence with 700+ words that exceeds limit
         # When trimmed, nothing remains
-        single_long_sentence = " ".join(["word"] * 100)
+        single_long_sentence = " ".join(["word"] * 700)
 
         response = f"""
-GAME_STAGE_ASSESSMENT:
-Mid-tournament.
-
-POSITIONAL_CONTEXT:
-Button position.
-
-RANGE_ANALYSIS:
-UTG range.
-
-EQUITY_ASSESSMENT:
-70% equity.
-
-OPPONENT_MODELING:
-Plays tight.
-
-BET_SIZING_RATIONALE:
-Standard sizing.
-
-MULTI_STREET_PLAN:
-Bet turn.
-
-META_CONSIDERATIONS:
-Table image.
-
-FINAL_DECISION:
+THOUGHT_PROCESS:
 {single_long_sentence}
 
 ACTION: fold
@@ -338,86 +195,39 @@ class TestWhitespaceCleanup:
 
     def test_multiple_spaces_collapsed(self, parser):
         response = """
-GAME_STAGE_ASSESSMENT:
-Mid-tournament,    37BB    stack,     no pressure.
+THOUGHT_PROCESS:
+Looking at    the board,    I see    opportunity.
 
-POSITIONAL_CONTEXT:
-Button position.
-
-RANGE_ANALYSIS:
-UTG range.
-
-EQUITY_ASSESSMENT:
-70% equity.
-
-OPPONENT_MODELING:
-Plays tight.
-
-BET_SIZING_RATIONALE:
-Standard sizing.
-
-MULTI_STREET_PLAN:
-Bet turn.
-
-META_CONSIDERATIONS:
-Table image.
-
-FINAL_DECISION:
-Raise for value.
+ACTION: fold
 """
         result = parser.parse(response)
 
         assert isinstance(result, Narration)
-        assert "37BB stack" in result.game_stage_assessment
-        assert "    " not in result.game_stage_assessment
+        assert "Looking at the board" in result.thought_process
+        assert "    " not in result.thought_process
 
-    def test_preserves_single_paragraph_breaks(self, parser):
+    def test_preserves_paragraph_breaks(self, parser):
         response = """
-GAME_STAGE_ASSESSMENT:
-First paragraph.
+THOUGHT_PROCESS:
+First paragraph of analysis.
 
-Second paragraph.
+Second paragraph continues.
 
-POSITIONAL_CONTEXT:
-Button position.
-
-RANGE_ANALYSIS:
-UTG range.
-
-EQUITY_ASSESSMENT:
-70% equity.
-
-OPPONENT_MODELING:
-Plays tight.
-
-BET_SIZING_RATIONALE:
-Standard sizing.
-
-MULTI_STREET_PLAN:
-Bet turn.
-
-META_CONSIDERATIONS:
-Table image.
-
-FINAL_DECISION:
-Raise for value.
+ACTION: fold
 """
         result = parser.parse(response)
 
         assert isinstance(result, Narration)
+        # Content should be preserved (paragraph breaks may be normalized)
+        assert "First paragraph" in result.thought_process
+        assert "Second paragraph" in result.thought_process
 
 
 class TestMinimalValidResponse:
-    """Tests for responses without narration."""
+    """Tests for responses without THOUGHT_PROCESS."""
 
-    def test_action_only_response_returns_error(self, parser):
-        response = """
-ACTION: fold
-
-REASONING:
-Hand is too weak.
-"""
-        result = parser.parse(response)
+    def test_action_only_response_returns_error(self, parser, minimal_response):
+        result = parser.parse(minimal_response)
 
         assert isinstance(result, ParseError)
 
@@ -425,19 +235,18 @@ Hand is too weak.
 class TestErrorContext:
     """Tests for error context information."""
 
-    def test_missing_field_error_includes_field_name(self, parser):
+    def test_missing_field_error_includes_snippet(self, parser):
         response = """
-GAME_STAGE_ASSESSMENT:
-Mid-tournament.
+ACTION: fold
 """
         result = parser.parse(response)
 
         assert isinstance(result, ParseError)
         assert result.context is not None
-        assert "missing_field" in result.context
+        assert "response_snippet" in result.context
 
-    def test_error_includes_response_snippet(self, parser):
-        long_response = "GAME_STAGE_ASSESSMENT:\n" + "x" * 300
+    def test_error_includes_truncated_snippet_for_long_response(self, parser):
+        long_response = "ACTION: fold\n" + "x" * 300
 
         result = parser.parse(long_response)
 

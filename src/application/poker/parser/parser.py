@@ -2,25 +2,30 @@
 
 from __future__ import annotations
 
-from src.application.poker.parser.action_parser import (ActionParser,
-                                                        PokerActionParser)
+from src.application.poker.parser.action_parser import ActionParser, PokerActionParser
 from src.application.poker.parser.narration_parser import (
-    NarrationParser, StructuredNarrationParser)
-from src.application.poker.parser.reasoning_parser import (
-    ReasoningParser, RegexReasoningParser)
-from src.application.protocols.response import (ParseError, ParseFailure,
-                                                ParseResult, ParseSuccess)
+    NarrationParser,
+    ThoughtProcessNarrationParser,
+)
+from src.application.protocols.response import (
+    ParseError,
+    ParseFailure,
+    ParseResult,
+    ParseSuccess,
+)
 from src.domain.models.actions import Action, ActionType
-from src.domain.models.available_action import (AvailableActions,
-                                                AvailableCallAction,
-                                                AvailableCheckAction)
+from src.domain.models.available_action import (
+    AvailableActions,
+    AvailableCallAction,
+    AvailableCheckAction,
+)
 from src.domain.models.narration import Narration
 
 
 class PokerResponseParser:
     """Parses LLM responses into poker actions using strategy pattern.
 
-    Composes parsing strategies to extract action, narration, and reasoning
+    Composes parsing strategies to extract action and narration
     from LLM text output.
 
     Implements the ResponseParser protocol for poker.
@@ -30,11 +35,11 @@ class PokerResponseParser:
         self,
         action_parser: ActionParser | None = None,
         narration_parser: NarrationParser | None = None,
-        reasoning_parser: ReasoningParser | None = None,
     ) -> None:
         self._action_parser: ActionParser = action_parser or PokerActionParser()
-        self._narration_parser: NarrationParser = narration_parser or StructuredNarrationParser()
-        self._reasoning_parser: ReasoningParser = reasoning_parser or RegexReasoningParser()
+        self._narration_parser: NarrationParser = (
+            narration_parser or ThoughtProcessNarrationParser()
+        )
 
     def parse_response(
         self,
@@ -54,13 +59,9 @@ class PokerResponseParser:
         # Parse narration (non-critical - return error object as-is)
         narration_result: Narration | ParseError = self._narration_parser.parse(response_text)
 
-        # Parse reasoning (non-critical - return error object as-is)
-        reasoning_result: str | ParseError = self._reasoning_parser.parse(response_text)
-
         return ParseSuccess(
             action=action,
             narration=narration_result,
-            reasoning=reasoning_result,
         )
 
     def get_fallback_action(

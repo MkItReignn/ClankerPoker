@@ -66,49 +66,34 @@ def facing_bet_actions(fold_action, call_action, raise_action, all_in_action):
 
 
 @pytest.fixture
-def full_narration_response():
-    """A complete LLM response with all 9 narration fields."""
+def full_thought_process_response():
+    """A complete LLM response with THOUGHT_PROCESS and ACTION."""
     return """
-GAME_STAGE_ASSESSMENT:
-Mid-tournament, 37BB stack, no survival pressure.
+THOUGHT_PROCESS:
+We're in the middle of the tournament with a healthy 37 big blind stack, so there's no
+immediate survival pressure. I'm on the button which is an excellent position - I'll be
+last to act on every street after the flop.
 
-POSITIONAL_CONTEXT:
-Button position, 3:1 pot odds, 24BB effective.
+Looking at the pot odds, I'm getting about 3:1 with 24 big blinds effective stacks.
+The under-the-gun player typically has a strong range here - pocket jacks or better,
+ace-king, ace-queen. Their continuation bet could be a strong king or a bluff.
 
-RANGE_ANALYSIS:
-UTG range: JJ+, AK, AQ. C-bet polarizes to Kx or air.
+With top pair and best kicker, I estimate my equity at around 70-75% against their
+likely range. Alice tends to play straightforward and commits with strong hands,
+so I can extract value here.
 
-EQUITY_ASSESSMENT:
-TPTK has 70-75% equity vs her range.
-
-OPPONENT_MODELING:
-Alice plays straightforward, commits with strong hands.
-
-BET_SIZING_RATIONALE:
-3x raise to 300 builds pot while keeping her range wide.
-
-MULTI_STREET_PLAN:
-Bet 60% pot on safe turns, check dangerous cards.
-
-META_CONSIDERATIONS:
-Establishes strong table image, pure chip EV spot.
-
-FINAL_DECISION:
-Raise for value with TPTK against straightforward opponent.
+A raise to 300 (about 3 times the bet) builds the pot while keeping her range wide
+enough to call. On safe turn cards I'll continue betting around 60% of the pot,
+but I'll check back if a dangerous card comes. This is a pure value spot with
+position advantage.
 
 ACTION: raise 300
-
-REASONING:
-Value raise with position and range advantage.
 """.strip()
 
 
 @pytest.fixture
 def minimal_response():
-    """Minimal valid response with just ACTION and REASONING."""
+    """Minimal valid response with just ACTION."""
     return """
 ACTION: fold
-
-REASONING:
-Hand is too weak to continue.
 """.strip()
