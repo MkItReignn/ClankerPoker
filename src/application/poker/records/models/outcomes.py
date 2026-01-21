@@ -118,7 +118,6 @@ class PlayerOutcome:
     player_id: str
     player_name: str
     chips_won: ChipAmount
-    chips_lost: ChipAmount
     final_stack: ChipAmount
     was_eliminated: bool = False
 
@@ -128,7 +127,6 @@ class PlayerOutcome:
             "player_id": self.player_id,
             "player_name": self.player_name,
             "chips_won": self.chips_won.value,
-            "chips_lost": self.chips_lost.value,
             "final_stack": self.final_stack.value,
             "was_eliminated": self.was_eliminated,
         }
@@ -140,7 +138,6 @@ class PlayerOutcome:
             player_id=data["player_id"],
             player_name=data["player_name"],
             chips_won=ChipAmount(data["chips_won"]),
-            chips_lost=ChipAmount(data["chips_lost"]),
             final_stack=ChipAmount(data["final_stack"]),
             was_eliminated=data.get("was_eliminated", False),
         )
