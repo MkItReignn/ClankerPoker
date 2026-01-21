@@ -353,3 +353,19 @@ class Game:
     def is_tournament_complete(self) -> bool:
         """Check if the tournament is complete (only one player has chips remaining)."""
         return len(self.get_active_players()) == 1
+
+    def get_winner(self) -> Player | None:
+        """Get the tournament winner if the tournament is complete.
+
+        Returns:
+            The winning Player object if exactly one active player remains,
+            None otherwise.
+        """
+        if not self.is_tournament_complete():
+            return None
+
+        active_players: list[Player] = self.get_active_players()
+        if len(active_players) == 1:
+            return active_players[0]
+
+        return None
