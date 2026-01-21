@@ -13,11 +13,12 @@ import pytest
 
 from src.application.poker.history.models import GameMetadata
 from src.application.poker.history.recorder import HistoryRecorder
+from src.application.protocols.player import ActionResponse
 from src.config.poker.config import PokerPlayerConfig
 from src.domain.models.actions import Action, ActionType
 from src.domain.models.card import Rank
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game, GamePhase, GameResults
+from src.domain.models.game import Game, GamePhase, HandResult
 from src.domain.models.player import BettingRoundActionStatus, HandParticipationStatus, Player
 from src.domain.models.seat import Seat
 
@@ -307,7 +308,7 @@ class TestHandOutcome:
         game = game_factory(
             players=players,
             pot_amount=pot_amount,
-            results=GameResults(
+            results=HandResult(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
@@ -355,7 +356,7 @@ class TestHandOutcome:
             players=players,
             pot_amount=pot_amount,
             current_phase=GamePhase.SHOWDOWN,
-            results=GameResults(
+            results=HandResult(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
@@ -404,7 +405,7 @@ class TestHandOutcome:
             players=players,
             pot_amount=pot_amount,
             current_phase=GamePhase.SHOWDOWN,
-            results=GameResults(
+            results=HandResult(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
@@ -455,7 +456,7 @@ class TestHandOutcome:
         game = game_factory(
             players=players,
             pot_amount=pot_amount,
-            results=GameResults(
+            results=HandResult(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
@@ -712,7 +713,8 @@ class TestActionRecording:
         recorder.record_round_start(state_before)
 
         fold_action = Action(action_type=ActionType.FOLD)
-        recorder.record_action(state_before, state_after, "player-1", fold_action)
+        response = ActionResponse(action=fold_action)
+        recorder.record_action(state_before, state_after, "player-1", response)
 
         assert recorder.history is not None
         hand = recorder.history.current_hand
@@ -776,7 +778,8 @@ class TestActionRecording:
         recorder.record_round_start(state_before)
 
         bet_action = Action(action_type=ActionType.BET, amount=bet_amount)
-        recorder.record_action(state_before, state_after, "player-1", bet_action)
+        response = ActionResponse(action=bet_action)
+        recorder.record_action(state_before, state_after, "player-1", response)
 
         assert recorder.history is not None
         hand = recorder.history.current_hand
@@ -835,7 +838,8 @@ class TestActionRecording:
         recorder.record_round_start(state_before)
 
         bet_action = Action(action_type=ActionType.BET, amount=bet_amount)
-        recorder.record_action(state_before, state_after, "player-1", bet_action)
+        response = ActionResponse(action=bet_action)
+        recorder.record_action(state_before, state_after, "player-1", response)
 
         assert recorder.history is not None
         hand = recorder.history.current_hand
@@ -893,7 +897,8 @@ class TestActionRecording:
         recorder.record_round_start(state_before)
 
         bet_action = Action(action_type=ActionType.BET, amount=ChipAmount(100))
-        recorder.record_action(state_before, state_after, "player-1", bet_action)
+        response = ActionResponse(action=bet_action)
+        recorder.record_action(state_before, state_after, "player-1", response)
 
         assert recorder.history is not None
         hand = recorder.history.current_hand
@@ -934,10 +939,11 @@ class TestActionRecording:
 
         # First action: player-1 checks
         check_action = Action(action_type=ActionType.CHECK)
-        recorder.record_action(state, state, "player-1", check_action)
+        response = ActionResponse(action=check_action)
+        recorder.record_action(state, state, "player-1", response)
 
         # Second action: player-2 checks
-        recorder.record_action(state, state, "player-2", check_action)
+        recorder.record_action(state, state, "player-2", response)
 
         assert recorder.history is not None
         hand = recorder.history.current_hand
@@ -998,12 +1004,13 @@ class TestEdgeCases:
         # Don't start a round
 
         check_action = Action(action_type=ActionType.CHECK)
+        response = ActionResponse(action=check_action)
         # Should not raise
         recorder.record_action(
             two_player_game,
             two_player_game,
             "player-1",
-            check_action,
+            response,
         )
 
         assert recorder.history is not None
@@ -1023,12 +1030,13 @@ class TestEdgeCases:
         recorder.record_round_start(two_player_game)
 
         check_action = Action(action_type=ActionType.CHECK)
+        response = ActionResponse(action=check_action)
         # Non-existent player - should not raise
         recorder.record_action(
             two_player_game,
             two_player_game,
             "non-existent-player",
-            check_action,
+            response,
         )
 
         assert recorder.history is not None
@@ -1067,7 +1075,7 @@ class TestEdgeCases:
         game = game_factory(
             players=players,
             pot_amount=pot_amount,
-            results=GameResults(
+            results=HandResult(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
@@ -1112,7 +1120,7 @@ class TestEdgeCases:
         game = game_factory(
             players=players,
             pot_amount=pot_amount,
-            results=GameResults(
+            results=HandResult(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),

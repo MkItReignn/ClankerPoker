@@ -5,7 +5,7 @@ from dataclasses import replace
 import structlog
 
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game, GamePhase, GameResults
+from src.domain.models.game import Game, GamePhase, HandOutcome
 from src.domain.models.player import (BettingRoundActionStatus,
                                       HandParticipationStatus, Player,
                                       PlayerId)
@@ -192,7 +192,7 @@ class HandCompleter:
             updated_players, game.hand_state.hand_number
         )
 
-        updated_results = GameResults(
+        updated_outcome = HandOutcome(
             hand_number=game.hand_state.hand_number,
             winners=[(winner.id, total_pot)],
         )
@@ -206,7 +206,7 @@ class HandCompleter:
             button_seat=game.button_seat,
             blind_state=game.blind_state,
             players=updated_players,
-            results=updated_results,
+            outcome=updated_outcome,
         )
 
     @staticmethod
@@ -251,7 +251,7 @@ class HandCompleter:
             button_seat=game.button_seat,
             blind_state=game.blind_state,
             players=game.players,
-            results=game.results,
+            outcome=game.outcome,
         )
 
         winners_by_pot = HandCompleter._determine_winners_by_pot(
@@ -291,7 +291,7 @@ class HandCompleter:
 
         winners = [(pid, payout) for pid, payout in pot_payouts.items()]
 
-        updated_results = GameResults(
+        updated_outcome = HandOutcome(
             hand_number=game.hand_state.hand_number,
             winners=winners,
         )
@@ -305,5 +305,5 @@ class HandCompleter:
             button_seat=game.button_seat,
             blind_state=game.blind_state,
             players=updated_players,
-            results=updated_results,
+            outcome=updated_outcome,
         )

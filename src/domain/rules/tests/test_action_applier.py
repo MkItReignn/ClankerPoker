@@ -2175,7 +2175,7 @@ class TestGameStatePreservation:
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
-        assert updated_game.results == game.results
+        assert updated_game.outcome == game.outcome
 
 
 class TestEdgeCases:

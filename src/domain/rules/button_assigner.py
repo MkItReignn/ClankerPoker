@@ -85,7 +85,7 @@ class ButtonAssigner:
             button_seat=winner.seat,
             blind_state=game.blind_state,
             players=game.players,
-            results=game.results,
+            outcome=game.outcome,
         )
 
         return updated_game

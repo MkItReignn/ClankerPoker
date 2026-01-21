@@ -410,7 +410,7 @@ class TestAssignButton:
         assert updated_game.betting_state == game.betting_state
         assert updated_game.blind_state == game.blind_state
         assert updated_game.players == game.players
-        assert updated_game.results == game.results
+        assert updated_game.outcome == game.outcome
 
     def test_ace_is_highest_card_in_high_card_draw(
         self,

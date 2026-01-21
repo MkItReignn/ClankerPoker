@@ -12,7 +12,7 @@ from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import (NO_POSITION_TO_ACT, BettingState,
                                     BlindState, Game, GameId, GameIdentity,
-                                    GamePhase, GameResults, GameStatus,
+                                    GamePhase, GameStatus, HandOutcome,
                                     HandState)
 from src.domain.models.hand import Hand
 from src.domain.models.llm_model import LlmModel
@@ -47,7 +47,7 @@ __all__ = [
     "GameId",
     "GameIdentity",
     "GamePhase",
-    "GameResults",
+    "HandOutcome",
     "GameStatus",
     "Hand",
     "HandParticipationStatus",

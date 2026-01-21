@@ -21,7 +21,7 @@ from src.domain.models.game import (
     Game,
     GameIdentity,
     GamePhase,
-    GameResults,
+    HandResult,
     GameStatus,
     HandState,
 )
@@ -210,7 +210,7 @@ def game_factory(
         hand_number: int = 1,
         button_seat: Seat = Seat.SEAT_0,
         pot_amount: ChipAmount = ChipAmount(0),
-        results: GameResults | None = None,
+        results: HandResult | None = None,
         status: GameStatus = GameStatus.IN_PROGRESS,
     ) -> Game:
         now = datetime.now()

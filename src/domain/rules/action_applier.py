@@ -441,7 +441,7 @@ class ActionApplier:
             button_seat=game.button_seat,
             blind_state=game.blind_state,
             players=updated_players,
-            results=game.results,
+            outcome=game.outcome,
         )
 
     @staticmethod

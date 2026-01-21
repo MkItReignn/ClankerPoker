@@ -160,7 +160,7 @@ def minimal_game_factory() -> Callable[..., Game]:
                 )
             ),
             players=Players.from_list(players),
-            results=None,
+            outcome=None,
         )
 
     return create_game

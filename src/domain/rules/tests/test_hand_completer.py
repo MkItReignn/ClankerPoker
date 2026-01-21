@@ -149,7 +149,7 @@ class TestEarlyWinScenarios:
         sample_player_factory: Callable[..., Player],
         minimal_game_factory: Callable[..., Game],
     ) -> None:
-        """Early win creates GameResults documenting winner and pot amount."""
+        """Early win creates HandOutcome documenting winner and pot amount."""
         # Arrange
         # P1 invested 100, P2 invested 50, total pot = 150
         p1 = sample_player_factory(
@@ -189,11 +189,11 @@ class TestEarlyWinScenarios:
         completed_game = HandCompleter.complete(game)
 
         # Assert
-        assert completed_game.results is not None
-        assert completed_game.results.hand_number == 3
-        assert len(completed_game.results.winners) == 1
-        assert completed_game.results.winners[0][0] == p1.id
-        assert completed_game.results.winners[0][1].value == 150
+        assert completed_game.outcome is not None
+        assert completed_game.outcome.hand_number == 3
+        assert len(completed_game.outcome.winners) == 1
+        assert completed_game.outcome.winners[0][0] == p1.id
+        assert completed_game.outcome.winners[0][1].value == 150
 
     def test_raises_error_when_hand_not_complete(
         self,

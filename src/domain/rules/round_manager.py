@@ -70,7 +70,7 @@ class RoundManager:
             button_seat=game.button_seat,
             blind_state=game.blind_state,
             players=updated_players,
-            results=game.results,
+            outcome=game.outcome,
         )
 
     @staticmethod
@@ -117,7 +117,7 @@ class RoundManager:
             button_seat=game.button_seat,
             blind_state=game.blind_state,
             players=game.players,
-            results=game.results,
+            outcome=game.outcome,
         )
 
         return updated_game, updated_deck

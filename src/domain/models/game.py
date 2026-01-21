@@ -141,7 +141,7 @@ class BlindState:
 
 
 @dataclass(slots=True)
-class GameResults:
+class HandOutcome:
     hand_number: int
     winners: list[tuple[PlayerId, ChipAmount]]
 
@@ -165,7 +165,7 @@ class Game:
     button_seat: Seat
     blind_state: BlindState
     players: Players
-    results: GameResults | None
+    outcome: HandOutcome | None
 
     def __post_init__(self) -> None:
         # Convert list[Player] to Players for backward compatibility
@@ -206,9 +206,9 @@ class Game:
                 )
 
         if self.identity.status == GameStatus.COMPLETED:
-            if self.results is None:
-                raise ValueError("COMPLETED game must have results")
-            if not self.results.winners:
+            if self.outcome is None:
+                raise ValueError("COMPLETED game must have outcome")
+            if not self.outcome.winners:
                 raise ValueError("COMPLETED game must have at least one winner")
 
     @property
@@ -352,4 +352,4 @@ class Game:
 
     def is_tournament_complete(self) -> bool:
         """Check if the tournament is complete (only one player has chips remaining)."""
-        return len(self.get_active_players()) <= 1
+        return len(self.get_active_players()) == 1

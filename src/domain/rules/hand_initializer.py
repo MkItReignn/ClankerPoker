@@ -133,7 +133,7 @@ class HandInitializer:
                 button_seat=position_mapping.button_seat,
                 blind_state=updated_blind_state,
                 players=updated_players,
-                results=game.results,
+                outcome=game.outcome,
             ),
             updated_deck,
         )
