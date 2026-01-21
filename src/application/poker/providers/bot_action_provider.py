@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING, ClassVar
 from src.application.poker.providers.bot_random_action_selector import \
     BotRandomActionSelector
 from src.application.protocols.player import ActionResponse, PlayerConfig
+from src.config.poker.bot_config import BotPokerGameConfig
+from src.config.poker.bot_personality import BotPersonality
 from src.domain.models.actions import Action
 from src.domain.models.available_action import AvailableActions
 from src.domain.models.narration import Narration, NarrationText
@@ -192,3 +194,36 @@ class BotActionProvider:
                 narration_template=narration_template,
             )
         )
+
+    @classmethod
+    def from_bot_config(
+        cls,
+        bot_config: BotPokerGameConfig,
+        seed: int | None = None,
+    ) -> BotActionProvider:
+        """Create a provider from bot game configuration.
+
+        Maps each player's personality to the appropriate selector.
+
+        Args:
+            bot_config: Bot game configuration with player personalities.
+            seed: Optional random seed for reproducibility.
+
+        Returns:
+            BotActionProvider with per-player configs based on personalities.
+        """
+        personality_to_selector = {
+            BotPersonality.AGGRESSIVE: BotRandomActionSelector.aggressive,
+            BotPersonality.PASSIVE: BotRandomActionSelector.passive,
+            BotPersonality.TIGHT: BotRandomActionSelector.tight,
+            BotPersonality.LOOSE: BotRandomActionSelector.loose,
+            BotPersonality.DEFAULT: BotRandomActionSelector,
+        }
+
+        player_configs: dict[str, BotPlayerConfig] = {}
+        for player_id, player_cfg in bot_config.player_configs.items():
+            selector_factory = personality_to_selector[player_cfg.personality]
+            selector = selector_factory(seed=seed)
+            player_configs[player_id] = BotPlayerConfig(selector=selector)
+
+        return cls.with_player_configs(player_configs)

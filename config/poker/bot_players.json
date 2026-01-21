@@ -1,0 +1,10 @@
+{
+    "player_configs": {
+        "player1": {"name": "Alex-Aggressive", "personality": "aggressive"},
+        "player2": {"name": "Pat-Passive", "personality": "passive"},
+        "player3": {"name": "Terry-Tight", "personality": "tight"},
+        "player4": {"name": "Lou-Loose", "personality": "loose"},
+        "player5": {"name": "Balanced-Ben", "personality": "default"},
+        "player6": {"name": "Steady-Sam", "personality": "default"}
+    }
+}
