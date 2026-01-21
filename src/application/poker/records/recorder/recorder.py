@@ -14,12 +14,13 @@ from src.application.poker.records.recorder.player_record_factory import \
 from src.application.poker.records.recorder.record_logger import RecordLogger
 from src.application.protocols.player import ActionResponse
 from src.config.poker.config import PokerPlayerConfig
-from src.domain.models.actions import Action
+from src.domain.models.actions import Action, ActionType
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game, GamePhase
 from src.domain.models.narration import Narration
 from src.domain.models.player import Player
 from src.domain.rules.betting_calculator import BettingCalculator
+from src.domain.rules.position_manager import PositionManager
 from src.logger.factories import get_generic_logger
 
 
@@ -121,6 +122,123 @@ class Recorder:
 
         if round_record.phase != GamePhase.PRE_FLOP:
             self._record_logger.log_round_advanced(self._record.current_hand, round_record)
+
+    def record_blind_postings(self, state: Game) -> None:
+        """Record blind posting actions for PRE_FLOP.
+
+        Creates TurnRecords for small blind and big blind postings.
+        Should be called immediately after record_round_start() for PRE_FLOP.
+
+        IMPORTANT: This method is called AFTER blinds have already been posted
+        (in HandEngine.initialize_hand). The state passed here already reflects
+        post-blind chip counts. This means:
+        - HandRecord and RoundRecord player_records already show post-blind state
+        - The TurnRecords created here are retroactive documentation of what happened
+        - The player.remaining_chips is post-blind, but we manually set invested_before=0
+
+        This is an intentional design choice to avoid refactoring the domain layer.
+        The TurnRecords serve as an action log for replay/LLM context, while the
+        HandRecord/RoundRecord player_records are the authoritative state snapshots.
+        """
+        if self._record is None or self._record.current_hand is None:
+            return
+
+        if state.current_phase != GamePhase.PRE_FLOP:
+            return
+
+        current_round = self._record.current_hand.current_round()
+        if current_round is None:
+            return
+
+        # Get position mapping to find SB/BB seats
+        position_mapping = PositionManager.resolve_positions_for_hand(
+            all_players=list(state.players),
+            previous_button_seat=state.button_seat,
+            advance_button=False,
+        )
+
+        # Find SB and BB players by seat
+        sb_player: Player | None = None
+        bb_player: Player | None = None
+        for player in state.players:
+            if player.seat == position_mapping.small_blind_seat:
+                sb_player = player
+            elif player.seat == position_mapping.big_blind_seat:
+                bb_player = player
+
+        # Get actual amounts posted (may be less than blind level if all-in)
+        sb_amount = sb_player.total_invested_this_hand if sb_player else ChipAmount(0)
+        bb_amount = bb_player.total_invested_this_hand if bb_player else ChipAmount(0)
+
+        # Record small blind posting
+        if sb_player is not None:
+            self._record_blind_turn(
+                current_round=current_round,
+                player=sb_player,
+                action_type=ActionType.POST_SMALL_BLIND,
+                amount=sb_amount,
+                phase=state.current_phase,
+                pot_after=sb_amount,
+            )
+
+        # Record big blind posting
+        if bb_player is not None:
+            self._record_blind_turn(
+                current_round=current_round,
+                player=bb_player,
+                action_type=ActionType.POST_BIG_BLIND,
+                amount=bb_amount,
+                phase=state.current_phase,
+                pot_after=sb_amount + bb_amount,
+            )
+
+    def _record_blind_turn(
+        self,
+        current_round: RoundRecord,
+        player: Player,
+        action_type: ActionType,
+        amount: ChipAmount,
+        phase: GamePhase,
+        pot_after: ChipAmount,
+    ) -> None:
+        """Create a TurnRecord for a blind posting."""
+        # invested_before is 0 for blind postings (they're the first investments)
+        turn_player_record = self._player_record_factory.create_turn_level_player_record(
+            player, invested_before=0
+        )
+
+        action_record = ActionRecord(
+            player_id=player.id,
+            player_name=self._player_configs[player.id].name,
+            phase=phase,
+            action_type=action_type,
+            amount=amount,
+            timestamp=datetime.now(),
+        )
+
+        # For blind postings:
+        # - pot_before is 0 for SB, SB amount for BB
+        # - current_bet is the amount posted (SB or BB)
+        pot_before = ChipAmount(pot_after.value - amount.value)
+
+        turn_record = TurnRecord(
+            round_turn_number=len(current_round.turns) + 1,
+            player_record=turn_player_record,
+            action=action_record,
+            timestamp=datetime.now(),
+            pot_before=pot_before,
+            pot_after=pot_after,
+            current_bet_before=ChipAmount(0) if action_type == ActionType.POST_SMALL_BLIND else amount,
+            current_bet_after=amount,
+            narration=None,
+        )
+
+        current_round.add_turn(turn_record)
+
+        if self._record is not None and self._record.current_hand is not None:
+            self._record_logger.log_action_taken(
+                turn_record, self._record.current_hand.hand_number
+            )
 
     def record_round_complete(self) -> None:
         """Record the completion of a betting round."""

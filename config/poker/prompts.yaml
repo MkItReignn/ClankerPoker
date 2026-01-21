@@ -45,12 +45,14 @@ system_prompt:
     === ACTION NOTATION ===
 
     SHORTHAND CODES:
-      F          = Fold (surrender hand)
-      X          = Check (pass, no bet)
-      C          = Call (match current bet)
-      B<amount>  = Bet (e.g., B100 = bet 100 chips)
-      R<amount>  = Raise TO amount (e.g., R300 = raise to 300 total)
-      AI<amount> = All-in for amount (e.g., AI500 = all-in for 500)
+      PSB<amount> = Post Small Blind (e.g., PSB25 = post small blind of 25)
+      PBB<amount> = Post Big Blind (e.g., PBB50 = post big blind of 50)
+      F           = Fold (surrender hand)
+      X           = Check (pass, no bet)
+      C           = Call (match current bet)
+      B<amount>   = Bet (e.g., B100 = bet 100 chips)
+      R<amount>   = Raise TO amount (e.g., R300 = raise to 300 total)
+      AI<amount>  = All-in for amount (e.g., AI500 = all-in for 500)
 
     POSITION ABBREVIATIONS:
       BTN = Button (dealer, acts last post-flop - best position)
@@ -60,9 +62,10 @@ system_prompt:
       CO  = Cutoff (one before button - late position)
 
     READING ACTION SEQUENCES:
-      PRE_FLOP: Alice(UTG):R60, Bob(CO):C, Carol(BTN):F, Dave(SB):F, Eve(BB):C
+      PRE_FLOP: Dave(SB):PSB25, Eve(BB):PBB50, Alice(UTG):R150, Bob(CO):C, Carol(BTN):F, Dave(SB):F, Eve(BB):C
 
-      Reads as: "Alice raised to 60 from UTG, Bob called from cutoff,
+      Reads as: "Dave posts small blind of 25, Eve posts big blind of 50,
+      Alice raised to 150 from UTG, Bob called from cutoff,
       Carol folded on button, Dave folded small blind, Eve called from big blind."
 
     THE "?" MARKER:

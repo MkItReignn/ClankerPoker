@@ -98,20 +98,20 @@ class TestInitializeGame:
         assert SMALL_BLIND.value in investments
         assert BIG_BLIND.value in investments
 
-    def test_initializes_history(
+    def test_initializes_record(
         self,
         poker_state: PokerStateManager,
     ) -> None:
-        """Given new runner, when initialized, history is created."""
+        """Given new runner, when initialized, record is created."""
         # Arrange
-        assert poker_state.history is None
+        assert poker_state.record is None
 
         # Act
         poker_state.initialize()
 
         # Assert
-        assert poker_state.history is not None
-        assert poker_state.history.game_id == poker_state.game.id
+        assert poker_state.record is not None
+        assert poker_state.record.game_id == poker_state.game.id
 
 
 class TestRunTurn:
@@ -189,12 +189,12 @@ class TestRunTurn:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_records_action_in_history(
+    async def test_records_action_in_record(
         self,
         poker_state: PokerStateManager,
         scripted_provider_factory,
     ) -> None:
-        """Given player takes action, action is recorded in history."""
+        """Given player takes action, action is recorded in game record."""
         # Arrange
         poker_state.initialize()
         provider = scripted_provider_factory([call()])
@@ -203,12 +203,12 @@ class TestRunTurn:
         await run_turn(poker_state, provider)
 
         # Assert
-        history = poker_state.history
-        assert history is not None
-        assert history.current_hand is not None
-        assert len(history.current_hand.rounds) > 0
+        record = poker_state.record
+        assert record is not None
+        assert record.current_hand is not None
+        assert len(record.current_hand.rounds) > 0
 
-        current_round = history.current_hand.rounds[-1]
+        current_round = record.current_hand.rounds[-1]
         assert len(current_round.turns) > 0
 
         last_turn = current_round.turns[-1]
@@ -362,8 +362,8 @@ class TestRunGame:
         assert result.final_state.status != GameStatus.COMPLETED or result.total_hands <= 3
 
 
-class TestHistoryRecording:
-    """Tests for game history recording throughout game lifecycle."""
+class TestGameRecording:
+    """Tests for game record keeping throughout game lifecycle."""
 
     @pytest.mark.asyncio
     async def test_records_completed_hand(
@@ -371,7 +371,7 @@ class TestHistoryRecording:
         poker_state: PokerStateManager,
         scripted_provider_factory,
     ) -> None:
-        """Given hand completes via fold, history contains the completed hand."""
+        """Given hand completes via fold, record contains the completed hand."""
         # Arrange
         poker_state.initialize()
         provider = scripted_provider_factory([fold()])
@@ -384,9 +384,9 @@ class TestHistoryRecording:
         poker_state.mark_game_complete_if_over()
 
         # Assert
-        history = poker_state.history
-        assert history is not None
-        assert len(history.completed_hands) == 1
+        record = poker_state.record
+        assert record is not None
+        assert len(record.completed_hands) == 1
 
     @pytest.mark.asyncio
     async def test_tracks_player_chip_changes(
@@ -394,7 +394,7 @@ class TestHistoryRecording:
         poker_state: PokerStateManager,
         scripted_provider_factory,
     ) -> None:
-        """Given players win/lose pots, history tracks chip changes."""
+        """Given players win/lose pots, record tracks chip changes."""
         # Arrange
         poker_state.initialize()
 
@@ -409,11 +409,11 @@ class TestHistoryRecording:
         poker_state.mark_game_complete_if_over()
 
         # Assert
-        history = poker_state.history
-        assert history is not None
-        assert len(history.completed_hands) == 1
+        record = poker_state.record
+        assert record is not None
+        assert len(record.completed_hands) == 1
 
-        completed_hand = history.completed_hands[0]
+        completed_hand = record.completed_hands[0]
         assert completed_hand.outcome is not None
         assert len(completed_hand.outcome.winner_ids) == 1
 
@@ -746,11 +746,11 @@ class TestShowdown:
         poker_state.mark_game_complete_if_over()
 
         # Assert: Hand completed, winner received pot
-        history = poker_state.history
-        assert history is not None
-        assert len(history.completed_hands) == 1
+        record = poker_state.record
+        assert record is not None
+        assert len(record.completed_hands) == 1
 
-        completed_hand = history.completed_hands[0]
+        completed_hand = record.completed_hands[0]
         assert completed_hand.outcome is not None
         assert len(completed_hand.outcome.winner_ids) >= 1
 
@@ -794,10 +794,10 @@ class TestShowdown:
         three_player_state.mark_game_complete_if_over()
 
         # Assert
-        history = three_player_state.history
-        assert history is not None
-        assert len(history.completed_hands) == 1
-        assert history.completed_hands[0].outcome is not None
+        record = three_player_state.record
+        assert record is not None
+        assert len(record.completed_hands) == 1
+        assert record.completed_hands[0].outcome is not None
 
 
 class TestCompleteGame:
@@ -833,9 +833,9 @@ class TestCompleteGame:
         await orchestrator.run_game()
 
         # Assert: Game progressed (multiple hands played)
-        history = poker_state.history
-        assert history is not None
-        assert len(history.completed_hands) > 1
+        record = poker_state.record
+        assert record is not None
+        assert len(record.completed_hands) > 1
 
     @pytest.mark.asyncio
     async def test_game_completes_with_single_winner(
@@ -881,18 +881,18 @@ class TestCompleteGame:
         assert winner.remaining_chips.value > 0
 
     @pytest.mark.asyncio
-    async def test_full_hand_records_all_rounds_in_history(
+    async def test_full_hand_records_all_rounds_in_record(
         self,
         poker_state: PokerStateManager,
         scripted_provider_factory,
     ) -> None:
-        """Given hand plays through all streets, history records each round."""
+        """Given hand plays through all streets, record tracks each round."""
         # Arrange
         poker_state.initialize()
         actions = [call(), check()] + [check()] * 6
         provider = scripted_provider_factory(actions)
 
-        # Play through all phases manually to ensure history recording
+        # Play through all phases manually to ensure record tracking
         phases = [GamePhase.PRE_FLOP, GamePhase.FLOP, GamePhase.TURN, GamePhase.RIVER]
         for i, _phase in enumerate(phases):
             for _ in range(2):
@@ -907,14 +907,14 @@ class TestCompleteGame:
                     poker_state.resolve_hand()
                     poker_state.mark_game_complete_if_over()
 
-        # Assert: History contains all rounds
-        history = poker_state.history
-        assert history is not None
-        assert len(history.completed_hands) == 1
+        # Assert: Record contains all rounds
+        record = poker_state.record
+        assert record is not None
+        assert len(record.completed_hands) == 1
 
-        completed_hand = history.completed_hands[0]
-        # Should have 4 rounds: PRE_FLOP, FLOP, TURN, RIVER
-        assert len(completed_hand.rounds) == 4
+        completed_hand = record.completed_hands[0]
+        # Should have 5 rounds: PRE_FLOP, FLOP, TURN, RIVER, SHOWDOWN
+        assert len(completed_hand.rounds) == 5
 
     @pytest.mark.asyncio
     async def test_button_rotates_between_hands(

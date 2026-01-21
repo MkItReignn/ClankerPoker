@@ -60,6 +60,8 @@ class TurnDto:
             ActionType.BET,
             ActionType.RAISE,
             ActionType.ALL_IN,
+            ActionType.POST_SMALL_BLIND,
+            ActionType.POST_BIG_BLIND,
         ):
             action_str = f"{action_str}{self.amount.value}"
         return f"{self.name}{pos_str}:{action_str}"

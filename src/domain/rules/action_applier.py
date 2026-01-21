@@ -199,6 +199,11 @@ class ActionApplier:
             return ActionApplier._apply_raise(player, action, call_amount)
         elif action.action_type == ActionType.ALL_IN:
             return ActionApplier._apply_all_in(player, action, call_amount, minimum_raise_increment)
+        elif action.action_type in (ActionType.POST_SMALL_BLIND, ActionType.POST_BIG_BLIND):
+            raise ValueError(
+                f"Blind posting actions ({action.action_type.value}) cannot be applied directly. "
+                "Blinds are posted automatically during hand initialization."
+            )
         else:
             raise ValueError(f"Unknown action type: {action.action_type}")
 

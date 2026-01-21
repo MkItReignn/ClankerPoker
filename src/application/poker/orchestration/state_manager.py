@@ -5,10 +5,9 @@ from __future__ import annotations
 from dataclasses import replace as dataclass_replace
 from datetime import UTC, datetime
 
-from src.application.poker.context import (PokerContextBuilder,
-                                           PokerDecisionContext)
-from src.application.poker.history.models import GameHistory, GameMetadata
-from src.application.poker.history.recorder import HistoryRecorder
+from src.application.poker.context import PokerContextBuilder, PokerDecisionContext
+from src.application.poker.records.models import GameMetadata, GameRecord
+from src.application.poker.records.recorder import Recorder
 from src.application.poker.orchestration.game_initializer import \
     GameInitializer
 from src.application.protocols.player import ActionResponse, PlayerConfig
@@ -37,7 +36,7 @@ class PokerStateManager:
         tournament_config: TournamentConfig,
         game_id: str,
         seed: int,
-        history: GameHistory | None = None,
+        record: GameRecord | None = None,
     ) -> None:
         self._logger = get_generic_logger(__name__.removeprefix("src."))
 
@@ -53,14 +52,14 @@ class PokerStateManager:
         player_names = self.player_names
         self._context_builder: PokerContextBuilder = PokerContextBuilder(player_names=player_names)
 
-        # Initialize history recorder with player configs dict
-        self._recorder: HistoryRecorder = HistoryRecorder(
+        # Initialize recorder with player configs dict
+        self._recorder: Recorder = Recorder(
             player_configs=self._config.player_configs
         )
 
-        # If history was provided, set it on the recorder
-        if history is not None:
-            self._recorder._history = history
+        # If record was provided, set it on the recorder
+        if record is not None:
+            self._recorder._record = record
 
     @property
     def game(self) -> Game:
@@ -69,9 +68,9 @@ class PokerStateManager:
         return self._game
 
     @property
-    def history(self) -> GameHistory | None:
-        """Get the current game history."""
-        return self._recorder.history
+    def record(self) -> GameRecord | None:
+        """Get the current game record."""
+        return self._recorder.record
 
     @property
     def player_names(self) -> dict[str, str]:
@@ -96,7 +95,7 @@ class PokerStateManager:
         return self._context_builder.build_context(
             state=self.game,
             player_id=player_id,
-            history=self._recorder.history,
+            record=self._recorder.record,
         )
 
     def get_available_actions(self, player_id: str) -> list[AvailableActions]:
@@ -121,7 +120,7 @@ class PokerStateManager:
         if new_player is None:
             raise ValueError(f"Player {player_id} not found after action")
 
-        # Record in history - pass full response
+        # Record in game record - pass full response
         self._recorder.record_action(
             state_before=self.game,
             state_after=new_state,
@@ -176,7 +175,7 @@ class PokerStateManager:
         """Award pots and record hand outcome.
 
         Precondition: is_hand_complete() (SHOWDOWN phase or only 1 player remains)
-        Postcondition: Pots awarded, hand recorded in history
+        Postcondition: Pots awarded, hand recorded in game record
         """
         if not self.is_hand_complete():
             raise ValueError(
@@ -210,7 +209,7 @@ class PokerStateManager:
             updated_at=now,
         )
         self.game.identity = completed_identity
-        self._recorder.complete_game(now)
+        self._recorder.record_game_complete(now)
 
         return True
 
@@ -233,12 +232,13 @@ class PokerStateManager:
         if not self.is_round_complete():
             raise ValueError("Cannot transition to next round: round is not complete")
 
-        # Complete the current round in history
+        # Complete the current round in game record
         self._recorder.record_round_complete()
 
         # Handle RIVER → SHOWDOWN (no cards to deal)
         if self.game.current_phase == GamePhase.RIVER:
             self._transition_to_showdown()
+            self._recorder.record_round_start(self.game)
             return GamePhase.SHOWDOWN
 
         # Normal phase advancement (PREFLOP → FLOP → TURN → RIVER)
@@ -252,7 +252,7 @@ class PokerStateManager:
         ):
             self._game, self._deck = HandEngine.deal_community_cards(self._game, self._deck)
 
-        # Start the new round in history
+        # Start the new round in game record
         self._recorder.record_round_start(self._game)
 
         return self._game.current_phase
@@ -280,16 +280,17 @@ class PokerStateManager:
         # Initialize hand
         new_state, self._deck = HandEngine.initialize_hand(state, self._deck)
 
-        # Record hand start and first round in history
+        # Record hand start, first round, and blind postings in game record
         self._recorder.record_hand_start(new_state)
         self._recorder.record_round_start(new_state)
+        self._recorder.record_blind_postings(new_state)
 
         return new_state
 
     def initialize(self) -> None:
         """Initialize the game state.
 
-        Creates the game with button assigned, initializes history, and deals first hand.
+        Creates the game with button assigned, initializes game record, and deals first hand.
         """
         player_configs = list(self._config.player_configs.values())
 
@@ -300,7 +301,7 @@ class PokerStateManager:
             game_id=self._game_id,
         )
 
-        if self._recorder.history is None:
+        if self._recorder.record is None:
             metadata = GameMetadata(
                 seed=state.identity.seed,
                 buy_in_amount=state.tournament_config.buy_in_amount,
@@ -309,6 +310,6 @@ class PokerStateManager:
                 payout_structure=state.tournament_config.payout_structure,
                 started_at=state.identity.started_at,
             )
-            self._recorder.initialize_history(state, metadata)
+            self._recorder.record_game_start(state, metadata)
 
         self._game = self._init_new_hand(state)
