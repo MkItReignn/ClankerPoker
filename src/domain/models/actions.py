@@ -15,6 +15,17 @@ class ActionType(Enum):
     RAISE = "raise"
     ALL_IN = "all_in"
 
+    def to_short_string(self) -> str:
+        """Convert action type to shorthand notation (F, X, C, B, R, AI)."""
+        return {
+            ActionType.FOLD: "F",
+            ActionType.CHECK: "X",
+            ActionType.CALL: "C",
+            ActionType.BET: "B",
+            ActionType.RAISE: "R",
+            ActionType.ALL_IN: "AI",
+        }[self]
+
 
 @dataclass(frozen=True, slots=True)
 class Action:

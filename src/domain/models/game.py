@@ -55,6 +55,16 @@ class GamePhase(Enum):
             cls.SHOWDOWN,
         )
 
+    @classmethod
+    def get_betting_phases(cls) -> tuple[GamePhase, ...]:
+        """Returns phases where betting occurs (excludes SHOWDOWN)."""
+        return (
+            cls.PRE_FLOP,
+            cls.FLOP,
+            cls.TURN,
+            cls.RIVER,
+        )
+
     def next_phase(self) -> GamePhase | None:
         """Returns the next phase in sequence, or None if this is the last phase."""
         order = self.get_phase_order()
