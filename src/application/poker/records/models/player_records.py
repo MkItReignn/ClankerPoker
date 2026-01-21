@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from src.domain.models.chips import ChipAmount
@@ -30,6 +30,27 @@ class PlayerRecordSnapshot:
             raise ValueError(f"chips cannot be negative: {self.chips.value}")
         if not isinstance(self.model_id, LlmModel):
             raise ValueError(f"model_id must be an LlmModel enum, got {type(self.model_id)}")
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize PlayerRecordSnapshot to a dictionary."""
+        return {
+            "player_id": self.player_id,
+            "player_name": self.player_name,
+            "seat": self.seat.value,
+            "chips": self.chips.value,
+            "model_id": self.model_id.value,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> PlayerRecordSnapshot:
+        """Deserialize a dictionary to PlayerRecordSnapshot."""
+        return cls(
+            player_id=data["player_id"],
+            player_name=data["player_name"],
+            seat=Seat.from_int(data["seat"]),
+            chips=ChipAmount(data["chips"]),
+            model_id=LlmModel(data["model_id"]),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -105,14 +126,9 @@ class HandLevelPlayerRecord(PlayerRecordSnapshot):
     hole_cards: Hand | None
     position: PositionName | None
     starting_chips: ChipAmount
-    total_invested_in_hand: ChipAmount = field(default_factory=lambda: ChipAmount(0))
 
     def __post_init__(self) -> None:
         super(HandLevelPlayerRecord, self).__post_init__()
-        if self.total_invested_in_hand.value < 0:
-            raise ValueError(
-                f"total_invested_in_hand cannot be negative: {self.total_invested_in_hand.value}"
-            )
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize HandLevelPlayerRecord to a dictionary."""
@@ -129,7 +145,6 @@ class HandLevelPlayerRecord(PlayerRecordSnapshot):
             ),
             "position": self.position.value if self.position else None,
             "starting_chips": self.starting_chips.value,
-            "total_invested_in_hand": self.total_invested_in_hand.value,
         }
 
     @classmethod
@@ -157,17 +172,15 @@ class HandLevelPlayerRecord(PlayerRecordSnapshot):
             hole_cards=hole_cards,
             position=position,
             starting_chips=ChipAmount(data["starting_chips"]),
-            total_invested_in_hand=ChipAmount(data.get("total_invested_in_hand", 0)),
         )
 
 
 @dataclass(frozen=True, slots=True)
 class RoundLevelPlayerRecord(PlayerRecordSnapshot):
     chips_at_round_start: ChipAmount
-    total_invested_in_hand: ChipAmount
+    total_invested_in_hand_at_round_start: ChipAmount
     participation_status: HandParticipationStatus
     is_all_in: bool
-    total_invested_in_round: ChipAmount = field(default_factory=lambda: ChipAmount(0))
 
     def __post_init__(self) -> None:
         super(type(self), self).__post_init__()
@@ -175,13 +188,9 @@ class RoundLevelPlayerRecord(PlayerRecordSnapshot):
             raise ValueError(
                 f"chips_at_round_start cannot be negative: {self.chips_at_round_start.value}"
             )
-        if self.total_invested_in_hand.value < 0:
+        if self.total_invested_in_hand_at_round_start.value < 0:
             raise ValueError(
-                f"total_invested_in_hand cannot be negative: {self.total_invested_in_hand.value}"
-            )
-        if self.total_invested_in_round.value < 0:
-            raise ValueError(
-                f"total_invested_in_round cannot be negative: {self.total_invested_in_round.value}"
+                f"total_invested_in_hand_at_round_start cannot be negative: {self.total_invested_in_hand_at_round_start.value}"
             )
 
     def to_dict(self) -> dict[str, Any]:
@@ -193,8 +202,7 @@ class RoundLevelPlayerRecord(PlayerRecordSnapshot):
             "chips": self.chips.value,
             "model_id": self.model_id.value,
             "chips_at_round_start": self.chips_at_round_start.value,
-            "total_invested_in_hand": self.total_invested_in_hand.value,
-            "total_invested_in_round": self.total_invested_in_round.value,
+            "total_invested_in_hand_at_round_start": self.total_invested_in_hand_at_round_start.value,
             "participation_status": self.participation_status.name,
             "is_all_in": self.is_all_in,
         }
@@ -211,8 +219,7 @@ class RoundLevelPlayerRecord(PlayerRecordSnapshot):
             chips=ChipAmount(data["chips"]),
             model_id=LlmModel(data["model_id"]),
             chips_at_round_start=ChipAmount(data["chips_at_round_start"]),
-            total_invested_in_hand=ChipAmount(data["total_invested_in_hand"]),
-            total_invested_in_round=ChipAmount(data.get("total_invested_in_round", 0)),
+            total_invested_in_hand_at_round_start=ChipAmount(data["total_invested_in_hand_at_round_start"]),
             participation_status=participation_status,
             is_all_in=data["is_all_in"],
         )

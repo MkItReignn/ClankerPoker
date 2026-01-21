@@ -16,7 +16,8 @@ from src.domain.models.seat import Seat
 from .hand_record import HandRecord
 from .outcomes import HandOutcome
 from .player_records import GameLevelPlayerRecord, HandLevelPlayerRecord, PlayerConfig
-from .turn_record import TurnRecord
+
+DEFAULT_HAND_HISTORY_COUNT = 5
 
 
 @dataclass(slots=True)
@@ -107,7 +108,6 @@ class GameRecord:
         self,
         player_id: str,
         name: str,
-        initial_chips: ChipAmount,
         seat: Seat,
         model_id: LlmModel,
         player_config: PlayerConfig,
@@ -116,7 +116,7 @@ class GameRecord:
             player_id=player_id,
             player_name=name,
             seat=seat,
-            chips=initial_chips,
+            chips=self.metadata.starting_chip_stack,
             model_id=model_id,
             player_config=player_config,
             hands_played=0,
@@ -173,30 +173,10 @@ class GameRecord:
 
         self.current_hand = None
 
-    def get_recent_hands(self, count: int = 5) -> list[HandRecord]:
+    def get_last_hand_records(
+        self, count: int = DEFAULT_HAND_HISTORY_COUNT
+    ) -> list[HandRecord]:
         return list(reversed(self.completed_hands[-count:]))
-
-    def get_player_turns(self, player_id: str, hand_count: int = 10) -> list[TurnRecord]:
-        turns: list[TurnRecord] = []
-        for hand in reversed(self.completed_hands[-hand_count:]):
-            player_turns = hand.get_player_turns(player_id)
-            turns.extend(reversed(player_turns))
-        return turns
-
-    def get_hand_by_number(self, hand_number: int) -> HandRecord | None:
-        for hand in self.completed_hands:
-            if hand.hand_number == hand_number:
-                return hand
-        if self.current_hand and self.current_hand.hand_number == hand_number:
-            return self.current_hand
-        return None
-
-    @property
-    def total_hands(self) -> int:
-        count = len(self.completed_hands)
-        if self.current_hand is not None:
-            count += 1
-        return count
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize GameRecord to a dictionary."""

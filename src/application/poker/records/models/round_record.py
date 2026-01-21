@@ -38,12 +38,6 @@ class RoundRecord:
     def is_complete(self) -> bool:
         return self.completed_at is not None
 
-    def get_actions_by_player(self, player_id: str) -> list[TurnRecord]:
-        return [turn for turn in self.turns if turn.player_record.player_id == player_id]
-
-    def get_turn_count(self) -> int:
-        return len(self.turns)
-
     def to_dict(self) -> dict[str, Any]:
         """Serialize RoundRecord to a dictionary."""
         return {

@@ -14,7 +14,6 @@ from src.domain.models.seat import Seat
 from .outcomes import HandOutcome
 from .player_records import HandLevelPlayerRecord, RoundLevelPlayerRecord
 from .round_record import RoundRecord
-from .turn_record import TurnRecord
 
 
 @dataclass(slots=True)
@@ -61,24 +60,6 @@ class HandRecord:
     def is_complete(self) -> bool:
         return self.outcome is not None
 
-    def get_round_by_phase(self, phase: GamePhase) -> RoundRecord | None:
-        for round_record in self.rounds:
-            if round_record.phase == phase:
-                return round_record
-        return None
-
-    def get_all_turns(self) -> list[TurnRecord]:
-        turns: list[TurnRecord] = []
-        for round_record in self.rounds:
-            turns.extend(round_record.turns)
-        return turns
-
-    def get_player_turns(self, player_id: str) -> list[TurnRecord]:
-        turns: list[TurnRecord] = []
-        for round_record in self.rounds:
-            turns.extend(round_record.get_actions_by_player(player_id))
-        return turns
-
     def to_dict(self) -> dict[str, Any]:
         """Serialize HandRecord to a dictionary."""
         return {
@@ -113,7 +94,7 @@ class HandRecord:
             blinds=BlindLevel(
                 small_blind=ChipAmount(data["small_blind"]),
                 big_blind=ChipAmount(data["big_blind"]),
-                level=data.get("blind_level", 1),  # Default to 1 for old data
+                level=data["blind_level"],
             ),
             player_records=player_records,
             started_at=datetime.fromisoformat(data["started_at"]),
