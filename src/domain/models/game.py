@@ -20,7 +20,6 @@ GameId = str
 
 
 class GameStatus(Enum):
-    WAITING = "waiting"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
@@ -196,7 +195,8 @@ class Game:
 
         if self.identity.status == GameStatus.IN_PROGRESS:
             if self.betting_state.position_to_act == NO_POSITION_TO_ACT:
-                if not self.is_round_complete():
+                # Allow NO_POSITION_TO_ACT during initial setup (before first hand dealt)
+                if not self.hand_state.is_initial_hand_setup and not self.is_round_complete():
                     raise ValueError(
                         "IN_PROGRESS game with NO_POSITION_TO_ACT must have a complete betting round"
                     )
@@ -349,3 +349,7 @@ class Game:
             return None
 
         return player.id
+
+    def is_tournament_complete(self) -> bool:
+        """Check if the tournament is complete (only one player has chips remaining)."""
+        return len(self.get_active_players()) <= 1

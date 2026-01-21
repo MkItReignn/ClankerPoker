@@ -517,3 +517,201 @@ class TestIsRoundComplete:
         game = minimal_game_factory(players=[player1, player2, player3])
 
         assert game.is_round_complete() is False
+
+
+class TestIsTournamentComplete:
+    """Tests for Game.is_tournament_complete() method.
+
+    Per RULE_BOOK Section 16.1: Tournament ends when one player has all chips.
+    """
+
+    def test_returns_true_when_one_player_remaining(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Tournament is complete when only one active player remains."""
+        player1 = sample_player_factory(
+            player_id="player-1",
+            seat=Seat(0),
+            remaining_chips=LARGE_CHIPS,
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+        player2 = sample_player_factory(
+            player_id="player-2",
+            seat=Seat(1),
+            remaining_chips=ZERO_CHIPS,
+            participation_status=HandParticipationStatus.ELIMINATED,
+        )
+
+        game = minimal_game_factory(players=[player1, player2])
+
+        assert game.is_tournament_complete() is True
+
+    def test_returns_true_when_all_players_eliminated(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Game is complete when all players are eliminated."""
+        player1 = sample_player_factory(
+            player_id="player-1",
+            seat=Seat(0),
+            remaining_chips=ZERO_CHIPS,
+            participation_status=HandParticipationStatus.ELIMINATED,
+        )
+        player2 = sample_player_factory(
+            player_id="player-2",
+            seat=Seat(1),
+            remaining_chips=ZERO_CHIPS,
+            participation_status=HandParticipationStatus.ELIMINATED,
+        )
+
+        game = minimal_game_factory(players=[player1, player2])
+
+        assert game.is_tournament_complete() is True
+
+    def test_returns_false_when_two_players_remaining(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Tournament continues with 2+ active players."""
+        player1 = sample_player_factory(
+            player_id="player-1",
+            seat=Seat(0),
+            remaining_chips=MEDIUM_CHIPS,
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+        player2 = sample_player_factory(
+            player_id="player-2",
+            seat=Seat(1),
+            remaining_chips=MEDIUM_CHIPS,
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+
+        game = minimal_game_factory(players=[player1, player2])
+
+        assert game.is_tournament_complete() is False
+
+    def test_returns_false_when_multiple_players_remaining(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Tournament continues with multiple active players."""
+        player1 = sample_player_factory(
+            player_id="player-1",
+            seat=Seat(0),
+            remaining_chips=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+        player2 = sample_player_factory(
+            player_id="player-2",
+            seat=Seat(1),
+            remaining_chips=ChipAmount(1500),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+        player3 = sample_player_factory(
+            player_id="player-3",
+            seat=Seat(2),
+            remaining_chips=ChipAmount(2000),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+        player4 = sample_player_factory(
+            player_id="player-4",
+            seat=Seat(3),
+            remaining_chips=MEDIUM_CHIPS,
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+
+        game = minimal_game_factory(players=[player1, player2, player3, player4])
+
+        assert game.is_tournament_complete() is False
+
+    def test_ignores_eliminated_players(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Only counts active (non-eliminated) players."""
+        player1 = sample_player_factory(
+            player_id="player-1",
+            seat=Seat(0),
+            remaining_chips=LARGE_CHIPS,
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+        player2 = sample_player_factory(
+            player_id="player-2",
+            seat=Seat(1),
+            remaining_chips=ZERO_CHIPS,
+            participation_status=HandParticipationStatus.ELIMINATED,
+        )
+        player3 = sample_player_factory(
+            player_id="player-3",
+            seat=Seat(2),
+            remaining_chips=ZERO_CHIPS,
+            participation_status=HandParticipationStatus.ELIMINATED,
+        )
+        player4 = sample_player_factory(
+            player_id="player-4",
+            seat=Seat(3),
+            remaining_chips=ZERO_CHIPS,
+            participation_status=HandParticipationStatus.ELIMINATED,
+        )
+
+        game = minimal_game_factory(players=[player1, player2, player3, player4])
+
+        assert game.is_tournament_complete() is True
+
+    def test_returns_false_when_chips_are_unequal(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Tournament continues even if chip counts are very unequal."""
+        player1 = sample_player_factory(
+            player_id="player-1",
+            seat=Seat(0),
+            remaining_chips=ChipAmount(5900),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+        player2 = sample_player_factory(
+            player_id="player-2",
+            seat=Seat(1),
+            remaining_chips=ChipAmount(100),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+
+        game = minimal_game_factory(players=[player1, player2])
+
+        assert game.is_tournament_complete() is False
+
+    def test_returns_false_when_short_stacks_remain(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Tournament continues even with very short stacks (1 chip)."""
+        player1 = sample_player_factory(
+            player_id="player-1",
+            seat=Seat(0),
+            remaining_chips=ChipAmount(5998),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+        player2 = sample_player_factory(
+            player_id="player-2",
+            seat=Seat(1),
+            remaining_chips=ChipAmount(1),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+        player3 = sample_player_factory(
+            player_id="player-3",
+            seat=Seat(2),
+            remaining_chips=ChipAmount(1),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+
+        game = minimal_game_factory(players=[player1, player2, player3])
+
+        assert game.is_tournament_complete() is False
