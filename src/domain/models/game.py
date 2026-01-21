@@ -324,7 +324,7 @@ class Game:
 
         return True
 
-    def get_current_player_id(self) -> PlayerId | None:
+    def get_player_to_act_id(self) -> PlayerId | None:
         """Get the ID of the player who needs to act.
 
         Returns:
