@@ -2,10 +2,15 @@
 
 Loads OpenRouter client configuration from JSON files.
 Configuration files are located at the project root in config/llm/.
+
+API key can be provided via:
+1. OPENROUTER_API_KEY environment variable (takes precedence)
+2. api_key field in the JSON config file (fallback)
 """
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any, final, override
 
@@ -58,8 +63,16 @@ class OpenRouterConfigLoader(BaseConfigLoader[OpenRouterConfig]):
         payload = self._json_loader.load()
         extractor = ConfigTypeExtractor(logger=self._logger)
 
-        # Extract required api_key
-        api_key = extractor.get_required_string(payload, "api_key", context="root")
+        # Environment variable takes precedence for API key
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+        if not api_key:
+            # Fall back to JSON config (optional)
+            api_key = extractor.get_str_or_none(payload, "api_key", context="root")
+        if not api_key:
+            raise ValueError(
+                "API key must be set via OPENROUTER_API_KEY environment variable "
+                "or api_key field in config JSON"
+            )
 
         # Extract optional fields with defaults
         base_url = extractor.get_string_with_default(
