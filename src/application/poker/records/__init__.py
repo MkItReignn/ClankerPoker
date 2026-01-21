@@ -1,6 +1,6 @@
-"""Game record models and formatters."""
+"""Game record models and serializers."""
 
-from src.application.poker.records.formatter import RecordFormatter
+from src.application.poker.records.context_serializer import RecordToLlmContextSerializer
 from src.application.poker.records.models import (
     ActionRecord,
     GameLevelPlayerRecord,
@@ -16,7 +16,6 @@ from src.application.poker.records.models import (
     TurnLevelPlayerRecord,
     TurnRecord,
 )
-from src.application.poker.records.recorder import Recorder
 
 __all__ = [
     # Main hierarchy models
@@ -36,6 +35,5 @@ __all__ = [
     "PlayerOutcome",
     "ShowdownResult",
     # Utilities
-    "RecordFormatter",
-    "Recorder",
+    "RecordToLlmContextSerializer",
 ]

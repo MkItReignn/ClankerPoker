@@ -2,14 +2,9 @@
 
 from __future__ import annotations
 
-from src.application.poker.records.models import (
-    GameRecord,
-    HandOutcome,
-    HandRecord,
-    PlayerOutcome,
-    RoundRecord,
-    TurnRecord,
-)
+from src.application.poker.records.models import (GameRecord, HandOutcome,
+                                                  HandRecord, PlayerOutcome,
+                                                  RoundRecord, TurnRecord)
 from src.domain.models.player import HandParticipationStatus
 from src.logger.factories import get_generic_logger
 
@@ -55,7 +50,11 @@ class RecordLogger:
                 "model": player_record.model_id.value,
                 "seat": player_record.seat.value,
                 "position": player_record.position.value if player_record.position else None,
-                "hole_cards": f"{player_record.hole_cards.card1} {player_record.hole_cards.card2}" if player_record.hole_cards else None,
+                "hole_cards": (
+                    f"{player_record.hole_cards.card1} {player_record.hole_cards.card2}"
+                    if player_record.hole_cards
+                    else None
+                ),
                 "stack": player_record.chips.value,
             }
             for player_record in sorted_records
@@ -103,13 +102,11 @@ class RecordLogger:
             pot = round_record.turns[-1].pot_after.value
 
         folded = [
-            ps.player_name for ps in round_record.player_records.values()
+            ps.player_name
+            for ps in round_record.player_records.values()
             if ps.participation_status == HandParticipationStatus.FOLDED
         ]
-        all_in = [
-            ps.player_name for ps in round_record.player_records.values()
-            if ps.is_all_in
-        ]
+        all_in = [ps.player_name for ps in round_record.player_records.values() if ps.is_all_in]
 
         self._logger.info(
             "Betting round ended",
@@ -147,18 +144,18 @@ class RecordLogger:
                     po = winner_map[winner_id]
                     winners_info.append(f"{po.player_name}: {po.chips_won.value}")
 
-        players_remaining = sum(
-            1 for po in outcome.player_outcomes if not po.was_eliminated
-        )
+        players_remaining = sum(1 for po in outcome.player_outcomes if not po.was_eliminated)
 
         showdown_info: list[dict[str, str]] = []
         if outcome.was_showdown and outcome.showdown_results:
             for sr in outcome.showdown_results:
-                showdown_info.append({
-                    "player": sr.player_name,
-                    "hole_cards": f"{sr.hole_cards.card1} {sr.hole_cards.card2}",
-                    "hand": str(sr.hand_evaluation),
-                })
+                showdown_info.append(
+                    {
+                        "player": sr.player_name,
+                        "hole_cards": f"{sr.hole_cards.card1} {sr.hole_cards.card2}",
+                        "hand": str(sr.hand_evaluation),
+                    }
+                )
 
         self._logger.info(
             "Hand completed",
@@ -202,9 +199,7 @@ class RecordLogger:
             position=position,
         )
 
-    def _get_eliminated_by_name(
-        self, outcome: HandOutcome, game_record: GameRecord
-    ) -> str | None:
+    def _get_eliminated_by_name(self, outcome: HandOutcome, game_record: GameRecord) -> str | None:
         """Determine who eliminated the players, if there's a single winner."""
         if len(outcome.winner_ids) != 1:
             return None
@@ -214,9 +209,7 @@ class RecordLogger:
             return game_record.player_records[eliminated_by_id].player_name
         return None
 
-    def _get_starting_chips(
-        self, player_id: str, hand: HandRecord
-    ) -> int:
+    def _get_starting_chips(self, player_id: str, hand: HandRecord) -> int:
         """Get starting chips for a player from hand record."""
         if player_id in hand.player_records:
             return hand.player_records[player_id].starting_chips.value
@@ -262,9 +255,7 @@ class RecordLogger:
 
         return positions
 
-    def log_hand_completed_with_eliminations(
-        self, game_record: GameRecord
-    ) -> None:
+    def log_hand_completed_with_eliminations(self, game_record: GameRecord) -> None:
         """Log hand completion with all related events (completion, standings, eliminations).
 
         Computes derived information (eliminated_by, position) from record objects
@@ -291,9 +282,7 @@ class RecordLogger:
         if not eliminated_players:
             return
 
-        active_count: int = sum(
-            1 for p in outcome.player_outcomes if not p.was_eliminated
-        )
+        active_count: int = sum(1 for p in outcome.player_outcomes if not p.was_eliminated)
 
         eliminated_by_name: str | None = self._get_eliminated_by_name(outcome, game_record)
         sorted_eliminated: list[PlayerOutcome] = self._sort_eliminated_by_starting_chips(
@@ -303,7 +292,7 @@ class RecordLogger:
             sorted_eliminated, active_count, hand
         )
 
-        for po, position in zip(sorted_eliminated, positions):
+        for po, position in zip(sorted_eliminated, positions, strict=False):
             self.log_player_eliminated(
                 hand.hand_number,
                 po.player_id,
@@ -312,9 +301,7 @@ class RecordLogger:
                 position,
             )
 
-    def log_game_ended(
-        self, record: GameRecord, total_hands: int, total_actions: int
-    ) -> None:
+    def log_game_ended(self, record: GameRecord, total_hands: int, total_actions: int) -> None:
         """Log tournament completion."""
         winner_name = None
         if record.player_records:
