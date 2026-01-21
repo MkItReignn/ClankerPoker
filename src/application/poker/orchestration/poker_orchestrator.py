@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from src.application.poker.context.types import PokerDecisionContext
-from src.application.poker.history.models import GameHistory
 from src.application.poker.orchestration.state_manager import PokerStateManager
+from src.application.poker.records.models import GameRecord
 from src.application.protocols.player import (ActionResponse,
                                               AsyncActionProvider)
 from src.domain.models.actions import Action
@@ -28,7 +28,7 @@ class GameResult:
         winner_id: ID of the winning player (or None if cancelled).
         winner_name: Name of the winning player.
         final_state: The final game state.
-        history: Complete game history.
+        record: Complete game record.
         total_hands: Number of hands played.
         total_actions: Total number of actions taken.
     """
@@ -36,7 +36,7 @@ class GameResult:
     winner_id: str | None
     winner_name: str | None
     final_state: Game
-    history: GameHistory | None
+    record: GameRecord | None
     total_hands: int
     total_actions: int
 
@@ -161,7 +161,7 @@ class PokerOrchestrator:
             winner_id=winner[0] if winner else None,
             winner_name=winner[1] if winner else None,
             final_state=self._state.game,
-            history=self._state.history,
+            record=self._state.record,
             total_hands=hands_played,
             total_actions=self._total_actions,
         )
