@@ -42,16 +42,16 @@ class PokerPlayerConfig:
         """Convert to generic PlayerConfig for use with action providers.
 
         Returns:
-            PlayerConfig instance with model_id as string value.
+            PlayerConfig instance with all player configuration including model_id.
         """
         from src.application.protocols.player import PlayerConfig
 
         return PlayerConfig(
             player_id=self.player_id,
             name=self.name,
+            model_id=self.model_id,
             personality=self.personality,
             addon_prompt=self.addon_prompt,
-            model_id=self.model_id.value,
         )
 
 
