@@ -59,17 +59,15 @@ class ParseSuccess(Generic[TAction, TNarration]):
     """Successful parse result.
 
     Action parsing succeeded, so the game can progress.
-    Narration and reasoning may have failed - caller should handle with logging.
+    Narration may have failed - caller should handle with logging.
 
     Attributes:
         action: The successfully parsed action (guaranteed valid).
         narration: Parsed narration or ParseError if narration parsing failed.
-        reasoning: Parsed reasoning text or ParseError if reasoning parsing failed.
     """
 
     action: TAction
     narration: TNarration | ParseError
-    reasoning: str | ParseError
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,6 +87,22 @@ class ParseFailure:
 # Type alias for parse results: discriminated union
 # Use isinstance() to discriminate between success and failure
 type ParseResult[TAction, TNarration] = ParseSuccess[TAction, TNarration] | ParseFailure
+
+
+@dataclass(frozen=True, slots=True)
+class ActionResponse(Generic[TAction, TNarration]):
+    """Response from an action provider - contains chosen action and optional narration."""
+
+    action: TAction
+    narration: TNarration | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class TurnResult(Generic[TAction, TNarration]):
+    """Result of executing a single turn - wraps ActionResponse with player context."""
+
+    player_id: str
+    response: ActionResponse[TAction, TNarration]
 
 
 class ResponseParser(Protocol[TAction, TNarration, TAvailableActions]):

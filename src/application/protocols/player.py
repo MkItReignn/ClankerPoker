@@ -3,35 +3,31 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Generic, Protocol, TypeVar
+from typing import Protocol, TypeVar
+
+from src.application.protocols.response import ActionResponse
+from src.domain.models.llm_model import LlmModel
 
 # Generic type variables for game-agnostic design
-# Contravariant: used as input parameters in Protocol methods
+# Contravariant: used only as input parameters in Protocol methods
 TContext = TypeVar("TContext", contravariant=True)
 TAvailableActions = TypeVar("TAvailableActions", contravariant=True)
-# Covariant: used in return types
-TAction = TypeVar("TAction", covariant=True)
-TNarration = TypeVar("TNarration", covariant=True)
+# Invariant: used in ActionResponse which stores them as fields
+TAction = TypeVar("TAction")
+TNarration = TypeVar("TNarration")
+
+# Re-export for backwards compatibility
+# TODO: Remove this backwards compatability
+__all__ = ["ActionResponse", "AsyncActionProvider", "PlayerConfig"]
 
 
 @dataclass(frozen=True, slots=True)
 class PlayerConfig:
-    """Configuration for a player's LLM behavior.
-
-    This is game-agnostic configuration that controls how the LLM
-    generates responses for this player.
-
-    Attributes:
-        player_id: Unique identifier for the player in the game.
-        name: Display name for the player (used in prompts).
-        personality: Optional personality description for system prompt generation.
-        addon_prompt: Optional additional prompt text for customization.
-        model_id: The LLM model identifier to use.
-    """
+    """Configuration for a player's LLM behavior."""
 
     player_id: str
     name: str
-    model_id: str
+    model_id: LlmModel
     personality: str | None = None
     addon_prompt: str | None = None
 
@@ -40,26 +36,6 @@ class PlayerConfig:
             raise ValueError("player_id cannot be empty")
         if not self.name:
             raise ValueError("name cannot be empty")
-        if not self.model_id:
-            raise ValueError("model_id cannot be empty")
-
-
-@dataclass(frozen=True, slots=True)
-class ActionResponse(Generic[TAction, TNarration]):
-    """Response from an action provider.
-
-    Contains the chosen action and optional reasoning/narration.
-    The narration is game-specific structured output for display.
-
-    Attributes:
-        action: The chosen action (game-specific type).
-        reasoning: Optional internal reasoning from the LLM.
-        narration: Optional structured narration for display (game-specific type).
-    """
-
-    action: TAction
-    reasoning: str | None = None
-    narration: TNarration | None = None
 
 
 class AsyncActionProvider(Protocol[TContext, TAvailableActions, TAction, TNarration]):
@@ -86,7 +62,7 @@ class AsyncActionProvider(Protocol[TContext, TAvailableActions, TAction, TNarrat
         Args:
             context: All information needed to make a decision.
             available_actions: The set of legal actions.
-            config: Configuration for this player's behavior.
+            config: Configuration for this player's behavior (includes model_id).
 
         Returns:
             ActionResponse containing the chosen action and optional narration.
