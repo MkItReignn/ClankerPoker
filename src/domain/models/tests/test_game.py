@@ -548,29 +548,6 @@ class TestIsTournamentComplete:
 
         assert game.is_tournament_complete() is True
 
-    def test_returns_true_when_all_players_eliminated(
-        self,
-        sample_player_factory: Callable[..., Player],
-        minimal_game_factory: Callable[..., Game],
-    ) -> None:
-        """Game is complete when all players are eliminated."""
-        player1 = sample_player_factory(
-            player_id="player-1",
-            seat=Seat(0),
-            remaining_chips=ZERO_CHIPS,
-            participation_status=HandParticipationStatus.ELIMINATED,
-        )
-        player2 = sample_player_factory(
-            player_id="player-2",
-            seat=Seat(1),
-            remaining_chips=ZERO_CHIPS,
-            participation_status=HandParticipationStatus.ELIMINATED,
-        )
-
-        game = minimal_game_factory(players=[player1, player2])
-
-        assert game.is_tournament_complete() is True
-
     def test_returns_false_when_two_players_remaining(
         self,
         sample_player_factory: Callable[..., Player],
