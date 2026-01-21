@@ -88,6 +88,21 @@ class Players:
             players = [p for p in players if p.id != excluded_player_id]
         return tuple(players)
 
+    def players_in_hand_and_not_all_in(self) -> tuple[Player, ...]:
+        """Get all players who are in the hand and not all-in (can still act)."""
+        return tuple(p for p in self._players.values() if p.is_in_hand() and not p.is_all_in())
+
+    def are_all_players_all_in(self) -> bool:
+        """Check if all players in hand are all-in (no more betting possible)."""
+        players_in_hand = self.in_hand()
+
+        if len(players_in_hand) <= 1:
+            return False
+
+        # All players are all-in if no one can act
+        players_in_hand_and_not_all_in = self.players_in_hand_and_not_all_in()
+        return len(players_in_hand_and_not_all_in) == 0
+
     def get_all_players_invested_in_current_hand(self) -> list[Player]:
         """Get all players who have invested chips in the current hand (including folded)."""
         return [p for p in self._players.values() if p.total_invested_this_hand.value > 0]
