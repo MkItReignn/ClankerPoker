@@ -1,7 +1,7 @@
-"""Pytest fixtures for PokerGameRunner integration tests.
+"""Pytest fixtures for PokerStateManager integration tests.
 
-These fixtures support behavioral testing of the game runner by providing:
-- Game state factories for various starting conditions
+These fixtures support behavioral testing of the state manager by providing:
+- State manager factories with configurable tournament settings
 - A mock action provider that returns predetermined actions
 - Player and configuration factories
 """
@@ -9,77 +9,28 @@ These fixtures support behavioral testing of the game runner by providing:
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import datetime, UTC
 from typing import Any
 
 import pytest
 
+from src.application.poker.orchestration.state_manager import PokerStateManager
 from src.application.protocols.player import ActionResponse, PlayerConfig
-from src.application.poker.orchestration.runner import PokerGameRunner
+from src.application.protocols.response import TurnResult
 from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.config.poker.config import PokerGameConfig, PokerPlayerConfig
 from src.config.tournament.config import PayoutStructure, TournamentConfig
 from src.domain.models.actions import Action, ActionType
 from src.domain.models.available_action import AvailableActions
 from src.domain.models.blinds import BlindLevel
-from src.domain.models.bot import Bot, BotId, BotType, Prompt
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import (BettingState, BlindState, Game,
-                                    GameIdentity, GamePhase, GameStatus,
-                                    HandState)
 from src.domain.models.llm_model import LlmModel
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player,
-                                      PlayerId)
-from src.domain.models.players import Players
-from src.domain.models.pot import Pot, PotState
-from src.domain.models.seat import Seat
+from src.domain.models.narration import Narration
 
 SMALL_BLIND = ChipAmount(10)
 BIG_BLIND = ChipAmount(20)
 STARTING_CHIPS = ChipAmount(1000)
 TEST_SEED = 42
-
-
-@pytest.fixture
-def sample_bot() -> Bot:
-    """A sample bot for creating players."""
-    return Bot(
-        id=BotId("test-bot-1"),
-        name="Test Bot",
-        bot_type=BotType.HOUSE,
-        llm_model=LlmModel.OPENAI_GPT4O_MINI,
-        system_prompt=Prompt("You are a test bot."),
-    )
-
-
-@pytest.fixture
-def player_factory(sample_bot: Bot) -> Callable[..., Player]:
-    """Factory to create players with configurable properties."""
-
-    def create_player(
-        player_id: PlayerId,
-        seat: Seat,
-        remaining_chips: ChipAmount = STARTING_CHIPS,
-        total_invested_this_hand: ChipAmount | None = None,
-        participation_status: HandParticipationStatus = HandParticipationStatus.IN_HAND,
-        betting_status: BettingRoundActionStatus = BettingRoundActionStatus.NEEDS_ACTION,
-    ) -> Player:
-        if total_invested_this_hand is None:
-            total_invested_this_hand = ChipAmount(0)
-
-        return Player(
-            id=player_id,
-            bot_id=sample_bot.id,
-            seat=seat,
-            remaining_chips=remaining_chips,
-            hole_cards=None,
-            betting_status=betting_status,
-            participation_status=participation_status,
-            total_invested_this_hand=total_invested_this_hand,
-        )
-
-    return create_player
+TEST_GAME_ID = "game-test1234"
 
 
 @pytest.fixture
@@ -129,113 +80,138 @@ def tournament_config() -> TournamentConfig:
     )
 
 
+def create_two_player_config() -> PokerGameConfig:
+    """Create config for 2-player games."""
+    player_configs = {
+        "player-1": PokerPlayerConfig(
+            player_id="player-1",
+            name="Alice",
+            model_id=LlmModel.OPENAI_GPT4O_MINI,
+        ),
+        "player-2": PokerPlayerConfig(
+            player_id="player-2",
+            name="Bob",
+            model_id=LlmModel.OPENAI_GPT4O_MINI,
+        ),
+    }
+    return PokerGameConfig(player_configs=player_configs)
+
+
+def create_three_player_config() -> PokerGameConfig:
+    """Create config for 3-player games."""
+    player_configs = {
+        "player-1": PokerPlayerConfig(
+            player_id="player-1",
+            name="Alice",
+            model_id=LlmModel.OPENAI_GPT4O_MINI,
+        ),
+        "player-2": PokerPlayerConfig(
+            player_id="player-2",
+            name="Bob",
+            model_id=LlmModel.OPENAI_GPT4O_MINI,
+        ),
+        "player-3": PokerPlayerConfig(
+            player_id="player-3",
+            name="Charlie",
+            model_id=LlmModel.OPENAI_GPT4O_MINI,
+        ),
+    }
+    return PokerGameConfig(player_configs=player_configs)
+
+
 @pytest.fixture
-def waiting_game_factory(
+def two_player_config() -> PokerGameConfig:
+    """Config for 2-player games."""
+    return create_two_player_config()
+
+
+@pytest.fixture
+def three_player_config() -> PokerGameConfig:
+    """Config for 3-player games."""
+    return create_three_player_config()
+
+
+@pytest.fixture
+def poker_state(
+    two_player_config: PokerGameConfig,
     tournament_config: TournamentConfig,
-) -> Callable[..., Game]:
-    """Factory to create games in WAITING status for initialization tests."""
-
-    def create_game(
-        players: list[Player],
-        seed: int = TEST_SEED,
-    ) -> Game:
-        now = datetime.now(UTC)
-        return Game(
-            identity=GameIdentity(
-                id="test-game-1",
-                created_at=now,
-                updated_at=now,
-                started_at=None,
-                completed_at=None,
-                status=GameStatus.WAITING,
-                seed=seed,
-            ),
-            tournament_config=tournament_config,
-            hand_state=HandState(
-                hand_number=1,
-                current_phase=GamePhase.PRE_FLOP,
-                community_cards=[],
-                is_initial_hand_setup=True,
-            ),
-            pot_state=PotState(
-                main_pot=Pot(
-                    amount=ChipAmount(0),
-                    eligible_player_ids=frozenset({p.id for p in players}),
-                ),
-                side_pots=[],
-            ),
-            betting_state=BettingState(
-                last_raise_increment=ChipAmount(0),
-                position_to_act=0,
-            ),
-            button_seat=Seat.SEAT_0,
-            blind_state=BlindState(
-                current_blind_level=BlindLevel(
-                    small_blind=SMALL_BLIND,
-                    big_blind=BIG_BLIND,
-                    level=1,
-                )
-            ),
-            players=Players.from_list(players),
-            results=None,
-        )
-
-    return create_game
+) -> PokerStateManager:
+    """Create a PokerStateManager with test configuration for 2 players."""
+    return PokerStateManager(
+        config=two_player_config,
+        tournament_config=tournament_config,
+        game_id=TEST_GAME_ID,
+        seed=TEST_SEED,
+    )
 
 
 @pytest.fixture
-def two_player_waiting_game(
-    player_factory: Callable[..., Player],
-    waiting_game_factory: Callable[..., Game],
-) -> Game:
-    """A 2-player game in WAITING status ready for initialization."""
-    players = [
-        player_factory(player_id="player-1", seat=Seat.SEAT_0),
-        player_factory(player_id="player-2", seat=Seat.SEAT_1),
-    ]
-    return waiting_game_factory(players=players)
-
-
-@pytest.fixture
-def three_player_waiting_game(
-    player_factory: Callable[..., Player],
-    waiting_game_factory: Callable[..., Game],
-) -> Game:
-    """A 3-player game in WAITING status ready for initialization."""
-    players = [
-        player_factory(player_id="player-1", seat=Seat.SEAT_0),
-        player_factory(player_id="player-2", seat=Seat.SEAT_1),
-        player_factory(player_id="player-3", seat=Seat.SEAT_2),
-    ]
-    return waiting_game_factory(players=players)
-
-
-@pytest.fixture
-def poker_runner(poker_game_config: PokerGameConfig) -> PokerGameRunner:
-    """Create a PokerGameRunner with test configuration."""
-    return PokerGameRunner(config=poker_game_config)
+def three_player_state(
+    three_player_config: PokerGameConfig,
+    tournament_config: TournamentConfig,
+) -> PokerStateManager:
+    """Create a PokerStateManager with test configuration for 3 players."""
+    return PokerStateManager(
+        config=three_player_config,
+        tournament_config=tournament_config,
+        game_id=TEST_GAME_ID,
+        seed=TEST_SEED,
+    )
 
 
 class ScriptedActionProvider:
     """Action provider that returns actions from a predetermined script.
 
     This is the mock at the LLM boundary - the only external dependency.
-    Actions are consumed in order; raises if script is exhausted.
+
+    Supports two modes:
+    1. Sequential actions: Pass a list of actions, consumed in order by any player.
+    2. Per-player actions: Pass a dict mapping player_id to list of actions,
+       each player gets actions from their own list.
     """
 
-    def __init__(self, actions: list[Action]) -> None:
-        self._actions = list(actions)
-        self._index = 0
+    def __init__(
+        self,
+        actions: list[Action] | dict[str, list[Action]],
+    ) -> None:
+        if isinstance(actions, dict):
+            self._per_player_actions = {pid: list(acts) for pid, acts in actions.items()}
+            self._per_player_indices: dict[str, int] = {pid: 0 for pid in actions.keys()}
+            self._actions: list[Action] | None = None
+            self._index = 0
+        else:
+            self._actions = list(actions)
+            self._index = 0
+            self._per_player_actions: dict[str, list[Action]] | None = None
+            self._per_player_indices: dict[str, int] | None = None
 
     @property
     def actions_taken(self) -> int:
         """Number of actions consumed from the script."""
+        if self._per_player_actions is not None:
+            return sum(self._per_player_indices.values())
         return self._index
 
     @property
     def actions_remaining(self) -> int:
         """Number of actions left in the script."""
+        if self._per_player_actions is not None:
+            total = sum(len(acts) for acts in self._per_player_actions.values())
+            return total - self.actions_taken
         return len(self._actions) - self._index
+
+    async def get_action(
+        self,
+        context: Any,
+        available_actions: list[AvailableActions],
+        config: PlayerConfig,
+    ) -> ActionResponse[Action, None]:
+        """Return the next scripted action for the requesting player.
+
+        This method makes ScriptedActionProvider compatible with the
+        AsyncActionProvider protocol used by PokerOrchestrator.
+        """
+        return await self(context, available_actions, config)
 
     async def __call__(
         self,
@@ -243,23 +219,85 @@ class ScriptedActionProvider:
         available_actions: list[AvailableActions],
         config: PlayerConfig,
     ) -> ActionResponse[Action, None]:
-        """Return the next scripted action."""
+        """Return the next scripted action for the requesting player."""
+        if self._per_player_actions is not None:
+            player_actions = self._per_player_actions.get(config.player_id)
+            if player_actions is None:
+                raise RuntimeError(
+                    f"No actions configured for player {config.player_id}. "
+                    f"Available players: {list(self._per_player_actions.keys())}"
+                )
+
+            player_index = self._per_player_indices[config.player_id]
+            if player_index >= len(player_actions):
+                raise RuntimeError(
+                    f"Script exhausted for player {config.player_id} after {player_index} actions. "
+                    f"Player requested action but none available."
+                )
+
+            requested_action = player_actions[player_index]
+
+            # If the requested action is not available, try to find a compatible one
+            # (e.g., if CALL requested but only CHECK available, use CHECK)
+            action = self._find_compatible_action(requested_action, available_actions)
+
+            self._per_player_indices[config.player_id] = player_index + 1
+            return ActionResponse(action=action, narration=None)
+
         if self._index >= len(self._actions):
             raise RuntimeError(
                 f"Script exhausted after {self._index} actions. "
                 f"Player {config.player_id} requested action but none available."
             )
 
-        action = self._actions[self._index]
+        requested_action = self._actions[self._index]
+        action = self._find_compatible_action(requested_action, available_actions)
         self._index += 1
         return ActionResponse(action=action, narration=None)
 
+    def _find_compatible_action(
+        self,
+        requested: Action,
+        available_actions: list[AvailableActions],
+    ) -> Action:
+        """Find a compatible action if the requested one is not available.
+
+        Handles cases like CALL vs CHECK (both mean "match the current bet").
+        """
+        from src.domain.models.available_action import (AvailableCallAction,
+                                                        AvailableCheckAction)
+
+        # Check if requested action is available
+        for available in available_actions:
+            if available.action_type == requested.action_type:
+                return requested
+
+        # If CALL requested but only CHECK available (or vice versa), use what's available
+        if requested.action_type == ActionType.CALL:
+            for available in available_actions:
+                if isinstance(available, AvailableCheckAction):
+                    return Action(action_type=ActionType.CHECK)
+        elif requested.action_type == ActionType.CHECK:
+            for available in available_actions:
+                if isinstance(available, AvailableCallAction):
+                    return Action(action_type=ActionType.CALL, amount=available.call_amount)
+
+        # No compatible action found, return requested (will fail validation with clear error)
+        return requested
+
 
 @pytest.fixture
-def scripted_provider_factory() -> Callable[[list[Action]], ScriptedActionProvider]:
-    """Factory to create scripted action providers."""
+def scripted_provider_factory() -> (
+    Callable[[list[Action] | dict[str, list[Action]]], ScriptedActionProvider]
+):
+    """Factory to create scripted action providers.
 
-    def create_provider(actions: list[Action]) -> ScriptedActionProvider:
+    Accepts either:
+    - list[Action]: Sequential actions consumed by any player
+    - dict[str, list[Action]]: Per-player actions, keyed by player_id
+    """
+
+    def create_provider(actions: list[Action] | dict[str, list[Action]]) -> ScriptedActionProvider:
         return ScriptedActionProvider(actions)
 
     return create_provider
@@ -293,3 +331,25 @@ def raise_to(amount: int) -> Action:
 def all_in(amount: int) -> Action:
     """Create an all-in action."""
     return Action(action_type=ActionType.ALL_IN, amount=ChipAmount(amount))
+
+
+async def run_turn(
+    state: PokerStateManager,
+    action_provider: ScriptedActionProvider,
+) -> TurnResult[Action, Narration] | None:
+    """Run a single turn - get action from provider and apply it.
+
+    Test helper that bundles the typical test flow:
+    get player -> build context -> get available actions -> get action -> apply.
+    """
+    player_id = state.get_player_to_act_id()
+    if player_id is None:
+        return None
+
+    config = state.get_player_config(player_id)
+    context = state.build_context(player_id)
+    available_actions = state.get_available_actions(player_id)
+
+    response = await action_provider.get_action(context, available_actions, config)
+
+    return state.apply_action(player_id, response)
