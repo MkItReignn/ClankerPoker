@@ -1,57 +1,23 @@
-"""Format game history for LLM context."""
+"""Format game record for LLM context."""
 
 from __future__ import annotations
 
-from typing import ClassVar
-
-from src.application.poker.history.models import GameHistory, HandHistory
-from src.domain.models.chips import ChipAmount
+from src.application.poker.records.models import GameRecord, HandRecord
 from src.domain.rules.hand_evaluator import HandEvaluation, HandRank
 
 
-class HistoryFormatter:
-    """Formats game history into concise text for LLM context.
+class RecordFormatter:
+    """Formats game record into concise text for LLM context.
 
     Produces a dense, parseable format optimized for LLM comprehension.
     """
 
-    # Mapping of action types to their shorthand notation
-    ACTION_SHORTHAND_MAP: ClassVar[dict[str, str]] = {
-        "fold": "F",
-        "check": "X",
-        "call": "C",
-        "bet": "B",
-        "raise": "R",
-        "all_in": "AI",
-    }
-
     @staticmethod
-    def format_action_shorthand(action_type: str, amount: ChipAmount | None) -> str:
-        """Format an action in shorthand notation.
-
-        Examples:
-            F = fold, X = check, C = call, B100 = bet 100
-            R200 = raise to 200, AI = all-in
-
-        Args:
-            action_type: The action type string.
-            amount: The chip amount (if applicable).
-
-        Returns:
-            Shorthand string representation.
-        """
-        short = HistoryFormatter.ACTION_SHORTHAND_MAP.get(action_type, action_type[0].upper())
-
-        if amount is not None and action_type in ("bet", "raise", "all_in"):
-            return f"{short}{amount.value}"
-        return short
-
-    @staticmethod
-    def format_hand_actions(hand: HandHistory) -> dict[str, list[str]]:
+    def format_hand_actions(hand: HandRecord) -> dict[str, list[str]]:
         """Format all actions in a hand grouped by phase.
 
         Args:
-            hand: The hand history to format.
+            hand: The hand record to format.
 
         Returns:
             Dictionary mapping phase names to lists of action strings.
@@ -59,23 +25,20 @@ class HistoryFormatter:
         phase_actions: dict[str, list[str]] = {}
 
         # Iterate through rounds (new hierarchical structure)
-        for round_history in hand.rounds:
-            phase_name = round_history.phase.value.upper()
+        for round_record in hand.rounds:
+            phase_name = round_record.phase.value.upper()
             if phase_name not in phase_actions:
                 phase_actions[phase_name] = []
 
             # Iterate through turns in this round
-            for turn in round_history.turns:
+            for turn in round_record.turns:
                 action = turn.action
-                action_str = HistoryFormatter.format_action_shorthand(
-                    action.action_type.value,
-                    action.amount,
-                )
+                action_str = action.to_short_string()
 
                 # Get position for this player
-                player_state = hand.player_states.get(action.player_id)
-                if player_state and player_state.position:
-                    position_str = player_state.position.value.upper()
+                player_record = hand.player_records.get(action.player_id)
+                if player_record and player_record.position:
+                    position_str = player_record.position.value.upper()
                     player_label = f"{action.player_name}({position_str})"
                 else:
                     # Fallback if position not available
@@ -86,7 +49,7 @@ class HistoryFormatter:
         return phase_actions
 
     @staticmethod
-    def format_hand_summary(hand: HandHistory, viewer_id: str | None = None) -> str:
+    def format_hand_summary(hand: HandRecord, viewer_id: str | None = None) -> str:
         """Format a completed hand as a one-line summary.
 
         Args:
@@ -135,7 +98,7 @@ class HistoryFormatter:
         return summary
 
     @staticmethod
-    def format_hand_starting_stacks(hand: HandHistory, viewer_id: str | None = None) -> str:
+    def format_hand_starting_stacks(hand: HandRecord, viewer_id: str | None = None) -> str:
         """Format starting stack sizes for a hand.
 
         Args:
@@ -149,10 +112,10 @@ class HistoryFormatter:
             "  Stacks: Alice(BUTTON)=1000, Bob(SB)=950, Carol(BB)=1200"
         """
         stack_strs = []
-        for player_id, player_state in hand.player_states.items():
-            name = "you" if viewer_id and player_id == viewer_id else player_state.player_name
+        for player_id, player_record in hand.player_records.items():
+            name = "you" if viewer_id and player_id == viewer_id else player_record.player_name
             position_str = ""
-            if player_state.position:
+            if player_record.position:
                 # Abbreviate position names for compactness
                 pos_abbrev = {
                     "button": "BTN",
@@ -161,27 +124,27 @@ class HistoryFormatter:
                     "BUTTON": "BTN",
                     "SMALL_BLIND": "SB",
                     "BIG_BLIND": "BB",
-                }.get(player_state.position.value, player_state.position.value[:3].upper())
+                }.get(player_record.position.value, player_record.position.value[:3].upper())
                 position_str = f"({pos_abbrev})"
-            stack_strs.append(f"{name}{position_str}={player_state.starting_chips.value}")
+            stack_strs.append(f"{name}{position_str}={player_record.starting_chips.value}")
 
         return f"  Stacks: {', '.join(stack_strs)}"
 
     @staticmethod
-    def format_recent_history(
-        history: GameHistory,
+    def format_recent_records(
+        record: GameRecord,
         viewer_id: str | None = None,
         max_hands: int = 5,
     ) -> str:
-        """Format recent game history for LLM context.
+        """Format recent game record for LLM context.
 
         Args:
-            history: The game history to format.
+            record: The game record to format.
             viewer_id: Optional viewer's player_id to personalize output.
             max_hands: Maximum number of recent hands to include.
 
         Returns:
-            Formatted history string.
+            Formatted record string.
 
         Example output:
             === PREVIOUS HANDS ===
@@ -195,7 +158,7 @@ class HistoryFormatter:
               FLOP: Carol(BIG_BLIND):X, Dave:B300, Alice(BUTTON):F, Carol(BIG_BLIND):C
               TURN: Carol(BIG_BLIND):X, Dave:AI350, Carol(BIG_BLIND):C
         """
-        recent = history.get_recent_hands(max_hands)
+        recent = record.get_recent_hands(max_hands)
 
         if not recent:
             return ""
@@ -203,14 +166,14 @@ class HistoryFormatter:
         lines = ["=== PREVIOUS HANDS ==="]
         for hand in recent:
             # Add summary line
-            lines.append(HistoryFormatter.format_hand_summary(hand, viewer_id))
+            lines.append(RecordFormatter.format_hand_summary(hand, viewer_id))
 
             # Add starting stacks
-            lines.append(HistoryFormatter.format_hand_starting_stacks(hand, viewer_id))
+            lines.append(RecordFormatter.format_hand_starting_stacks(hand, viewer_id))
 
-            # Add action history for this hand
+            # Add actions for this hand
             if hand.rounds:
-                phase_actions = HistoryFormatter.format_hand_actions(hand)
+                phase_actions = RecordFormatter.format_hand_actions(hand)
                 phase_order = ["PRE_FLOP", "FLOP", "TURN", "RIVER"]
 
                 for phase in phase_order:
@@ -288,13 +251,13 @@ class HistoryFormatter:
 
     @staticmethod
     def format_current_hand_actions(
-        hand: HandHistory,
+        hand: HandRecord,
         current_phase: str,
     ) -> str:
         """Format actions from the current hand for LLM context.
 
         Args:
-            hand: The current hand history.
+            hand: The current hand record.
             current_phase: The current phase name (for highlighting).
 
         Returns:
@@ -309,7 +272,7 @@ class HistoryFormatter:
         if not hand.rounds:
             return ""
 
-        phase_actions = HistoryFormatter.format_hand_actions(hand)
+        phase_actions = RecordFormatter.format_hand_actions(hand)
 
         lines = ["ACTIONS THIS HAND:"]
         phase_order = ["PRE_FLOP", "FLOP", "TURN", "RIVER"]

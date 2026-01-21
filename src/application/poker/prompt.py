@@ -133,13 +133,13 @@ class PokerPromptFormatter:
             lines.append("")
 
         # Actions this hand
-        if context.current_hand_history.text:
-            lines.append(context.current_hand_history.text)
+        if context.current_hand_record.text:
+            lines.append(context.current_hand_record.text)
             lines.append("")
 
         # Previous hands
-        if context.previous_hand_history.text:
-            lines.append(context.previous_hand_history.text)
+        if context.previous_hands_record.text:
+            lines.append(context.previous_hands_record.text)
             lines.append("")
 
         # Available actions
@@ -165,7 +165,7 @@ class PokerPromptFormatter:
         Composes system prompt from structured components:
         - Identity (elite player expertise and mission)
         - Context format guide (complete field documentation)
-        - History notation (action shorthand reference)
+        - Hands record notation (action shorthand reference)
         - Decision framework (9-category systematic thinking)
         - Personality section (if provided)
         - Addon section (if provided)
@@ -184,7 +184,7 @@ class PokerPromptFormatter:
         parts: list[str] = [
             components.identity.format(player_name=player_name),
             components.context_format_guide,
-            components.history_notation,
+            components.hands_record_notation,
             components.decision_framework,
         ]
 

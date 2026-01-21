@@ -1,4 +1,4 @@
-"""Pytest fixtures for history recorder tests."""
+"""Pytest fixtures for game recorder tests."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from datetime import datetime
 
 import pytest
 
-from src.application.poker.history.models import GameMetadata
-from src.application.poker.history.recorder import HistoryRecorder
+from src.application.poker.records.models import GameMetadata
+from src.application.poker.records.recorder import Recorder
 from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.config.tournament.config import PayoutStructure, TournamentConfig
 from src.domain.models.blinds import BlindLevel
@@ -21,7 +21,7 @@ from src.domain.models.game import (
     Game,
     GameIdentity,
     GamePhase,
-    HandResult,
+    HandOutcome,
     GameStatus,
     HandState,
 )
@@ -104,7 +104,7 @@ def player_names() -> dict[str, str]:
 
 @pytest.fixture
 def player_configs(player_names: dict[str, str]) -> dict[str, PokerPlayerConfig]:
-    """Create player configs from player names for history recorder tests."""
+    """Create player configs from player names for game recorder tests."""
     return {
         player_id: PokerPlayerConfig(
             player_id=player_id,
@@ -210,7 +210,7 @@ def game_factory(
         hand_number: int = 1,
         button_seat: Seat = Seat.SEAT_0,
         pot_amount: ChipAmount = ChipAmount(0),
-        results: HandResult | None = None,
+        outcome: HandOutcome | None = None,
         status: GameStatus = GameStatus.IN_PROGRESS,
     ) -> Game:
         now = datetime.now()
@@ -255,16 +255,16 @@ def game_factory(
                 )
             ),
             players=Players.from_list(players),
-            results=results,
+            outcome=outcome,
         )
 
     return create_game
 
 
 @pytest.fixture
-def recorder(player_configs: dict[str, PokerPlayerConfig]) -> HistoryRecorder:
-    """Create a fresh HistoryRecorder instance."""
-    return HistoryRecorder(player_configs=player_configs)
+def recorder(player_configs: dict[str, PokerPlayerConfig]) -> Recorder:
+    """Create a fresh Recorder instance."""
+    return Recorder(player_configs=player_configs)
 
 
 @pytest.fixture

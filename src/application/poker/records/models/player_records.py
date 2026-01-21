@@ -1,4 +1,4 @@
-"""Player state snapshot models for tracking player state at each hierarchy level."""
+"""Player record snapshot models for tracking player state at each hierarchy level."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from src.domain.models.seat import Seat
 
 
 @dataclass(frozen=True, slots=True)
-class PlayerStateSnapshot:
+class PlayerRecordSnapshot:
     player_id: str
     player_name: str
     seat: Seat
@@ -56,7 +56,7 @@ class PlayerConfig:
 
 
 @dataclass(frozen=True, slots=True)
-class GameLevelPlayerState(PlayerStateSnapshot):
+class GameLevelPlayerRecord(PlayerRecordSnapshot):
     player_config: PlayerConfig
     hands_played: int = 0
     is_eliminated: bool = False
@@ -69,7 +69,7 @@ class GameLevelPlayerState(PlayerStateSnapshot):
             raise ValueError(f"hands_played cannot be negative: {self.hands_played}")
 
     def to_dict(self) -> dict[str, Any]:
-        """Serialize GameLevelPlayerState to a dictionary."""
+        """Serialize GameLevelPlayerRecord to a dictionary."""
         return {
             "player_id": self.player_id,
             "player_name": self.player_name,
@@ -84,8 +84,8 @@ class GameLevelPlayerState(PlayerStateSnapshot):
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> GameLevelPlayerState:
-        """Deserialize a dictionary to GameLevelPlayerState."""
+    def from_dict(cls, data: dict[str, Any]) -> GameLevelPlayerRecord:
+        """Deserialize a dictionary to GameLevelPlayerRecord."""
         return cls(
             player_id=data["player_id"],
             player_name=data["player_name"],
@@ -101,21 +101,21 @@ class GameLevelPlayerState(PlayerStateSnapshot):
 
 
 @dataclass(frozen=True, slots=True)
-class HandLevelPlayerState(PlayerStateSnapshot):
+class HandLevelPlayerRecord(PlayerRecordSnapshot):
     hole_cards: Hand | None
     position: PositionName | None
     starting_chips: ChipAmount
     total_invested_in_hand: ChipAmount = field(default_factory=lambda: ChipAmount(0))
 
     def __post_init__(self) -> None:
-        super(HandLevelPlayerState, self).__post_init__()
+        super(HandLevelPlayerRecord, self).__post_init__()
         if self.total_invested_in_hand.value < 0:
             raise ValueError(
                 f"total_invested_in_hand cannot be negative: {self.total_invested_in_hand.value}"
             )
 
     def to_dict(self) -> dict[str, Any]:
-        """Serialize HandLevelPlayerState to a dictionary."""
+        """Serialize HandLevelPlayerRecord to a dictionary."""
         return {
             "player_id": self.player_id,
             "player_name": self.player_name,
@@ -133,8 +133,8 @@ class HandLevelPlayerState(PlayerStateSnapshot):
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> HandLevelPlayerState:
-        """Deserialize a dictionary to HandLevelPlayerState."""
+    def from_dict(cls, data: dict[str, Any]) -> HandLevelPlayerRecord:
+        """Deserialize a dictionary to HandLevelPlayerRecord."""
         hole_cards = None
         if data.get("hole_cards"):
             from src.domain.models.card import Card
@@ -162,7 +162,7 @@ class HandLevelPlayerState(PlayerStateSnapshot):
 
 
 @dataclass(frozen=True, slots=True)
-class RoundLevelPlayerState(PlayerStateSnapshot):
+class RoundLevelPlayerRecord(PlayerRecordSnapshot):
     chips_at_round_start: ChipAmount
     total_invested_in_hand: ChipAmount
     participation_status: HandParticipationStatus
@@ -185,7 +185,7 @@ class RoundLevelPlayerState(PlayerStateSnapshot):
             )
 
     def to_dict(self) -> dict[str, Any]:
-        """Serialize RoundLevelPlayerState to a dictionary."""
+        """Serialize RoundLevelPlayerRecord to a dictionary."""
         return {
             "player_id": self.player_id,
             "player_name": self.player_name,
@@ -200,8 +200,8 @@ class RoundLevelPlayerState(PlayerStateSnapshot):
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> RoundLevelPlayerState:
-        """Deserialize a dictionary to RoundLevelPlayerState."""
+    def from_dict(cls, data: dict[str, Any]) -> RoundLevelPlayerRecord:
+        """Deserialize a dictionary to RoundLevelPlayerRecord."""
         participation_status = HandParticipationStatus[data["participation_status"]]
 
         return cls(
@@ -219,7 +219,7 @@ class RoundLevelPlayerState(PlayerStateSnapshot):
 
 
 @dataclass(frozen=True, slots=True)
-class TurnLevelPlayerState(PlayerStateSnapshot):
+class TurnLevelPlayerRecord(PlayerRecordSnapshot):
     total_invested_before_action: ChipAmount
     can_raise: bool
 
@@ -231,7 +231,7 @@ class TurnLevelPlayerState(PlayerStateSnapshot):
             )
 
     def to_dict(self) -> dict[str, Any]:
-        """Serialize TurnLevelPlayerState to a dictionary."""
+        """Serialize TurnLevelPlayerRecord to a dictionary."""
         return {
             "player_id": self.player_id,
             "player_name": self.player_name,
@@ -243,8 +243,8 @@ class TurnLevelPlayerState(PlayerStateSnapshot):
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> TurnLevelPlayerState:
-        """Deserialize a dictionary to TurnLevelPlayerState."""
+    def from_dict(cls, data: dict[str, Any]) -> TurnLevelPlayerRecord:
+        """Deserialize a dictionary to TurnLevelPlayerRecord."""
         return cls(
             player_id=data["player_id"],
             player_name=data["player_name"],

@@ -20,7 +20,7 @@ class PokerPlayerConfig:
 
     Attributes:
         player_id: Unique identifier for the player in the game.
-        name: Display name for the player (used in prompts and history).
+        name: Display name for the player (used in prompts and records).
         model_id: The LLM model to use for this player.
         personality: Optional personality description used in system prompt generation.
         addon_prompt: Optional additional prompt text for future customization.

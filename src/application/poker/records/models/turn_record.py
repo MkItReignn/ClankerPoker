@@ -1,4 +1,4 @@
-"""Turn history model - individual player action with complete context."""
+"""Turn record model - individual player action with complete context."""
 
 from __future__ import annotations
 
@@ -10,13 +10,13 @@ from src.domain.models.chips import ChipAmount
 from src.domain.models.narration import Narration
 
 from .outcomes import ActionRecord
-from .player_states import TurnLevelPlayerState
+from .player_records import TurnLevelPlayerRecord
 
 
 @dataclass(frozen=True, slots=True)
-class TurnHistory:
+class TurnRecord:
     turn_number: int
-    player_state: TurnLevelPlayerState
+    player_record: TurnLevelPlayerRecord
     action: ActionRecord
     timestamp: datetime
     pot_before: ChipAmount
@@ -42,10 +42,10 @@ class TurnHistory:
             )
 
     def to_dict(self) -> dict[str, Any]:
-        """Serialize TurnHistory to a dictionary."""
+        """Serialize TurnRecord to a dictionary."""
         return {
             "turn_number": self.turn_number,
-            "player_state": self.player_state.to_dict(),
+            "player_record": self.player_record.to_dict(),
             "action": self.action.to_dict(),
             "timestamp": self.timestamp.isoformat(),
             "pot_before": self.pot_before.value,
@@ -56,16 +56,16 @@ class TurnHistory:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> TurnHistory:
-        """Deserialize a dictionary to TurnHistory."""
-        player_state = TurnLevelPlayerState.from_dict(data["player_state"])
+    def from_dict(cls, data: dict[str, Any]) -> TurnRecord:
+        """Deserialize a dictionary to TurnRecord."""
+        player_record = TurnLevelPlayerRecord.from_dict(data["player_record"])
         action = ActionRecord.from_dict(data["action"])
         narration_data = data.get("narration")
         narration = Narration.from_dict(narration_data) if narration_data else None
 
         return cls(
             turn_number=data["turn_number"],
-            player_state=player_state,
+            player_record=player_record,
             action=action,
             timestamp=datetime.fromisoformat(data["timestamp"]),
             pot_before=ChipAmount(data["pot_before"]),

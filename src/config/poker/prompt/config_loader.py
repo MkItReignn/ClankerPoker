@@ -77,8 +77,8 @@ class PokerPromptConfigLoader:
         context_format_guide = extractor.get_required_string(
             system_prompt_raw, "context_format_guide", context="system_prompt"
         )
-        history_notation = extractor.get_required_string(
-            system_prompt_raw, "history_notation", context="system_prompt"
+        hands_record_notation = extractor.get_required_string(
+            system_prompt_raw, "hands_record_notation", context="system_prompt"
         )
         decision_framework = extractor.get_required_string(
             system_prompt_raw, "decision_framework", context="system_prompt"
@@ -93,7 +93,7 @@ class PokerPromptConfigLoader:
         return SystemPromptComponents(
             identity=identity,
             context_format_guide=context_format_guide,
-            history_notation=history_notation,
+            hands_record_notation=hands_record_notation,
             decision_framework=decision_framework,
             personality_section=personality_section,
             addon_section=addon_section,

@@ -1,4 +1,4 @@
-"""Outcome and action models for game history."""
+"""Outcome and action models for game records."""
 
 from __future__ import annotations
 
@@ -27,6 +27,17 @@ class ActionRecord:
             raise ValueError("player_id cannot be empty")
         if not self.player_name:
             raise ValueError("player_name cannot be empty")
+
+    def to_short_string(self) -> str:
+        """Convert to shorthand notation (F, X, C, B100, R200, AI500)."""
+        short = self.action_type.to_short_string()
+        if self.amount is not None and self.action_type in (
+            ActionType.BET,
+            ActionType.RAISE,
+            ActionType.ALL_IN,
+        ):
+            return f"{short}{self.amount.value}"
+        return short
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize ActionRecord to a dictionary."""

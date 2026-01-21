@@ -1,4 +1,4 @@
-"""Hand history model - complete hand from deal to showdown."""
+"""Hand record model - complete hand from deal to showdown."""
 
 from __future__ import annotations
 
@@ -12,18 +12,18 @@ from src.domain.models.game import GamePhase
 from src.domain.models.seat import Seat
 
 from .outcomes import HandOutcome
-from .player_states import HandLevelPlayerState, RoundLevelPlayerState
-from .round_history import RoundHistory
-from .turn_history import TurnHistory
+from .player_records import HandLevelPlayerRecord, RoundLevelPlayerRecord
+from .round_record import RoundRecord
+from .turn_record import TurnRecord
 
 
 @dataclass(slots=True)
-class HandHistory:
+class HandRecord:
     hand_number: int
     button_seat: Seat
     blinds: BlindLevel
-    player_states: dict[str, HandLevelPlayerState]
-    rounds: list[RoundHistory] = field(default_factory=list)
+    player_records: dict[str, HandLevelPlayerRecord]
+    rounds: list[RoundRecord] = field(default_factory=list)
     outcome: HandOutcome | None = None
     started_at: datetime = field(default_factory=datetime.now)
     completed_at: datetime | None = None
@@ -36,17 +36,17 @@ class HandHistory:
         self,
         phase: GamePhase,
         community_cards: tuple[Card, ...],
-        player_states: dict[str, RoundLevelPlayerState],
-    ) -> RoundHistory:
-        round_history = RoundHistory(
+        player_records: dict[str, RoundLevelPlayerRecord],
+    ) -> RoundRecord:
+        round_record = RoundRecord(
             phase=phase,
             community_cards=community_cards,
-            player_states=player_states,
+            player_records=player_records,
         )
-        self.rounds.append(round_history)
-        return round_history
+        self.rounds.append(round_record)
+        return round_record
 
-    def current_round(self) -> RoundHistory | None:
+    def current_round(self) -> RoundRecord | None:
         return self.rounds[-1] if self.rounds else None
 
     def complete(self, outcome: HandOutcome) -> None:
@@ -61,34 +61,34 @@ class HandHistory:
     def is_complete(self) -> bool:
         return self.outcome is not None
 
-    def get_round_by_phase(self, phase: GamePhase) -> RoundHistory | None:
-        for round_history in self.rounds:
-            if round_history.phase == phase:
-                return round_history
+    def get_round_by_phase(self, phase: GamePhase) -> RoundRecord | None:
+        for round_record in self.rounds:
+            if round_record.phase == phase:
+                return round_record
         return None
 
-    def get_all_turns(self) -> list[TurnHistory]:
-        turns: list[TurnHistory] = []
-        for round_history in self.rounds:
-            turns.extend(round_history.turns)
+    def get_all_turns(self) -> list[TurnRecord]:
+        turns: list[TurnRecord] = []
+        for round_record in self.rounds:
+            turns.extend(round_record.turns)
         return turns
 
-    def get_player_turns(self, player_id: str) -> list[TurnHistory]:
-        turns: list[TurnHistory] = []
-        for round_history in self.rounds:
-            turns.extend(round_history.get_actions_by_player(player_id))
+    def get_player_turns(self, player_id: str) -> list[TurnRecord]:
+        turns: list[TurnRecord] = []
+        for round_record in self.rounds:
+            turns.extend(round_record.get_actions_by_player(player_id))
         return turns
 
     def to_dict(self) -> dict[str, Any]:
-        """Serialize HandHistory to a dictionary."""
+        """Serialize HandRecord to a dictionary."""
         return {
             "hand_number": self.hand_number,
             "button_seat": self.button_seat.value,
             "small_blind": self.blinds.small_blind.value,
             "big_blind": self.blinds.big_blind.value,
             "blind_level": self.blinds.level,
-            "player_states": {
-                player_id: state.to_dict() for player_id, state in self.player_states.items()
+            "player_records": {
+                player_id: record.to_dict() for player_id, record in self.player_records.items()
             },
             "rounds": [round.to_dict() for round in self.rounds],
             "outcome": self.outcome.to_dict() if self.outcome else None,
@@ -97,15 +97,15 @@ class HandHistory:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> HandHistory:
-        """Deserialize a dictionary to HandHistory."""
+    def from_dict(cls, data: dict[str, Any]) -> HandRecord:
+        """Deserialize a dictionary to HandRecord."""
         from src.domain.models.chips import ChipAmount
 
-        # Deserialize player states
-        player_states: dict[str, HandLevelPlayerState] = {}
-        player_states_data = data.get("player_states", {})
-        for player_id, state_data in player_states_data.items():
-            player_states[player_id] = HandLevelPlayerState.from_dict(state_data)
+        # Deserialize player records
+        player_records: dict[str, HandLevelPlayerRecord] = {}
+        player_records_data = data.get("player_records", {})
+        for player_id, record_data in player_records_data.items():
+            player_records[player_id] = HandLevelPlayerRecord.from_dict(record_data)
 
         hand = cls(
             hand_number=data["hand_number"],
@@ -115,13 +115,13 @@ class HandHistory:
                 big_blind=ChipAmount(data["big_blind"]),
                 level=data.get("blind_level", 1),  # Default to 1 for old data
             ),
-            player_states=player_states,
+            player_records=player_records,
             started_at=datetime.fromisoformat(data["started_at"]),
         )
 
         # Deserialize rounds
         for round_data in data.get("rounds", []):
-            hand.rounds.append(RoundHistory.from_dict(round_data))
+            hand.rounds.append(RoundRecord.from_dict(round_data))
 
         # Deserialize outcome
         outcome_data = data.get("outcome")

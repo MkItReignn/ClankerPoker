@@ -15,7 +15,7 @@ class SystemPromptComponents:
     Attributes:
         identity: Elite player identity, expertise, and mission.
         context_format_guide: Complete guide to reading structured context.
-        history_notation: Action shorthand and position abbreviations.
+        hands_record_notation: Action shorthand and position abbreviations for hand records.
         decision_framework: 9-category systematic decision framework.
         personality_section: Template for personality injection.
         addon_section: Template for addon prompt injection.
@@ -23,7 +23,7 @@ class SystemPromptComponents:
 
     identity: str
     context_format_guide: str
-    history_notation: str
+    hands_record_notation: str
     decision_framework: str
     personality_section: str
     addon_section: str
@@ -33,8 +33,8 @@ class SystemPromptComponents:
             raise ValueError("identity cannot be empty")
         if not self.context_format_guide:
             raise ValueError("context_format_guide cannot be empty")
-        if not self.history_notation:
-            raise ValueError("history_notation cannot be empty")
+        if not self.hands_record_notation:
+            raise ValueError("hands_record_notation cannot be empty")
         if not self.decision_framework:
             raise ValueError("decision_framework cannot be empty")
         if not self.personality_section:

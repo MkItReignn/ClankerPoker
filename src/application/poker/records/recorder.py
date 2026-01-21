@@ -1,28 +1,31 @@
-"""History recorder for capturing game state snapshots."""
+"""Game state recorder for capturing game state snapshots."""
 
 from __future__ import annotations
 
 from datetime import datetime
 
-from src.application.poker.history.models import (
+from src.application.poker.records.record_logger import RecordLogger
+from src.application.poker.records.models import (
     ActionRecord,
-    GameHistory,
     GameMetadata,
-    HandLevelPlayerState,
+    GameRecord,
+    HandLevelPlayerRecord,
     HandOutcome,
     PlayerConfig,
     PlayerOutcome,
-    RoundHistory,
-    RoundLevelPlayerState,
+    RoundLevelPlayerRecord,
+    RoundRecord,
     ShowdownResult,
-    TurnHistory,
-    TurnLevelPlayerState,
+    TurnLevelPlayerRecord,
+    TurnRecord,
 )
+from src.application.protocols.player import ActionResponse
 from src.config.poker.config import PokerPlayerConfig
 from src.domain.models.actions import Action
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game, GamePhase
 from src.domain.models.llm_model import LlmModel
+from src.domain.models.narration import Narration
 from src.domain.models.player import HandParticipationStatus, Player
 from src.domain.models.position import PositionName, TablePositionMapping
 from src.domain.rules.betting_calculator import BettingCalculator
@@ -31,10 +34,10 @@ from src.domain.rules.position_manager import PositionManager
 from src.logger.factories import get_generic_logger
 
 
-class HistoryRecorder:
-    """Records game history snapshots at each level of the game hierarchy.
+class Recorder:
+    """Records game state snapshots at each level of the game hierarchy.
 
-    Responsible for capturing state snapshots and building history objects:
+    Responsible for capturing state snapshots and building record objects:
     - Game level: tournament metadata and player registration
     - Hand level: player positions, hole cards, blinds
     - Round level: player states at start of each betting round
@@ -42,19 +45,20 @@ class HistoryRecorder:
     """
 
     def __init__(self, player_configs: dict[str, PokerPlayerConfig]) -> None:
-        """Initialize the history recorder.
+        """Initialize the recorder.
 
         Args:
             player_configs: Dictionary mapping player_id to player configuration.
         """
         self._player_configs = player_configs
-        self._history: GameHistory | None = None
+        self._record: GameRecord | None = None
         self._logger = get_generic_logger(__name__.removeprefix("src."))
+        self._record_logger = RecordLogger()
 
     @property
-    def history(self) -> GameHistory | None:
-        """Get the current game history."""
-        return self._history
+    def record(self) -> GameRecord | None:
+        """Get the current game record."""
+        return self._record
 
     def _get_player_name(self, player_id: str) -> str:
         if player_id not in self._player_configs:
@@ -70,18 +74,18 @@ class HistoryRecorder:
     # Game Lifecycle
     # =========================================================================
 
-    def initialize_history(
+    def initialize_record(
         self,
         state: Game,
         metadata: GameMetadata,
     ) -> None:
-        """Initialize game history with metadata and register all players.
+        """Initialize game record with metadata and register all players.
 
         Args:
             state: Current game state with players.
             metadata: Tournament configuration metadata.
         """
-        self._history = GameHistory(state.id, metadata)
+        self._record = GameRecord(state.id, metadata)
 
         # Register all players with initial state and LLM config
         for player in state.players:
@@ -94,7 +98,7 @@ class HistoryRecorder:
                 addon_prompt=poker_config.addon_prompt,
             )
 
-            self._history.register_player(
+            self._record.register_player(
                 player_id=player.id,
                 name=player_name,
                 initial_chips=player.remaining_chips,
@@ -103,14 +107,16 @@ class HistoryRecorder:
                 player_config=player_config,
             )
 
+        self._record_logger.log_game_started(self._record)
+
     def complete_game(self, completed_at: datetime) -> None:
         """Mark the game as complete.
 
         Args:
             completed_at: Timestamp when game completed.
         """
-        if self._history is not None:
-            self._history.metadata.completed_at = completed_at
+        if self._record is not None:
+            self._record.metadata.completed_at = completed_at
 
     # =========================================================================
     # Hand Lifecycle
@@ -119,21 +125,21 @@ class HistoryRecorder:
     def record_hand_start(self, state: Game) -> None:
         """Record the start of a new hand.
 
-        Creates HandLevelPlayerState for each active player and starts
-        the hand in history.
+        Creates HandLevelPlayerRecord for each active player and starts
+        the hand in record.
 
         Args:
             state: Game state after hand initialization.
         """
-        if self._history is None:
+        if self._record is None:
             return
 
-        # Capture hand-level player states
-        hand_player_states: dict[str, HandLevelPlayerState] = {}
+        # Capture hand-level player records
+        hand_player_records: dict[str, HandLevelPlayerRecord] = {}
         position_mapping: TablePositionMapping = PositionManager.resolve_positions_for_hand(
             all_players=list(state.players),
             previous_button_seat=state.button_seat,
-            advance_button=False,  # Reading current state for history
+            advance_button=False,  # Reading current state for record
         )
 
         for player in state.players:
@@ -144,7 +150,7 @@ class HistoryRecorder:
                 )
                 player_name: str = self._get_player_name(player.id)
 
-                hand_player_states[player.id] = HandLevelPlayerState(
+                hand_player_records[player.id] = HandLevelPlayerRecord(
                     player_id=player.id,
                     player_name=player_name,
                     seat=player.seat,
@@ -157,26 +163,31 @@ class HistoryRecorder:
                 )
 
         # Start the hand
-        self._history.start_hand(
+        self._record.start_hand(
             hand_number=state.hand_state.hand_number,
             button_seat=state.button_seat,
             blinds=state.current_blind_level,
-            player_states=hand_player_states,
+            player_records=hand_player_records,
         )
+
+        if self._record.current_hand is not None:
+            self._record_logger.log_hand_started(self._record.current_hand)
 
     def record_hand_complete(self, state: Game) -> None:
         """Record the completion of a hand.
 
-        Builds the hand outcome and completes the hand in history.
+        Builds the hand outcome and completes the hand in record.
 
         Args:
             state: Game state after hand completion.
         """
-        if self._history is None or self._history.current_hand is None:
+        if self._record is None or self._record.current_hand is None:
             return
 
         outcome: HandOutcome = self._build_hand_outcome(state)
-        self._history.complete_hand(outcome)
+        self._record.complete_hand(outcome)
+
+        self._record_logger.log_hand_completed_with_eliminations(self._record)
 
     # =========================================================================
     # Round Lifecycle
@@ -185,17 +196,17 @@ class HistoryRecorder:
     def record_round_start(self, state: Game) -> None:
         """Record the start of a betting round.
 
-        Creates RoundLevelPlayerState for each player and starts
-        the round in history.
+        Creates RoundLevelPlayerRecord for each player and starts
+        the round in record.
 
         Args:
             state: Current game state at round start.
         """
-        if self._history is None or self._history.current_hand is None:
+        if self._record is None or self._record.current_hand is None:
             return
 
-        # Capture round-level player states
-        round_player_states: dict[str, RoundLevelPlayerState] = {}
+        # Capture round-level player records
+        round_player_records: dict[str, RoundLevelPlayerRecord] = {}
 
         for player in state.players:
             # Determine participation status
@@ -215,12 +226,12 @@ class HistoryRecorder:
 
             # Calculate total invested in this round
             total_invested_in_round = ChipAmount(0)
-            if len(self._history.current_hand.rounds) > 0:
+            if len(self._record.current_hand.rounds) > 0:
                 # Get the last completed round (current round hasn't been added yet)
-                previous_round = self._history.current_hand.rounds[-1]
+                previous_round = self._record.current_hand.rounds[-1]
 
-                if player.id in previous_round.player_states:
-                    previous_total = previous_round.player_states[player.id].total_invested_in_hand
+                if player.id in previous_round.player_records:
+                    previous_total = previous_round.player_records[player.id].total_invested_in_hand
                     total_invested_in_round = ChipAmount(
                         total_invested.value - previous_total.value
                     )
@@ -232,7 +243,7 @@ class HistoryRecorder:
                 total_invested_in_round = total_invested
 
             player_name = self._get_player_name(player.id)
-            round_player_states[player.id] = RoundLevelPlayerState(
+            round_player_records[player.id] = RoundLevelPlayerRecord(
                 player_id=player.id,
                 player_name=player_name,
                 seat=player.seat,
@@ -249,20 +260,26 @@ class HistoryRecorder:
         community_cards = tuple(state.community_cards) if state.community_cards else ()
 
         # Start the round
-        self._history.current_hand.start_round(
+        round_record = self._record.current_hand.start_round(
             phase=state.current_phase,
             community_cards=community_cards,
-            player_states=round_player_states,
+            player_records=round_player_records,
         )
+
+        if round_record.phase != GamePhase.PRE_FLOP:
+            self._record_logger.log_round_advanced(self._record.current_hand, round_record)
 
     def record_round_complete(self) -> None:
         """Record the completion of a betting round."""
-        if self._history is None or self._history.current_hand is None:
+        if self._record is None or self._record.current_hand is None:
             return
 
-        current_round = self._history.current_hand.current_round()
+        current_round = self._record.current_hand.current_round()
         if current_round is not None and not current_round.is_complete:
             current_round.complete()
+            self._record_logger.log_betting_round_ended(
+                self._record.current_hand, current_round
+            )
 
     # =========================================================================
     # Action Recording
@@ -273,23 +290,23 @@ class HistoryRecorder:
         state_before: Game,
         state_after: Game,
         player_id: str,
-        action: Action,
+        response: ActionResponse[Action, Narration],
     ) -> None:
         """Record an action taken by a player.
 
-        Creates TurnLevelPlayerState (before action), ActionRecord,
-        and TurnHistory with pot changes.
+        Creates TurnLevelPlayerRecord (before action), ActionRecord,
+        and TurnRecord with pot changes.
 
         Args:
             state_before: Game state before the action.
             state_after: Game state after the action.
             player_id: ID of player who acted.
-            action: The action taken.
+            response: The action response containing action, narration, reasoning.
         """
-        if self._history is None or self._history.current_hand is None:
+        if self._record is None or self._record.current_hand is None:
             return
 
-        current_round: RoundHistory | None = self._history.current_hand.current_round()
+        current_round: RoundRecord | None = self._record.current_hand.current_round()
         if current_round is None:
             return
 
@@ -298,6 +315,9 @@ class HistoryRecorder:
             return
 
         player_name = self._get_player_name(player_id)
+
+        # Extract action from response
+        action = response.action
 
         # Capture state BEFORE action
         chips_before: int = player.remaining_chips.value
@@ -317,8 +337,8 @@ class HistoryRecorder:
             state_after.players_in_hand()
         ).value
 
-        # Create turn-level player state (BEFORE action)
-        turn_player_state: TurnLevelPlayerState = TurnLevelPlayerState(
+        # Create turn-level player record (BEFORE action)
+        turn_player_record: TurnLevelPlayerRecord = TurnLevelPlayerRecord(
             player_id=player_id,
             player_name=player_name,
             seat=player.seat,
@@ -338,21 +358,26 @@ class HistoryRecorder:
             timestamp=datetime.now(),
         )
 
-        # Create turn history
+        # Create turn record
         turn_number: int = len(current_round.turns) + 1
-        turn_history: TurnHistory = TurnHistory(
+        turn_record: TurnRecord = TurnRecord(
             turn_number=turn_number,
-            player_state=turn_player_state,
+            player_record=turn_player_record,
             action=action_record,
             timestamp=datetime.now(),
             pot_before=ChipAmount(pot_before),
             pot_after=ChipAmount(pot_after),
             current_bet_before=ChipAmount(current_bet_before),
             current_bet_after=ChipAmount(current_bet_after),
+            narration=response.narration,
         )
 
         # Add turn to current round
-        current_round.add_turn(turn_history)
+        current_round.add_turn(turn_record)
+
+        self._record_logger.log_action_taken(
+            turn_record, self._record.current_hand.hand_number
+        )
 
     # =========================================================================
     # Private Helpers
@@ -371,11 +396,11 @@ class HistoryRecorder:
         winner_ids: list[str] = []
         total_pot: ChipAmount = state.pot
 
-        if state.results is not None:
-            winner_ids = [w[0] for w in state.results.winners]
+        if state.outcome is not None:
+            winner_ids = [w[0] for w in state.outcome.winners]
             # Sum up all winnings for pot total if available
-            if state.results.winners:
-                total_pot = sum((w[1] for w in state.results.winners), start=ChipAmount(0))
+            if state.outcome.winners:
+                total_pot = sum((w[1] for w in state.outcome.winners), start=ChipAmount(0))
 
         # Determine if showdown
         players_in_hand = state.players_in_hand()
@@ -412,8 +437,8 @@ class HistoryRecorder:
             chips_won = ChipAmount(0)
             chips_lost = ChipAmount(0)
 
-            if player.id in winner_ids and state.results is not None:
-                for w_id, w_amount in state.results.winners:
+            if player.id in winner_ids and state.outcome is not None:
+                for w_id, w_amount in state.outcome.winners:
                     if w_id == player.id:
                         chips_won = w_amount
 

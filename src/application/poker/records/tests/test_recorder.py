@@ -1,4 +1,4 @@
-"""Behavioral tests for HistoryRecorder.
+"""Behavioral tests for Recorder.
 
 Tests focus on documenting and verifying the recorder's behavior at each
 level of the game hierarchy: Game -> Hand -> Round -> Turn.
@@ -11,14 +11,14 @@ from datetime import datetime
 
 import pytest
 
-from src.application.poker.history.models import GameMetadata
-from src.application.poker.history.recorder import HistoryRecorder
+from src.application.poker.records.models import GameMetadata
+from src.application.poker.records.recorder import Recorder
 from src.application.protocols.player import ActionResponse
 from src.config.poker.config import PokerPlayerConfig
 from src.domain.models.actions import Action, ActionType
 from src.domain.models.card import Rank
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game, GamePhase, HandResult
+from src.domain.models.game import Game, GamePhase, HandOutcome
 from src.domain.models.player import BettingRoundActionStatus, HandParticipationStatus, Player
 from src.domain.models.seat import Seat
 
@@ -26,72 +26,72 @@ from .conftest import STARTING_CHIPS, make_hole_cards
 
 
 class TestGameLifecycle:
-    """Tests for game-level recording (initialize_history, complete_game)."""
+    """Tests for game-level recording (initialize_record, complete_game)."""
 
     def test_registers_all_players_with_initial_state(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         two_player_game: Game,
         game_metadata: GameMetadata,
     ) -> None:
         """All players are registered with correct initial chips and seat."""
-        recorder.initialize_history(two_player_game, game_metadata)
+        recorder.initialize_record(two_player_game, game_metadata)
 
-        assert recorder.history is not None
-        assert len(recorder.history.player_states) == 2
+        assert recorder.record is not None
+        assert len(recorder.record.player_records) == 2
 
-        p1_state = recorder.history.player_states["player-1"]
+        p1_state = recorder.record.player_records["player-1"]
         assert p1_state.player_name == "Alice"
         assert p1_state.chips == STARTING_CHIPS
         assert p1_state.seat == Seat.SEAT_0
         assert p1_state.hands_played == 0
         assert p1_state.is_eliminated is False
 
-        p2_state = recorder.history.player_states["player-2"]
+        p2_state = recorder.record.player_records["player-2"]
         assert p2_state.player_name == "Bob"
         assert p2_state.chips == STARTING_CHIPS
         assert p2_state.seat == Seat.SEAT_1
 
     def test_stores_game_id_from_state(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         two_player_game: Game,
         game_metadata: GameMetadata,
     ) -> None:
         """Game ID is captured from the game state."""
-        recorder.initialize_history(two_player_game, game_metadata)
+        recorder.initialize_record(two_player_game, game_metadata)
 
-        assert recorder.history is not None
-        assert recorder.history.game_id == two_player_game.id
+        assert recorder.record is not None
+        assert recorder.record.game_id == two_player_game.id
 
     def test_stores_tournament_metadata(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         two_player_game: Game,
         game_metadata: GameMetadata,
     ) -> None:
         """Tournament configuration metadata is captured."""
-        recorder.initialize_history(two_player_game, game_metadata)
+        recorder.initialize_record(two_player_game, game_metadata)
 
-        assert recorder.history is not None
-        assert recorder.history.metadata.seed == game_metadata.seed
-        assert recorder.history.metadata.buy_in_amount == game_metadata.buy_in_amount
-        assert recorder.history.metadata.starting_chip_stack == game_metadata.starting_chip_stack
+        assert recorder.record is not None
+        assert recorder.record.metadata.seed == game_metadata.seed
+        assert recorder.record.metadata.buy_in_amount == game_metadata.buy_in_amount
+        assert recorder.record.metadata.starting_chip_stack == game_metadata.starting_chip_stack
 
     def test_complete_game_sets_completion_timestamp(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         two_player_game: Game,
         game_metadata: GameMetadata,
     ) -> None:
         """Completing the game sets the completion timestamp in metadata."""
-        recorder.initialize_history(two_player_game, game_metadata)
+        recorder.initialize_record(two_player_game, game_metadata)
         completed_at = datetime.now()
 
         recorder.complete_game(completed_at)
 
-        assert recorder.history is not None
-        assert recorder.history.metadata.completed_at == completed_at
+        assert recorder.record is not None
+        assert recorder.record.metadata.completed_at == completed_at
 
     def test_raises_on_unknown_player_id(
         self,
@@ -109,10 +109,10 @@ class TestGameLifecycle:
                 model_id=LlmModel.OPENAI_GPT4O_MINI,
             )
         }  # Missing player-2
-        recorder = HistoryRecorder(player_configs=incomplete_configs)
+        recorder = Recorder(player_configs=incomplete_configs)
 
         with pytest.raises(KeyError, match="player-2"):
-            recorder.initialize_history(two_player_game, game_metadata)
+            recorder.initialize_record(two_player_game, game_metadata)
 
 
 class TestHandLifecycle:
@@ -120,60 +120,60 @@ class TestHandLifecycle:
 
     def test_captures_player_positions(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         three_player_game: Game,
         game_metadata: GameMetadata,
     ) -> None:
         """Each player's position (BTN, SB, BB) is recorded at hand start."""
-        recorder.initialize_history(three_player_game, game_metadata)
+        recorder.initialize_record(three_player_game, game_metadata)
         recorder.record_hand_start(three_player_game)
 
-        assert recorder.history is not None
-        assert recorder.history.current_hand is not None
+        assert recorder.record is not None
+        assert recorder.record.current_hand is not None
 
-        hand = recorder.history.current_hand
-        positions_recorded = {pid: state.position for pid, state in hand.player_states.items()}
+        hand = recorder.record.current_hand
+        positions_recorded = {pid: state.position for pid, state in hand.player_records.items()}
 
         # At least one position should be assigned
         assert any(pos is not None for pos in positions_recorded.values())
 
     def test_captures_hole_cards(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         two_player_game: Game,
         game_metadata: GameMetadata,
     ) -> None:
         """Hole cards are captured for each player at hand start."""
-        recorder.initialize_history(two_player_game, game_metadata)
+        recorder.initialize_record(two_player_game, game_metadata)
         recorder.record_hand_start(two_player_game)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
 
-        p1_state = hand.player_states["player-1"]
+        p1_state = hand.player_records["player-1"]
         assert p1_state.hole_cards is not None
         assert p1_state.hole_cards.card1.rank == Rank.ACE
 
     def test_captures_button_seat_and_blinds(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         two_player_game: Game,
         game_metadata: GameMetadata,
     ) -> None:
         """Button seat and blind levels are recorded at hand start."""
-        recorder.initialize_history(two_player_game, game_metadata)
+        recorder.initialize_record(two_player_game, game_metadata)
         recorder.record_hand_start(two_player_game)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
         assert hand.button_seat == two_player_game.button_seat
         assert hand.blinds == two_player_game.current_blind_level
 
     def test_captures_hand_number(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -193,16 +193,16 @@ class TestHandLifecycle:
         ]
         game = game_factory(players=players, hand_number=5)
 
-        recorder.initialize_history(game, game_metadata)
+        recorder.initialize_record(game, game_metadata)
         recorder.record_hand_start(game)
 
-        assert recorder.history is not None
-        assert recorder.history.current_hand is not None
-        assert recorder.history.current_hand.hand_number == 5
+        assert recorder.record is not None
+        assert recorder.record.current_hand is not None
+        assert recorder.record.current_hand.hand_number == 5
 
     def test_excludes_eliminated_players(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -229,21 +229,21 @@ class TestHandLifecycle:
         ]
         game = game_factory(players=players)
 
-        recorder.initialize_history(game, game_metadata)
+        recorder.initialize_record(game, game_metadata)
         recorder.record_hand_start(game)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
 
         # Only non-eliminated players should be in hand states
-        assert "player-1" in hand.player_states
-        assert "player-2" not in hand.player_states
-        assert "player-3" in hand.player_states
+        assert "player-1" in hand.player_records
+        assert "player-2" not in hand.player_records
+        assert "player-3" in hand.player_records
 
     def test_starting_chips_captured_correctly(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -266,14 +266,14 @@ class TestHandLifecycle:
         ]
         game = game_factory(players=players)
 
-        recorder.initialize_history(game, game_metadata)
+        recorder.initialize_record(game, game_metadata)
         recorder.record_hand_start(game)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
 
-        p1_state = hand.player_states["player-1"]
+        p1_state = hand.player_records["player-1"]
         assert p1_state.starting_chips == current_chips
         assert p1_state.chips == current_chips
 
@@ -283,7 +283,7 @@ class TestHandOutcome:
 
     def test_records_winner_on_fold_out(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -308,28 +308,28 @@ class TestHandOutcome:
         game = game_factory(
             players=players,
             pot_amount=pot_amount,
-            results=HandResult(
+            outcome=HandOutcome(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
             current_phase=GamePhase.PRE_FLOP,
         )
 
-        recorder.initialize_history(game, game_metadata)
+        recorder.initialize_record(game, game_metadata)
         recorder.record_hand_start(game)
         recorder.record_hand_complete(game)
 
-        assert recorder.history is not None
-        assert len(recorder.history.completed_hands) == 1
+        assert recorder.record is not None
+        assert len(recorder.record.completed_hands) == 1
 
-        completed_hand = recorder.history.completed_hands[0]
+        completed_hand = recorder.record.completed_hands[0]
         assert completed_hand.outcome is not None
         assert "player-1" in completed_hand.outcome.winner_ids
         assert completed_hand.outcome.was_showdown is False
 
     def test_records_showdown_with_hand_evaluations(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -356,18 +356,18 @@ class TestHandOutcome:
             players=players,
             pot_amount=pot_amount,
             current_phase=GamePhase.SHOWDOWN,
-            results=HandResult(
+            outcome=HandOutcome(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
         )
 
-        recorder.initialize_history(game, game_metadata)
+        recorder.initialize_record(game, game_metadata)
         recorder.record_hand_start(game)
         recorder.record_hand_complete(game)
 
-        assert recorder.history is not None
-        completed_hand = recorder.history.completed_hands[0]
+        assert recorder.record is not None
+        completed_hand = recorder.record.completed_hands[0]
         assert completed_hand.outcome is not None
         assert completed_hand.outcome.was_showdown is True
         assert len(completed_hand.outcome.showdown_results) == 2
@@ -379,7 +379,7 @@ class TestHandOutcome:
 
     def test_records_player_elimination(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -405,18 +405,18 @@ class TestHandOutcome:
             players=players,
             pot_amount=pot_amount,
             current_phase=GamePhase.SHOWDOWN,
-            results=HandResult(
+            outcome=HandOutcome(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
         )
 
-        recorder.initialize_history(game, game_metadata)
+        recorder.initialize_record(game, game_metadata)
         recorder.record_hand_start(game)
         recorder.record_hand_complete(game)
 
-        assert recorder.history is not None
-        outcome = recorder.history.completed_hands[0].outcome
+        assert recorder.record is not None
+        outcome = recorder.record.completed_hands[0].outcome
         assert outcome is not None
 
         # Find player-2's outcome
@@ -430,7 +430,7 @@ class TestHandOutcome:
 
     def test_updates_game_level_player_state_after_hand(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -456,19 +456,19 @@ class TestHandOutcome:
         game = game_factory(
             players=players,
             pot_amount=pot_amount,
-            results=HandResult(
+            outcome=HandOutcome(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
         )
 
-        recorder.initialize_history(game, game_metadata)
+        recorder.initialize_record(game, game_metadata)
         recorder.record_hand_start(game)
         recorder.record_hand_complete(game)
 
-        assert recorder.history is not None
+        assert recorder.record is not None
         # Game-level state should reflect final chips and hands played
-        p1_game_state = recorder.history.player_states["player-1"]
+        p1_game_state = recorder.record.player_records["player-1"]
         assert p1_game_state.chips == final_chips
         assert p1_game_state.hands_played == 1
 
@@ -478,7 +478,7 @@ class TestRoundLifecycle:
 
     def test_captures_community_cards(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -501,21 +501,21 @@ class TestRoundLifecycle:
             current_phase=GamePhase.FLOP,
         )
 
-        recorder.initialize_history(game, game_metadata)
+        recorder.initialize_record(game, game_metadata)
         recorder.record_hand_start(game)
         recorder.record_round_start(game)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
         assert len(hand.rounds) == 1
 
-        round_history = hand.rounds[0]
-        assert round_history.phase == GamePhase.FLOP
+        round_record = hand.rounds[0]
+        assert round_record.phase == GamePhase.FLOP
 
     def test_tracks_player_participation_status(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -543,24 +543,24 @@ class TestRoundLifecycle:
         ]
         game = game_factory(players=players)
 
-        recorder.initialize_history(game, game_metadata)
+        recorder.initialize_record(game, game_metadata)
         recorder.record_hand_start(game)
         recorder.record_round_start(game)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
-        round_history = hand.rounds[0]
+        round_record = hand.rounds[0]
 
-        p1_state = round_history.player_states["player-1"]
+        p1_state = round_record.player_records["player-1"]
         assert p1_state.participation_status == HandParticipationStatus.IN_HAND
 
-        p2_state = round_history.player_states["player-2"]
+        p2_state = round_record.player_records["player-2"]
         assert p2_state.participation_status == HandParticipationStatus.FOLDED
 
     def test_tracks_all_in_status(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -585,24 +585,24 @@ class TestRoundLifecycle:
         ]
         game = game_factory(players=players)
 
-        recorder.initialize_history(game, game_metadata)
+        recorder.initialize_record(game, game_metadata)
         recorder.record_hand_start(game)
         recorder.record_round_start(game)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
-        round_history = hand.rounds[0]
+        round_record = hand.rounds[0]
 
-        p1_state = round_history.player_states["player-1"]
+        p1_state = round_record.player_records["player-1"]
         assert p1_state.is_all_in is True
 
-        p2_state = round_history.player_states["player-2"]
+        p2_state = round_record.player_records["player-2"]
         assert p2_state.is_all_in is False
 
     def test_tracks_investment_across_rounds(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -629,39 +629,39 @@ class TestRoundLifecycle:
         ]
         game = game_factory(players=players, current_phase=GamePhase.PRE_FLOP)
 
-        recorder.initialize_history(game, game_metadata)
+        recorder.initialize_record(game, game_metadata)
         recorder.record_hand_start(game)
         recorder.record_round_start(game)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
 
-        round_history = hand.rounds[0]
-        p1_state = round_history.player_states["player-1"]
+        round_record = hand.rounds[0]
+        p1_state = round_record.player_records["player-1"]
         assert p1_state.total_invested_in_hand == invested_preflop
 
     def test_round_complete_marks_round_finished(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         two_player_game: Game,
         game_metadata: GameMetadata,
     ) -> None:
         """Completing a round sets the completion timestamp."""
-        recorder.initialize_history(two_player_game, game_metadata)
+        recorder.initialize_record(two_player_game, game_metadata)
         recorder.record_hand_start(two_player_game)
         recorder.record_round_start(two_player_game)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
-        round_history = hand.rounds[0]
-        assert round_history.is_complete is False
+        round_record = hand.rounds[0]
+        assert round_record.is_complete is False
 
         recorder.record_round_complete()
 
-        assert round_history.is_complete is True
-        assert round_history.completed_at is not None
+        assert round_record.is_complete is True
+        assert round_record.completed_at is not None
 
 
 class TestActionRecording:
@@ -669,7 +669,7 @@ class TestActionRecording:
 
     def test_records_fold_action(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -708,7 +708,7 @@ class TestActionRecording:
         ]
         state_after = game_factory(players=players_after, pot_amount=ChipAmount(30))
 
-        recorder.initialize_history(state_before, game_metadata)
+        recorder.initialize_record(state_before, game_metadata)
         recorder.record_hand_start(state_before)
         recorder.record_round_start(state_before)
 
@@ -716,20 +716,20 @@ class TestActionRecording:
         response = ActionResponse(action=fold_action)
         recorder.record_action(state_before, state_after, "player-1", response)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
-        round_history = hand.rounds[0]
-        assert len(round_history.turns) == 1
+        round_record = hand.rounds[0]
+        assert len(round_record.turns) == 1
 
-        turn = round_history.turns[0]
+        turn = round_record.turns[0]
         assert turn.action.action_type == ActionType.FOLD
         assert turn.action.player_id == "player-1"
         assert turn.action.player_name == "Alice"
 
     def test_records_bet_action_with_amount(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -773,7 +773,7 @@ class TestActionRecording:
             pot_amount=ChipAmount(130),
         )
 
-        recorder.initialize_history(state_before, game_metadata)
+        recorder.initialize_record(state_before, game_metadata)
         recorder.record_hand_start(state_before)
         recorder.record_round_start(state_before)
 
@@ -781,8 +781,8 @@ class TestActionRecording:
         response = ActionResponse(action=bet_action)
         recorder.record_action(state_before, state_after, "player-1", response)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
         turn = hand.rounds[0].turns[0]
         assert turn.action.action_type == ActionType.BET
@@ -790,7 +790,7 @@ class TestActionRecording:
 
     def test_captures_pot_changes(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -833,7 +833,7 @@ class TestActionRecording:
         ]
         state_after = game_factory(players=players_after, pot_amount=pot_after)
 
-        recorder.initialize_history(state_before, game_metadata)
+        recorder.initialize_record(state_before, game_metadata)
         recorder.record_hand_start(state_before)
         recorder.record_round_start(state_before)
 
@@ -841,8 +841,8 @@ class TestActionRecording:
         response = ActionResponse(action=bet_action)
         recorder.record_action(state_before, state_after, "player-1", response)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
         turn = hand.rounds[0].turns[0]
         assert turn.pot_before == pot_before
@@ -850,7 +850,7 @@ class TestActionRecording:
 
     def test_captures_player_state_before_action(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -892,7 +892,7 @@ class TestActionRecording:
         ]
         state_after = game_factory(players=players_after, pot_amount=ChipAmount(100))
 
-        recorder.initialize_history(state_before, game_metadata)
+        recorder.initialize_record(state_before, game_metadata)
         recorder.record_hand_start(state_before)
         recorder.record_round_start(state_before)
 
@@ -900,18 +900,18 @@ class TestActionRecording:
         response = ActionResponse(action=bet_action)
         recorder.record_action(state_before, state_after, "player-1", response)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
         turn = hand.rounds[0].turns[0]
 
         # Player state should reflect BEFORE action
-        assert turn.player_state.chips == chips_before
-        assert turn.player_state.can_raise is True
+        assert turn.player_record.chips == chips_before
+        assert turn.player_record.can_raise is True
 
     def test_records_multiple_actions_in_sequence(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -933,7 +933,7 @@ class TestActionRecording:
         ]
         state = game_factory(players=players, pot_amount=ChipAmount(30))
 
-        recorder.initialize_history(state, game_metadata)
+        recorder.initialize_record(state, game_metadata)
         recorder.record_hand_start(state)
         recorder.record_round_start(state)
 
@@ -945,16 +945,16 @@ class TestActionRecording:
         # Second action: player-2 checks
         recorder.record_action(state, state, "player-2", response)
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
-        round_history = hand.rounds[0]
+        round_record = hand.rounds[0]
 
-        assert len(round_history.turns) == 2
-        assert round_history.turns[0].turn_number == 1
-        assert round_history.turns[0].action.player_id == "player-1"
-        assert round_history.turns[1].turn_number == 2
-        assert round_history.turns[1].action.player_id == "player-2"
+        assert len(round_record.turns) == 2
+        assert round_record.turns[0].turn_number == 1
+        assert round_record.turns[0].action.player_id == "player-1"
+        assert round_record.turns[1].turn_number == 2
+        assert round_record.turns[1].action.player_id == "player-2"
 
 
 class TestEdgeCases:
@@ -962,10 +962,10 @@ class TestEdgeCases:
 
     def test_operations_are_noop_when_uninitialized(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         two_player_game: Game,
     ) -> None:
-        """All recording operations are no-ops when history not initialized."""
+        """All recording operations are no-ops when record not initialized."""
         # These should not raise exceptions
         recorder.record_hand_start(two_player_game)
         recorder.record_round_start(two_player_game)
@@ -973,33 +973,33 @@ class TestEdgeCases:
         recorder.record_hand_complete(two_player_game)
         recorder.complete_game(datetime.now())
 
-        assert recorder.history is None
+        assert recorder.record is None
 
     def test_hand_operations_are_noop_when_no_current_hand(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         two_player_game: Game,
         game_metadata: GameMetadata,
     ) -> None:
         """Round/action operations are no-ops when no current hand exists."""
-        recorder.initialize_history(two_player_game, game_metadata)
+        recorder.initialize_record(two_player_game, game_metadata)
         # Don't start a hand
 
         # These should not raise exceptions
         recorder.record_round_start(two_player_game)
         recorder.record_round_complete()
 
-        assert recorder.history is not None
-        assert recorder.history.current_hand is None
+        assert recorder.record is not None
+        assert recorder.record.current_hand is None
 
     def test_action_recording_is_noop_when_no_current_round(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         two_player_game: Game,
         game_metadata: GameMetadata,
     ) -> None:
         """Action recording is a no-op when no current round exists."""
-        recorder.initialize_history(two_player_game, game_metadata)
+        recorder.initialize_record(two_player_game, game_metadata)
         recorder.record_hand_start(two_player_game)
         # Don't start a round
 
@@ -1013,19 +1013,19 @@ class TestEdgeCases:
             response,
         )
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
         assert len(hand.rounds) == 0
 
     def test_action_recording_handles_missing_player(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         two_player_game: Game,
         game_metadata: GameMetadata,
     ) -> None:
         """Action recording is a no-op when player not found in game state."""
-        recorder.initialize_history(two_player_game, game_metadata)
+        recorder.initialize_record(two_player_game, game_metadata)
         recorder.record_hand_start(two_player_game)
         recorder.record_round_start(two_player_game)
 
@@ -1039,14 +1039,14 @@ class TestEdgeCases:
             response,
         )
 
-        assert recorder.history is not None
-        hand = recorder.history.current_hand
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
         assert hand is not None
         assert len(hand.rounds[0].turns) == 0
 
     def test_completes_last_round_when_hand_completes(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -1075,27 +1075,27 @@ class TestEdgeCases:
         game = game_factory(
             players=players,
             pot_amount=pot_amount,
-            results=HandResult(
+            outcome=HandOutcome(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
         )
 
-        recorder.initialize_history(game, game_metadata)
+        recorder.initialize_record(game, game_metadata)
         recorder.record_hand_start(game)
         recorder.record_round_start(game)
         # Don't explicitly complete the round
 
         recorder.record_hand_complete(game)
 
-        assert recorder.history is not None
-        completed_hand = recorder.history.completed_hands[0]
+        assert recorder.record is not None
+        completed_hand = recorder.record.completed_hands[0]
         # The last round should be completed
         assert completed_hand.rounds[0].is_complete is True
 
     def test_clears_current_hand_after_completion(
         self,
-        recorder: HistoryRecorder,
+        recorder: Recorder,
         player_factory: Callable[..., Player],
         game_factory: Callable[..., Game],
         game_metadata: GameMetadata,
@@ -1120,16 +1120,16 @@ class TestEdgeCases:
         game = game_factory(
             players=players,
             pot_amount=pot_amount,
-            results=HandResult(
+            outcome=HandOutcome(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
         )
 
-        recorder.initialize_history(game, game_metadata)
+        recorder.initialize_record(game, game_metadata)
         recorder.record_hand_start(game)
         recorder.record_hand_complete(game)
 
-        assert recorder.history is not None
-        assert recorder.history.current_hand is None
-        assert len(recorder.history.completed_hands) == 1
+        assert recorder.record is not None
+        assert recorder.record.current_hand is None
+        assert len(recorder.record.completed_hands) == 1
