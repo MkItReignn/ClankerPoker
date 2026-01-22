@@ -1,40 +1,40 @@
-"""Protocols for game history persistence."""
+"""Protocols for game record persistence."""
 
 from __future__ import annotations
 
 from typing import Protocol, TypeVar
 
-THistory = TypeVar("THistory")
+TRecord = TypeVar("TRecord")
 
 
-class GameHistoryRepository(Protocol[THistory]):
-    """Protocol for persisting and loading game history.
+class GameRecordRepository(Protocol[TRecord]):
+    """Protocol for persisting and loading game records.
 
     Implementations handle the actual storage mechanism (JSON files, database, etc.).
 
     Type Parameters:
-        THistory: The history type to persist.
+        TRecord: The record type to persist.
     """
 
-    def save(self, history: THistory) -> None:
-        """Save game history to persistent storage.
+    def save(self, record: TRecord) -> None:
+        """Save game record to persistent storage.
 
         Args:
-            history: The history object to save.
+            record: The record object to save.
 
         Raises:
             IOError: If saving fails.
         """
         ...
 
-    def load(self, game_id: str) -> THistory | None:
-        """Load game history from persistent storage.
+    def load(self, game_id: str) -> TRecord | None:
+        """Load game record from persistent storage.
 
         Args:
             game_id: The unique identifier of the game.
 
         Returns:
-            The loaded history, or None if not found.
+            The loaded record, or None if not found.
 
         Raises:
             IOError: If loading fails (other than not found).
@@ -42,18 +42,18 @@ class GameHistoryRepository(Protocol[THistory]):
         ...
 
     def exists(self, game_id: str) -> bool:
-        """Check if history exists for a game.
+        """Check if record exists for a game.
 
         Args:
             game_id: The unique identifier of the game.
 
         Returns:
-            True if history exists, False otherwise.
+            True if record exists, False otherwise.
         """
         ...
 
     def delete(self, game_id: str) -> bool:
-        """Delete game history from persistent storage.
+        """Delete game record from persistent storage.
 
         Args:
             game_id: The unique identifier of the game.

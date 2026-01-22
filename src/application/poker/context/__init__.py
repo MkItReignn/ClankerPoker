@@ -1,18 +1,21 @@
 """Poker decision context and context builder."""
 
 from src.application.poker.context.builder import PokerContextBuilder
-from src.application.poker.context.types import (ActingPlayerState,
-                                                 CurrentHandHistory, HandState,
-                                                 OpponentCurrentState,
-                                                 PokerDecisionContext,
-                                                 PreviousHandsHistory)
+from src.application.poker.context.types import (
+    ActingPlayerState,
+    CurrentHandRecord,
+    HandState,
+    OpponentCurrentState,
+    PokerDecisionContext,
+    PreviousHandsRecord,
+)
 
 __all__ = [
     "ActingPlayerState",
-    "CurrentHandHistory",
+    "CurrentHandRecord",
     "HandState",
     "OpponentCurrentState",
     "PokerContextBuilder",
     "PokerDecisionContext",
-    "PreviousHandsHistory",
+    "PreviousHandsRecord",
 ]

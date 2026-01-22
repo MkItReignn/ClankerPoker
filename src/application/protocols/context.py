@@ -10,14 +10,14 @@ from typing import Protocol, TypeVar
 TGameState = TypeVar("TGameState", contravariant=True)
 TContext = TypeVar("TContext", covariant=True)  # Return type in ContextBuilder
 TAvailableActions = TypeVar("TAvailableActions", contravariant=True)
-THistory = TypeVar("THistory", contravariant=True)
+TRecord = TypeVar("TRecord", contravariant=True)
 TContextInput = TypeVar("TContextInput", contravariant=True)  # Parameter in PromptFormatter
 TPlayerInfo = TypeVar(
     "TPlayerInfo", contravariant=True
 )  # Player info for prompt formatting (typically PlayerConfig)
 
 
-class ContextBuilder(Protocol[TGameState, TContext, THistory]):
+class ContextBuilder(Protocol[TGameState, TContext, TRecord]):
     """Protocol for building decision context from game state.
 
     Transforms raw game state into a context object optimized for LLM consumption.
@@ -27,21 +27,21 @@ class ContextBuilder(Protocol[TGameState, TContext, THistory]):
     Type Parameters:
         TGameState: The raw game state type.
         TContext: The context type for LLM consumption.
-        THistory: The history type containing past game information.
+        TRecord: The record type containing past game information.
     """
 
     def build_context(
         self,
         state: TGameState,
         player_id: str,
-        history: THistory | None = None,
+        record: TRecord | None = None,
     ) -> TContext:
         """Build a decision context for the specified player.
 
         Args:
             state: The current game state.
             player_id: The player who needs to make a decision.
-            history: Optional game history for additional context.
+            record: Optional game record for additional context.
 
         Returns:
             A context object containing all visible information for the player.

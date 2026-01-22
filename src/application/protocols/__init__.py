@@ -1,11 +1,9 @@
 """Game-agnostic protocols for LLM game players."""
 
 from src.application.protocols.context import ContextBuilder, PromptFormatter
-from src.application.protocols.history import GameHistoryRepository
 from src.application.protocols.llm import LlmClient, LlmRequest, LlmResponse
-from src.application.protocols.player import (ActionResponse,
-                                              AsyncActionProvider,
-                                              PlayerConfig)
+from src.application.protocols.player import ActionResponse, AsyncActionProvider, PlayerConfig
+from src.application.protocols.record import GameRecordRepository
 from src.application.protocols.response import ParseResult, ResponseParser
 
 __all__ = [
@@ -23,6 +21,6 @@ __all__ = [
     "LlmClient",
     "LlmRequest",
     "LlmResponse",
-    # History protocols
-    "GameHistoryRepository",
+    # Record protocols
+    "GameRecordRepository",
 ]

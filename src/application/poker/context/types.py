@@ -44,12 +44,12 @@ class OpponentCurrentState:
 
 
 @dataclass(frozen=True, slots=True)
-class CurrentHandHistory:
+class CurrentHandRecord:
     text: str
 
 
 @dataclass(frozen=True, slots=True)
-class PreviousHandsHistory:
+class PreviousHandsRecord:
     text: str
 
 
@@ -58,8 +58,8 @@ class PokerDecisionContext:
     acting_player: ActingPlayerState
     hand_state: HandState
     opponents: tuple[OpponentCurrentState, ...]
-    current_hand_history: CurrentHandHistory
-    previous_hand_history: PreviousHandsHistory
+    current_hand_record: CurrentHandRecord
+    previous_hands_record: PreviousHandsRecord
 
     @property
     def stack_in_bb(self) -> float:

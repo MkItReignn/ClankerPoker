@@ -4,13 +4,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from src.application.poker.context.types import (ActingPlayerState,
-                                                 CurrentHandHistory, HandState,
-                                                 OpponentCurrentState,
-                                                 PokerDecisionContext,
-                                                 PreviousHandsHistory)
-from src.application.poker.history.formatter import HistoryFormatter
-from src.application.poker.history.models import GameHistory
+from src.application.poker.context.types import (
+    ActingPlayerState,
+    CurrentHandRecord,
+    HandState,
+    OpponentCurrentState,
+    PokerDecisionContext,
+    PreviousHandsRecord,
+)
+from src.application.poker.records.context_serializer import RecordToLlmContextSerializer
+from src.application.poker.records.models import GameRecord
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game
 from src.domain.models.player import HandParticipationStatus, Player
@@ -47,7 +50,7 @@ class PokerContextBuilder:
         self,
         state: Game,
         player_id: str,
-        history: GameHistory | None = None,
+        record: GameRecord | None = None,
     ) -> PokerDecisionContext:
         """Build a decision context for the specified player.
 
@@ -116,24 +119,24 @@ class PokerContextBuilder:
                 )
             )
 
-        # Format history context
+        # Serialize record context
         actions_this_hand = ""
         previous_hands_summary = ""
-        if history is not None:
-            if history.current_hand is not None:
-                actions_this_hand = HistoryFormatter.format_current_hand_actions(
-                    history.current_hand,
+        if record is not None:
+            if record.current_hand is not None:
+                actions_this_hand = RecordToLlmContextSerializer.serialize_current_hand_actions(
+                    record.current_hand,
                     state.current_phase.value,
                 )
-            previous_hands_summary = HistoryFormatter.format_recent_history(
-                history,
+            previous_hands_summary = RecordToLlmContextSerializer.serialize_recent_records(
+                record,
                 viewer_id=player_id,
                 max_hands=5,
             )
 
-        # Build history wrappers
-        current_hand_history: CurrentHandHistory = CurrentHandHistory(text=actions_this_hand)
-        previous_hand_history: PreviousHandsHistory = PreviousHandsHistory(
+        # Build record wrappers
+        current_hand_record: CurrentHandRecord = CurrentHandRecord(text=actions_this_hand)
+        previous_hands_record: PreviousHandsRecord = PreviousHandsRecord(
             text=previous_hands_summary
         )
 
@@ -141,6 +144,6 @@ class PokerContextBuilder:
             acting_player=acting_player,
             hand_state=hand_state,
             opponents=tuple(opponents),
-            current_hand_history=current_hand_history,
-            previous_hand_history=previous_hand_history,
+            current_hand_record=current_hand_record,
+            previous_hands_record=previous_hands_record,
         )
