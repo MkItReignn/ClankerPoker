@@ -131,6 +131,46 @@ class TestActionNotation:
 
         assert "Frank(CO):AI500" in result
 
+    def test_post_small_blind_serializes_as_psb_with_amount(self, default_game_metadata):
+        """Post small blind action serializes as 'PSB<amount>'."""
+        player_records = {
+            "p1": make_hand_level_player_record(
+                "p1", "Alice", Seat.SEAT_0, PositionName.SMALL_BLIND
+            ),
+        }
+        round_records = {
+            "p1": make_round_level_player_record("p1", "Alice", Seat.SEAT_0),
+        }
+        turn = make_turn_record(
+            "p1", "Alice", Seat.SEAT_0, ActionType.POST_SMALL_BLIND, amount=25
+        )
+        round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
+        hand = make_hand_record(1, player_records, [round_record])
+
+        result = RecordToLlmContextSerializer.serialize_current_hand_actions(hand, "pre_flop")
+
+        assert "Alice(SB):PSB25" in result
+
+    def test_post_big_blind_serializes_as_pbb_with_amount(self, default_game_metadata):
+        """Post big blind action serializes as 'PBB<amount>'."""
+        player_records = {
+            "p1": make_hand_level_player_record(
+                "p1", "Bob", Seat.SEAT_1, PositionName.BIG_BLIND
+            ),
+        }
+        round_records = {
+            "p1": make_round_level_player_record("p1", "Bob", Seat.SEAT_1),
+        }
+        turn = make_turn_record(
+            "p1", "Bob", Seat.SEAT_1, ActionType.POST_BIG_BLIND, amount=50
+        )
+        round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
+        hand = make_hand_record(1, player_records, [round_record])
+
+        result = RecordToLlmContextSerializer.serialize_current_hand_actions(hand, "pre_flop")
+
+        assert "Bob(BB):PBB50" in result
+
 
 class TestPositionAbbreviations:
     """Tests for position shorthand notation per prompts.yaml."""

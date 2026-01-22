@@ -47,7 +47,7 @@ class HandInitializer:
         )
 
     @staticmethod
-    def initialize(game: Game, deck: Deck) -> tuple[Game, Deck]:
+    def setup_hand(game: Game, deck: Deck) -> tuple[Game, Deck]:
         active_players = game.get_active_players()
         if len(active_players) < 2:
             raise ValueError(
@@ -82,23 +82,6 @@ class HandInitializer:
             advance_button=not game.hand_state.is_initial_hand_setup,
         )
 
-        small_blind_seat = position_mapping.small_blind_seat
-        big_blind_seat = position_mapping.big_blind_seat
-
-        # Post blinds
-        sb_player = updated_players[small_blind_seat]
-        bb_player = updated_players[big_blind_seat]
-
-        updated_sb = HandInitializer._post_blind(sb_player, blind_level.small_blind)
-        updated_bb = HandInitializer._post_blind(bb_player, blind_level.big_blind)
-
-        updated_players = updated_players.replace_all(
-            {
-                updated_sb.id: updated_sb,
-                updated_bb.id: updated_bb,
-            }
-        )
-
         updated_hand_state = HandState(
             hand_number=next_hand_number,
             current_phase=GamePhase.PRE_FLOP,
@@ -112,15 +95,10 @@ class HandInitializer:
             side_pots=[],
         )
 
-        players_in_hand = [p for p in updated_players if p.is_in_hand()]
-        betting_order = PositionManager.get_betting_order(
-            position_mapping, GamePhase.PRE_FLOP, players_in_hand
-        )
-        first_to_act = PositionManager.find_first_position_to_act(betting_order, updated_players)
-
+        # Placeholder betting state - will be correctly set in post_blinds()
         updated_betting_state = BettingState(
             last_raise_increment=ChipAmount(0),
-            position_to_act=first_to_act,
+            position_to_act=position_mapping.button_seat,
         )
 
         return (
@@ -136,4 +114,52 @@ class HandInitializer:
                 outcome=game.outcome,
             ),
             updated_deck,
+        )
+
+    @staticmethod
+    def post_blinds(game: Game) -> Game:
+        blind_level = game.blind_state.current_blind_level
+
+        # Recalculate position mapping (button already set in setup_hand)
+        position_mapping = PositionManager.resolve_positions_for_hand(
+            all_players=list(game.players),
+            previous_button_seat=game.button_seat,
+            advance_button=False,  # Button already advanced in setup_hand
+        )
+
+        sb_player = game.players[position_mapping.small_blind_seat]
+        bb_player = game.players[position_mapping.big_blind_seat]
+
+        updated_sb = HandInitializer._post_blind(sb_player, blind_level.small_blind)
+        updated_bb = HandInitializer._post_blind(bb_player, blind_level.big_blind)
+
+        updated_players = game.players.replace_all(
+            {
+                updated_sb.id: updated_sb,
+                updated_bb.id: updated_bb,
+            }
+        )
+
+        # Now determine betting order (depends on who went all-in from blinds)
+        players_in_hand = [p for p in updated_players if p.is_in_hand()]
+        betting_order = PositionManager.get_betting_order(
+            position_mapping, GamePhase.PRE_FLOP, players_in_hand
+        )
+        first_to_act = PositionManager.find_first_position_to_act(betting_order, updated_players)
+
+        updated_betting_state = BettingState(
+            last_raise_increment=ChipAmount(0),
+            position_to_act=first_to_act,
+        )
+
+        return Game(
+            identity=game.identity,
+            tournament_config=game.tournament_config,
+            hand_state=game.hand_state,
+            pot_state=game.pot_state,
+            betting_state=updated_betting_state,
+            button_seat=game.button_seat,
+            blind_state=game.blind_state,
+            players=updated_players,
+            outcome=game.outcome,
         )

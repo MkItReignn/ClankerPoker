@@ -61,7 +61,8 @@ class TestHandInitializationBasics:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         for player in new_game.players:
             assert player.hole_cards is not None
@@ -87,7 +88,8 @@ class TestHandInitializationBasics:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         sb_seat = new_game.button_seat  # Heads-up: button is SB
         sb_player = new_game.players.get_by_seat(sb_seat)
@@ -115,7 +117,8 @@ class TestHandInitializationBasics:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         # In heads-up, non-button player is BB
         bb_seat = Seat.SEAT_1
@@ -145,7 +148,8 @@ class TestHandInitializationBasics:
         )
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         assert new_game.hand_state.hand_number == 2
 
@@ -162,7 +166,8 @@ class TestHandInitializationBasics:
         assert game.hand_state.is_initial_hand_setup is True
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         assert new_game.hand_state.hand_number == 1
         assert new_game.hand_state.is_initial_hand_setup is False
@@ -179,7 +184,8 @@ class TestHandInitializationBasics:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         assert new_game.hand_state.current_phase == GamePhase.PRE_FLOP
 
@@ -195,7 +201,8 @@ class TestHandInitializationBasics:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         assert new_game.hand_state.community_cards == []
 
@@ -225,7 +232,8 @@ class TestPlayerResetBehavior:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         # After initialization, only blinds are invested
         sb_player = new_game.players.get_by_seat(Seat.SEAT_0)
@@ -256,7 +264,8 @@ class TestPlayerResetBehavior:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         for player in new_game.players:
             assert player.participation_status == HandParticipationStatus.IN_HAND
@@ -286,7 +295,8 @@ class TestBlindPostingEdgeCases:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         sb_player = new_game.players.get_by_seat(Seat.SEAT_0)
         assert sb_player is not None
@@ -315,7 +325,8 @@ class TestBlindPostingEdgeCases:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         bb_player = new_game.players.get_by_seat(Seat.SEAT_1)
         assert bb_player is not None
@@ -344,7 +355,8 @@ class TestBlindPostingEdgeCases:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         bb_player = new_game.players.get_by_seat(Seat.SEAT_1)
         assert bb_player is not None
@@ -364,7 +376,8 @@ class TestBlindPostingEdgeCases:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         sb_player = new_game.players.get_by_seat(Seat.SEAT_0)
         assert sb_player is not None
@@ -400,7 +413,8 @@ class TestEliminatedPlayers:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         eliminated_player = new_game.players.get_by_id("p3")
         assert eliminated_player is not None
@@ -438,7 +452,8 @@ class TestEliminatedPlayers:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         players_with_cards = [p for p in new_game.players if p.hole_cards is not None]
         assert len(players_with_cards) == 2
@@ -461,7 +476,8 @@ class TestEliminatedPlayers:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         eliminated_player = new_game.players.get_by_id("p3")
         assert eliminated_player is not None
@@ -485,7 +501,7 @@ class TestDeckConsumption:
         deck = Deck.create_shuffled(seed=42)
         initial_cards_remaining = deck.cards_remaining()
 
-        _, new_deck = HandInitializer.initialize(game, deck)
+        _, new_deck = HandInitializer.setup_hand(game, deck)
 
         # 3 active players * 2 cards each = 6 cards dealt
         assert new_deck.cards_remaining() == initial_cards_remaining - 6
@@ -509,7 +525,7 @@ class TestDeckConsumption:
         deck = Deck.create_shuffled(seed=42)
         initial_cards_remaining = deck.cards_remaining()
 
-        _, new_deck = HandInitializer.initialize(game, deck)
+        _, new_deck = HandInitializer.setup_hand(game, deck)
 
         # Only 2 active players * 2 cards each = 4 cards dealt
         assert new_deck.cards_remaining() == initial_cards_remaining - 4
@@ -531,7 +547,8 @@ class TestBettingStateInitialization:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         # Position to act should be set (non-negative)
         assert new_game.betting_state.position_to_act >= 0
@@ -550,7 +567,8 @@ class TestBettingStateInitialization:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         # Verify BB is all-in
         bb_player = new_game.players.get_by_seat(Seat.SEAT_2)
@@ -583,7 +601,7 @@ class TestMinimumPlayerRequirement:
         deck = Deck.create_shuffled(seed=42)
 
         with pytest.raises(ValueError, match="need at least 2 players"):
-            HandInitializer.initialize(game, deck)
+            HandInitializer.setup_hand(game, deck)
 
 
 class TestBlindSchedule:
@@ -625,7 +643,8 @@ class TestBlindSchedule:
         )
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         assert new_game.blind_state.current_blind_level.small_blind == ChipAmount(25)
         assert new_game.blind_state.current_blind_level.big_blind == ChipAmount(50)
@@ -657,7 +676,8 @@ class TestBlindSchedule:
         )
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         assert new_game.blind_state.current_blind_level.small_blind == ChipAmount(10)
         assert new_game.blind_state.current_blind_level.big_blind == ChipAmount(20)
@@ -678,7 +698,8 @@ class TestPotStateReset:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         assert new_game.pot_state.main_pot.amount == ChipAmount(0)
 
@@ -700,7 +721,8 @@ class TestPotStateReset:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         assert len(new_game.pot_state.main_pot.eligible_player_ids) == 2
         assert "p1" in new_game.pot_state.main_pot.eligible_player_ids
@@ -719,6 +741,7 @@ class TestPotStateReset:
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
 
-        new_game, _ = HandInitializer.initialize(game, deck)
+        new_game, _ = HandInitializer.setup_hand(game, deck)
+        new_game = HandInitializer.post_blinds(new_game)
 
         assert new_game.pot_state.side_pots == []

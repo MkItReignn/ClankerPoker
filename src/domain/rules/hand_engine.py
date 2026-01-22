@@ -18,8 +18,12 @@ class HandEngine:
     """
 
     @staticmethod
-    def initialize_hand(game: Game, deck: Deck) -> tuple[Game, Deck]:
-        return HandInitializer.initialize(game, deck)
+    def setup_hand(game: Game, deck: Deck) -> tuple[Game, Deck]:
+        return HandInitializer.setup_hand(game, deck)
+
+    @staticmethod
+    def post_blinds(game: Game) -> Game:
+        return HandInitializer.post_blinds(game)
 
     @staticmethod
     def advance_betting_round(game: Game) -> Game:

@@ -263,7 +263,6 @@ class PokerStateManager:
         self._game = self._init_new_hand(self.game)
 
     def _init_new_hand(self, state: Game) -> Game:
-        """Initialize a new hand (internal)."""
         # Determine next hand number
         if state.hand_state.is_initial_hand_setup:
             next_hand_number = 1
@@ -277,15 +276,23 @@ class PokerStateManager:
         # Create fresh deck with deterministic seed
         self._deck = Deck.create_shuffled(seed=shuffle_seed)
 
-        # Initialize hand
-        new_state, self._deck = HandEngine.initialize_hand(state, self._deck)
+        # Phase 1: Setup hand (deal cards, no blinds yet)
+        pre_blind_state, self._deck = HandEngine.setup_hand(state, self._deck)
 
-        # Record hand start, first round, and blind postings in game record
-        self._recorder.record_hand_start(new_state)
-        self._recorder.record_round_start(new_state)
-        self._recorder.record_blind_postings(new_state)
+        # Record pre-blind state for hand and round
+        self._recorder.record_hand_start(pre_blind_state)
+        self._recorder.record_round_start(pre_blind_state)
 
-        return new_state
+        # Phase 2: Post blinds
+        post_blind_state = HandEngine.post_blinds(pre_blind_state)
+
+        # Record blind postings with accurate state transition
+        self._recorder.record_blind_postings(
+            state_before=pre_blind_state,
+            state_after=post_blind_state,
+        )
+
+        return post_blind_state
 
     def initialize(self) -> None:
         """Initialize the game state.

@@ -23,7 +23,7 @@ from src.domain.models.player import (BettingRoundActionStatus,
                                       HandParticipationStatus, Player)
 from src.domain.models.seat import Seat
 
-from .conftest import STARTING_CHIPS, make_hole_cards
+from .conftest import BIG_BLIND, SMALL_BLIND, STARTING_CHIPS, make_hole_cards
 
 
 class TestGameLifecycle:
@@ -1082,3 +1082,414 @@ class TestEdgeCases:
         assert recorder.record is not None
         assert recorder.record.current_hand is None
         assert len(recorder.record.completed_hands) == 1
+
+
+class TestBlindPostingRecording:
+    """Tests for blind posting recording (record_blind_postings)."""
+
+    def test_records_both_blinds_in_standard_three_player_game(
+        self,
+        recorder: Recorder,
+        player_factory: Callable[..., Player],
+        game_factory: Callable[..., Game],
+        game_metadata: GameMetadata,
+    ) -> None:
+        """Standard 3-player game records both SB and BB postings."""
+        # Pre-blind state: players have full chips, no investments
+        pre_blind_players = [
+            player_factory(
+                player_id="player-1",
+                seat=Seat.SEAT_0,
+                remaining_chips=STARTING_CHIPS,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-2",
+                seat=Seat.SEAT_1,
+                remaining_chips=STARTING_CHIPS,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-3",
+                seat=Seat.SEAT_2,
+                remaining_chips=STARTING_CHIPS,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+        ]
+        state_before = game_factory(players=pre_blind_players, button_seat=Seat.SEAT_0)
+
+        # Post-blind state: SB (seat 1) and BB (seat 2) have posted
+        post_blind_players = [
+            player_factory(
+                player_id="player-1",
+                seat=Seat.SEAT_0,
+                remaining_chips=STARTING_CHIPS,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(STARTING_CHIPS.value - SMALL_BLIND.value),
+                total_invested_this_hand=SMALL_BLIND,
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(STARTING_CHIPS.value - BIG_BLIND.value),
+                total_invested_this_hand=BIG_BLIND,
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+        ]
+        state_after = game_factory(players=post_blind_players, button_seat=Seat.SEAT_0)
+
+        recorder.record_game_start(state_before, game_metadata)
+        recorder.record_hand_start(state_before)
+        recorder.record_round_start(state_before)
+        recorder.record_blind_postings(state_before, state_after)
+
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
+        assert hand is not None
+        current_round = hand.current_round()
+        assert current_round is not None
+        assert len(current_round.turns) == 2
+
+        sb_turn = current_round.turns[0]
+        assert sb_turn.action.action_type == ActionType.POST_SMALL_BLIND
+        assert sb_turn.action.amount == SMALL_BLIND
+        assert sb_turn.pot_before == ChipAmount(0)
+        assert sb_turn.pot_after == SMALL_BLIND
+
+        bb_turn = current_round.turns[1]
+        assert bb_turn.action.action_type == ActionType.POST_BIG_BLIND
+        assert bb_turn.action.amount == BIG_BLIND
+        assert bb_turn.pot_before == SMALL_BLIND
+        assert bb_turn.pot_after == ChipAmount(SMALL_BLIND.value + BIG_BLIND.value)
+
+    def test_records_blinds_in_heads_up_game(
+        self,
+        recorder: Recorder,
+        player_factory: Callable[..., Player],
+        game_factory: Callable[..., Game],
+        game_metadata: GameMetadata,
+    ) -> None:
+        """Heads-up game: button is SB, other player is BB."""
+        # Pre-blind state
+        pre_blind_players = [
+            player_factory(
+                player_id="player-1",
+                seat=Seat.SEAT_0,
+                remaining_chips=STARTING_CHIPS,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-2",
+                seat=Seat.SEAT_1,
+                remaining_chips=STARTING_CHIPS,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+        ]
+        state_before = game_factory(players=pre_blind_players, button_seat=Seat.SEAT_0)
+
+        # Post-blind state: button (seat 0) is SB, seat 1 is BB
+        post_blind_players = [
+            player_factory(
+                player_id="player-1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(STARTING_CHIPS.value - SMALL_BLIND.value),
+                total_invested_this_hand=SMALL_BLIND,
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(STARTING_CHIPS.value - BIG_BLIND.value),
+                total_invested_this_hand=BIG_BLIND,
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+        ]
+        state_after = game_factory(players=post_blind_players, button_seat=Seat.SEAT_0)
+
+        recorder.record_game_start(state_before, game_metadata)
+        recorder.record_hand_start(state_before)
+        recorder.record_round_start(state_before)
+        recorder.record_blind_postings(state_before, state_after)
+
+        assert recorder.record is not None
+        hand = recorder.record.current_hand
+        assert hand is not None
+        current_round = hand.current_round()
+        assert current_round is not None
+        assert len(current_round.turns) == 2
+
+        sb_turn = current_round.turns[0]
+        assert sb_turn.action.action_type == ActionType.POST_SMALL_BLIND
+        assert sb_turn.action.amount == SMALL_BLIND
+        assert sb_turn.action.player_id == "player-1"
+
+        bb_turn = current_round.turns[1]
+        assert bb_turn.action.action_type == ActionType.POST_BIG_BLIND
+        assert bb_turn.action.amount == BIG_BLIND
+        assert bb_turn.action.player_id == "player-2"
+
+    def test_sb_goes_all_in_with_insufficient_chips(
+        self,
+        recorder: Recorder,
+        player_factory: Callable[..., Player],
+        game_factory: Callable[..., Game],
+        game_metadata: GameMetadata,
+    ) -> None:
+        """SB with fewer chips than small blind posts all-in amount."""
+        insufficient_chips = ChipAmount(5)  # Less than SB (10)
+
+        # Pre-blind state
+        pre_blind_players = [
+            player_factory(
+                player_id="player-1",
+                seat=Seat.SEAT_0,
+                remaining_chips=STARTING_CHIPS,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-2",
+                seat=Seat.SEAT_1,
+                remaining_chips=insufficient_chips,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=insufficient_chips,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-3",
+                seat=Seat.SEAT_2,
+                remaining_chips=STARTING_CHIPS,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+        ]
+        state_before = game_factory(players=pre_blind_players, button_seat=Seat.SEAT_0)
+
+        # Post-blind state: SB posts all-in (5 chips)
+        post_blind_players = [
+            player_factory(
+                player_id="player-1",
+                seat=Seat.SEAT_0,
+                remaining_chips=STARTING_CHIPS,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(0),
+                total_invested_this_hand=insufficient_chips,
+                betting_status=BettingRoundActionStatus.ACTED,
+                stack_at_hand_start=insufficient_chips,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(STARTING_CHIPS.value - BIG_BLIND.value),
+                total_invested_this_hand=BIG_BLIND,
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+        ]
+        state_after = game_factory(players=post_blind_players, button_seat=Seat.SEAT_0)
+
+        recorder.record_game_start(state_before, game_metadata)
+        recorder.record_hand_start(state_before)
+        recorder.record_round_start(state_before)
+        recorder.record_blind_postings(state_before, state_after)
+
+        assert recorder.record is not None
+        assert recorder.record.current_hand is not None
+        current_round = recorder.record.current_hand.current_round()
+        assert current_round is not None
+
+        sb_turn = current_round.turns[0]
+        assert sb_turn.action.action_type == ActionType.POST_SMALL_BLIND
+        assert sb_turn.action.amount == insufficient_chips
+        assert sb_turn.pot_after == insufficient_chips
+
+    def test_bb_goes_all_in_with_insufficient_chips(
+        self,
+        recorder: Recorder,
+        player_factory: Callable[..., Player],
+        game_factory: Callable[..., Game],
+        game_metadata: GameMetadata,
+    ) -> None:
+        """BB with fewer chips than big blind posts all-in amount."""
+        insufficient_chips = ChipAmount(15)  # Less than BB (20)
+
+        # Pre-blind state
+        pre_blind_players = [
+            player_factory(
+                player_id="player-1",
+                seat=Seat.SEAT_0,
+                remaining_chips=STARTING_CHIPS,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-2",
+                seat=Seat.SEAT_1,
+                remaining_chips=STARTING_CHIPS,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-3",
+                seat=Seat.SEAT_2,
+                remaining_chips=insufficient_chips,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=insufficient_chips,
+                hole_cards=make_hole_cards(),
+            ),
+        ]
+        state_before = game_factory(players=pre_blind_players, button_seat=Seat.SEAT_0)
+
+        # Post-blind state: BB posts all-in (15 chips)
+        post_blind_players = [
+            player_factory(
+                player_id="player-1",
+                seat=Seat.SEAT_0,
+                remaining_chips=STARTING_CHIPS,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(STARTING_CHIPS.value - SMALL_BLIND.value),
+                total_invested_this_hand=SMALL_BLIND,
+                stack_at_hand_start=STARTING_CHIPS,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(0),
+                total_invested_this_hand=insufficient_chips,
+                betting_status=BettingRoundActionStatus.ACTED,
+                stack_at_hand_start=insufficient_chips,
+                hole_cards=make_hole_cards(),
+            ),
+        ]
+        state_after = game_factory(players=post_blind_players, button_seat=Seat.SEAT_0)
+
+        recorder.record_game_start(state_before, game_metadata)
+        recorder.record_hand_start(state_before)
+        recorder.record_round_start(state_before)
+        recorder.record_blind_postings(state_before, state_after)
+
+        assert recorder.record is not None
+        assert recorder.record.current_hand is not None
+        current_round = recorder.record.current_hand.current_round()
+        assert current_round is not None
+
+        bb_turn = current_round.turns[1]
+        assert bb_turn.action.action_type == ActionType.POST_BIG_BLIND
+        assert bb_turn.action.amount == insufficient_chips
+        assert bb_turn.pot_before == SMALL_BLIND
+        assert bb_turn.pot_after == ChipAmount(SMALL_BLIND.value + insufficient_chips.value)
+
+    def test_both_blinds_go_all_in_with_insufficient_chips(
+        self,
+        recorder: Recorder,
+        player_factory: Callable[..., Player],
+        game_factory: Callable[..., Game],
+        game_metadata: GameMetadata,
+    ) -> None:
+        """Both SB and BB have insufficient chips and go all-in."""
+        sb_chips = ChipAmount(5)  # Less than SB (10)
+        bb_chips = ChipAmount(12)  # Less than BB (20)
+
+        pre_blind_players = [
+            player_factory(
+                player_id="player-1",
+                seat=Seat.SEAT_0,
+                remaining_chips=sb_chips,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=sb_chips,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-2",
+                seat=Seat.SEAT_1,
+                remaining_chips=bb_chips,
+                total_invested_this_hand=ChipAmount(0),
+                stack_at_hand_start=bb_chips,
+                hole_cards=make_hole_cards(),
+            ),
+        ]
+        state_before = game_factory(players=pre_blind_players, button_seat=Seat.SEAT_0)
+
+        post_blind_players = [
+            player_factory(
+                player_id="player-1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(0),
+                total_invested_this_hand=sb_chips,
+                betting_status=BettingRoundActionStatus.ACTED,
+                stack_at_hand_start=sb_chips,
+                hole_cards=make_hole_cards(),
+            ),
+            player_factory(
+                player_id="player-2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(0),
+                total_invested_this_hand=bb_chips,
+                betting_status=BettingRoundActionStatus.ACTED,
+                stack_at_hand_start=bb_chips,
+                hole_cards=make_hole_cards(),
+            ),
+        ]
+        state_after = game_factory(players=post_blind_players, button_seat=Seat.SEAT_0)
+
+        recorder.record_game_start(state_before, game_metadata)
+        recorder.record_hand_start(state_before)
+        recorder.record_round_start(state_before)
+        recorder.record_blind_postings(state_before, state_after)
+
+        assert recorder.record is not None
+        assert recorder.record.current_hand is not None
+        current_round = recorder.record.current_hand.current_round()
+        assert current_round is not None
+        assert len(current_round.turns) == 2
+
+        sb_turn = current_round.turns[0]
+        assert sb_turn.action.action_type == ActionType.POST_SMALL_BLIND
+        assert sb_turn.action.amount == sb_chips
+        assert sb_turn.pot_before == ChipAmount(0)
+        assert sb_turn.pot_after == sb_chips
+
+        bb_turn = current_round.turns[1]
+        assert bb_turn.action.action_type == ActionType.POST_BIG_BLIND
+        assert bb_turn.action.amount == bb_chips
+        assert bb_turn.pot_before == sb_chips
+        assert bb_turn.pot_after == ChipAmount(sb_chips.value + bb_chips.value)

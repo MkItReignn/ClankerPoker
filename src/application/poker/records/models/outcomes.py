@@ -27,12 +27,14 @@ class ActionRecord:
             raise ValueError("player_name cannot be empty")
 
     def to_short_string(self) -> str:
-        """Convert to shorthand notation (F, X, C, B100, R200, AI500)."""
+        """Convert to shorthand notation (F, X, C, B100, R200, AI500, PSB10, PBB20)."""
         short = self.action_type.to_short_string()
         if self.amount is not None and self.action_type in (
             ActionType.BET,
             ActionType.RAISE,
             ActionType.ALL_IN,
+            ActionType.POST_SMALL_BLIND,
+            ActionType.POST_BIG_BLIND,
         ):
             return f"{short}{self.amount.value}"
         return short
