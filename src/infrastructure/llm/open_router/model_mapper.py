@@ -15,10 +15,17 @@ class OpenRouterModelMapper:
         LlmModel.GOOGLE_GEMINI_ULTRA: "google/gemini-ultra",
         LlmModel.DEEPSEEK_DEEPSEEK: "deepseek/deepseek",
         LlmModel.XAI_GROK: "x-ai/grok",
+        LlmModel.DEEPSEEK_DEEPSEEK_v3_2: "deepseek/deepseek-v3.2",
+        LlmModel.XAI_GROK_4_1_FAST: "x-ai/grok-4.1-fast",
     }
 
     @classmethod
     def to_openrouter_model(cls, model: LlmModel) -> str:
+        if model == LlmModel.NONE:
+            raise ValueError(
+                f"Cannot map LlmModel.NONE to OpenRouter model. "
+                f"Use a valid LLM model or a non-LLM provider."
+            )
         if model not in cls._MODEL_MAP:
             raise ValueError(
                 f"Model {model.value} is not mapped to an OpenRouter model. "
@@ -45,6 +52,6 @@ class OpenRouterModelMapper:
     def is_valid_model(cls, model_id: str) -> bool:
         try:
             model = LlmModel(model_id)
-            return model in cls._MODEL_MAP
+            return model != LlmModel.NONE and model in cls._MODEL_MAP
         except ValueError:
             return False
