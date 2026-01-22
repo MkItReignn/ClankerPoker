@@ -102,17 +102,14 @@ class RecordLogger:
         )
 
     def log_action_taken(self, turn: TurnRecord, hand_number: int) -> None:
-        chips_before = turn.player_record.chips.value
         amount = turn.action.amount.value if turn.action.amount else 0
-        chips_after = chips_before - amount
 
         self._logger.info(
             "Action",
             hand=hand_number,
-            player=turn.player_record.player_name,
+            player=turn.action.player_name,
             action=turn.action.action_type.value,
             amount=amount,
-            stack=f"{chips_before} → {chips_after}",
         )
 
     def log_hand_completed(self, hand: HandRecord, outcome: HandOutcome) -> None:

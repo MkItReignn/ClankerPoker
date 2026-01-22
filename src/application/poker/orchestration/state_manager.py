@@ -120,15 +120,12 @@ class PokerStateManager:
         if new_player is None:
             raise ValueError(f"Player {player_id} not found after action")
 
-        # Record in game record - pass full response
         self._recorder.record_action(
-            state_before=self.game,
-            state_after=new_state,
+            state=new_state,
             player_id=player_id,
             response=response,
         )
 
-        # Update internal state
         self._game = new_state
 
         return TurnResult(
@@ -286,11 +283,8 @@ class PokerStateManager:
         # Phase 2: Post blinds
         post_blind_state = HandEngine.post_blinds(pre_blind_state)
 
-        # Record blind postings with accurate state transition
-        self._recorder.record_blind_postings(
-            state_before=pre_blind_state,
-            state_after=post_blind_state,
-        )
+        # Record blind postings
+        self._recorder.record_blind_postings(state=post_blind_state)
 
         return post_blind_state
 

@@ -138,8 +138,7 @@ class Recorder:
 
     def record_action(
         self,
-        state_before: Game,
-        state_after: Game,
+        state: Game,
         player_id: str,
         response: ActionResponse[Action, Narration],
     ) -> None:
@@ -150,20 +149,15 @@ class Recorder:
         if current_round is None:
             return
 
-        player = state_before.players.get_by_id(player_id)
+        player = state.players.get_by_id(player_id)
         if player is None:
             return
-
-        invested_before = self._calculate_invested_before(player)
-        turn_player_record = self._player_record_factory.create_turn_level_player_record(
-            player, invested_before
-        )
 
         action = response.action
         action_record = ActionRecord(
             player_id=player_id,
             player_name=self._player_configs[player_id].name,
-            phase=state_before.current_phase,
+            phase=state.current_phase,
             action_type=action.action_type,
             amount=action.amount,
             timestamp=datetime.now(),
@@ -171,7 +165,6 @@ class Recorder:
 
         turn_record = TurnRecord(
             round_turn_number=len(current_round.turns) + 1,
-            player_record=turn_player_record,
             action=action_record,
             timestamp=datetime.now(),
             narration=response.narration,
@@ -180,11 +173,11 @@ class Recorder:
         current_round.add_turn(turn_record)
         self._record_logger.log_action_taken(turn_record, self._record.current_hand.hand_number)
 
-    def record_blind_postings(self, state_before: Game, state_after: Game) -> None:
+    def record_blind_postings(self, state: Game) -> None:
         if self._record is None or self._record.current_hand is None:
             return
 
-        if state_after.current_phase != GamePhase.PRE_FLOP:
+        if state.current_phase != GamePhase.PRE_FLOP:
             return
 
         current_round = self._record.current_hand.current_round()
@@ -192,13 +185,13 @@ class Recorder:
             return
 
         position_mapping = PositionManager.resolve_positions_for_hand(
-            all_players=list(state_after.players),
-            previous_button_seat=state_after.button_seat,
+            all_players=list(state.players),
+            previous_button_seat=state.button_seat,
             advance_button=False,
         )
 
-        sb_player = state_after.players.get_by_seat(position_mapping.small_blind_seat)
-        bb_player = state_after.players.get_by_seat(position_mapping.big_blind_seat)
+        sb_player = state.players.get_by_seat(position_mapping.small_blind_seat)
+        bb_player = state.players.get_by_seat(position_mapping.big_blind_seat)
 
         sb_amount = sb_player.total_invested_this_hand if sb_player else ChipAmount(0)
         bb_amount = bb_player.total_invested_this_hand if bb_player else ChipAmount(0)
@@ -209,7 +202,7 @@ class Recorder:
                 player=sb_player,
                 action_type=ActionType.POST_SMALL_BLIND,
                 amount=sb_amount,
-                phase=state_after.current_phase,
+                phase=state.current_phase,
             )
 
         if bb_player is not None:
@@ -218,7 +211,7 @@ class Recorder:
                 player=bb_player,
                 action_type=ActionType.POST_BIG_BLIND,
                 amount=bb_amount,
-                phase=state_after.current_phase,
+                phase=state.current_phase,
             )
 
     def _record_blind_turn(
@@ -229,10 +222,6 @@ class Recorder:
         amount: ChipAmount,
         phase: GamePhase,
     ) -> None:
-        turn_player_record = self._player_record_factory.create_turn_level_player_record(
-            player, invested_before=0
-        )
-
         action_record = ActionRecord(
             player_id=player.id,
             player_name=self._player_configs[player.id].name,
@@ -244,7 +233,6 @@ class Recorder:
 
         turn_record = TurnRecord(
             round_turn_number=len(current_round.turns) + 1,
-            player_record=turn_player_record,
             action=action_record,
             timestamp=datetime.now(),
         )
@@ -255,9 +243,3 @@ class Recorder:
             self._record_logger.log_action_taken(
                 turn_record, self._record.current_hand.hand_number
             )
-
-    @staticmethod
-    def _calculate_invested_before(player: Player) -> int:
-        if player.stack_at_hand_start is None:
-            return 0
-        return player.stack_at_hand_start.value - player.remaining_chips.value

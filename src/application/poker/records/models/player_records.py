@@ -225,39 +225,3 @@ class RoundLevelPlayerRecord(PlayerRecordSnapshot):
         )
 
 
-@dataclass(frozen=True, slots=True)
-class TurnLevelPlayerRecord(PlayerRecordSnapshot):
-    total_invested_before_action: ChipAmount
-    can_raise: bool
-
-    def __post_init__(self) -> None:
-        super(type(self), self).__post_init__()
-        if self.total_invested_before_action.value < 0:
-            raise ValueError(
-                f"total_invested_before_action cannot be negative: {self.total_invested_before_action.value}"
-            )
-
-    def to_dict(self) -> dict[str, Any]:
-        """Serialize TurnLevelPlayerRecord to a dictionary."""
-        return {
-            "player_id": self.player_id,
-            "player_name": self.player_name,
-            "seat": self.seat.value,
-            "chips": self.chips.value,
-            "model_id": self.model_id.value,
-            "total_invested_before_action": self.total_invested_before_action.value,
-            "can_raise": self.can_raise,
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> TurnLevelPlayerRecord:
-        """Deserialize a dictionary to TurnLevelPlayerRecord."""
-        return cls(
-            player_id=data["player_id"],
-            player_name=data["player_name"],
-            seat=Seat.from_int(data["seat"]),
-            chips=ChipAmount(data["chips"]),
-            model_id=LlmModel(data["model_id"]),
-            total_invested_before_action=ChipAmount(data["total_invested_before_action"]),
-            can_raise=data["can_raise"],
-        )

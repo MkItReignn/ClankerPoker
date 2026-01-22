@@ -663,7 +663,7 @@ class TestActionRecording:
 
         fold_action = Action(action_type=ActionType.FOLD)
         response = ActionResponse(action=fold_action)
-        recorder.record_action(state_before, state_after, "player-1", response)
+        recorder.record_action(state_after, "player-1", response)
 
         assert recorder.record is not None
         hand = recorder.record.current_hand
@@ -728,7 +728,7 @@ class TestActionRecording:
 
         bet_action = Action(action_type=ActionType.BET, amount=bet_amount)
         response = ActionResponse(action=bet_action)
-        recorder.record_action(state_before, state_after, "player-1", response)
+        recorder.record_action(state_after, "player-1", response)
 
         assert recorder.record is not None
         hand = recorder.record.current_hand
@@ -736,67 +736,6 @@ class TestActionRecording:
         turn = hand.rounds[0].turns[0]
         assert turn.action.action_type == ActionType.BET
         assert turn.action.amount == bet_amount
-
-    def test_captures_player_state_before_action(
-        self,
-        recorder: Recorder,
-        player_factory: Callable[..., Player],
-        game_factory: Callable[..., Game],
-        game_metadata: GameMetadata,
-    ) -> None:
-        """Turn-level player state captures chips before the action."""
-        chips_before = ChipAmount(500)
-
-        players_before = [
-            player_factory(
-                player_id="player-1",
-                seat=Seat.SEAT_0,
-                remaining_chips=chips_before,
-                stack_at_hand_start=chips_before,
-                can_raise=True,
-            ),
-            player_factory(
-                player_id="player-2",
-                seat=Seat.SEAT_1,
-                remaining_chips=STARTING_CHIPS,
-                stack_at_hand_start=STARTING_CHIPS,
-            ),
-        ]
-        state_before = game_factory(players=players_before, pot_amount=ChipAmount(0))
-
-        players_after = [
-            player_factory(
-                player_id="player-1",
-                seat=Seat.SEAT_0,
-                remaining_chips=ChipAmount(400),
-                total_invested_this_hand=ChipAmount(100),
-                stack_at_hand_start=chips_before,
-            ),
-            player_factory(
-                player_id="player-2",
-                seat=Seat.SEAT_1,
-                remaining_chips=STARTING_CHIPS,
-                stack_at_hand_start=STARTING_CHIPS,
-            ),
-        ]
-        state_after = game_factory(players=players_after, pot_amount=ChipAmount(100))
-
-        recorder.record_game_start(state_before, game_metadata)
-        recorder.record_hand_start(state_before)
-        recorder.record_round_start(state_before)
-
-        bet_action = Action(action_type=ActionType.BET, amount=ChipAmount(100))
-        response = ActionResponse(action=bet_action)
-        recorder.record_action(state_before, state_after, "player-1", response)
-
-        assert recorder.record is not None
-        hand = recorder.record.current_hand
-        assert hand is not None
-        turn = hand.rounds[0].turns[0]
-
-        # Player state should reflect BEFORE action
-        assert turn.player_record.chips == chips_before
-        assert turn.player_record.can_raise is True
 
     def test_records_multiple_actions_in_sequence(
         self,
@@ -829,10 +768,10 @@ class TestActionRecording:
         # First action: player-1 checks
         check_action = Action(action_type=ActionType.CHECK)
         response = ActionResponse(action=check_action)
-        recorder.record_action(state, state, "player-1", response)
+        recorder.record_action(state, "player-1", response)
 
         # Second action: player-2 checks
-        recorder.record_action(state, state, "player-2", response)
+        recorder.record_action(state, "player-2", response)
 
         assert recorder.record is not None
         hand = recorder.record.current_hand
@@ -895,12 +834,7 @@ class TestEdgeCases:
         check_action = Action(action_type=ActionType.CHECK)
         response = ActionResponse(action=check_action)
         # Should not raise
-        recorder.record_action(
-            two_player_game,
-            two_player_game,
-            "player-1",
-            response,
-        )
+        recorder.record_action(two_player_game, "player-1", response)
 
         assert recorder.record is not None
         hand = recorder.record.current_hand
@@ -921,12 +855,7 @@ class TestEdgeCases:
         check_action = Action(action_type=ActionType.CHECK)
         response = ActionResponse(action=check_action)
         # Non-existent player - should not raise
-        recorder.record_action(
-            two_player_game,
-            two_player_game,
-            "non-existent-player",
-            response,
-        )
+        recorder.record_action(two_player_game, "non-existent-player", response)
 
         assert recorder.record is not None
         hand = recorder.record.current_hand
@@ -1096,7 +1025,7 @@ class TestBlindPostingRecording:
         recorder.record_game_start(state_before, game_metadata)
         recorder.record_hand_start(state_before)
         recorder.record_round_start(state_before)
-        recorder.record_blind_postings(state_before, state_after)
+        recorder.record_blind_postings(state_after)
 
         assert recorder.record is not None
         hand = recorder.record.current_hand
@@ -1166,7 +1095,7 @@ class TestBlindPostingRecording:
         recorder.record_game_start(state_before, game_metadata)
         recorder.record_hand_start(state_before)
         recorder.record_round_start(state_before)
-        recorder.record_blind_postings(state_before, state_after)
+        recorder.record_blind_postings(state_after)
 
         assert recorder.record is not None
         hand = recorder.record.current_hand
@@ -1257,7 +1186,7 @@ class TestBlindPostingRecording:
         recorder.record_game_start(state_before, game_metadata)
         recorder.record_hand_start(state_before)
         recorder.record_round_start(state_before)
-        recorder.record_blind_postings(state_before, state_after)
+        recorder.record_blind_postings(state_after)
 
         assert recorder.record is not None
         assert recorder.record.current_hand is not None
@@ -1340,7 +1269,7 @@ class TestBlindPostingRecording:
         recorder.record_game_start(state_before, game_metadata)
         recorder.record_hand_start(state_before)
         recorder.record_round_start(state_before)
-        recorder.record_blind_postings(state_before, state_after)
+        recorder.record_blind_postings(state_after)
 
         assert recorder.record is not None
         assert recorder.record.current_hand is not None
@@ -1407,7 +1336,7 @@ class TestBlindPostingRecording:
         recorder.record_game_start(state_before, game_metadata)
         recorder.record_hand_start(state_before)
         recorder.record_round_start(state_before)
-        recorder.record_blind_postings(state_before, state_after)
+        recorder.record_blind_postings(state_after)
 
         assert recorder.record is not None
         assert recorder.record.current_hand is not None

@@ -37,7 +37,7 @@ class TestActionNotation:
         round_records = {
             "p1": make_round_level_player_record("p1", "Alice", Seat.SEAT_0),
         }
-        turn = make_turn_record("p1", "Alice", Seat.SEAT_0, ActionType.FOLD)
+        turn = make_turn_record("p1", "Alice", ActionType.FOLD)
         round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
 
@@ -53,7 +53,7 @@ class TestActionNotation:
         round_records = {
             "p1": make_round_level_player_record("p1", "Bob", Seat.SEAT_1),
         }
-        turn = make_turn_record("p1", "Bob", Seat.SEAT_1, ActionType.CHECK, phase=GamePhase.FLOP)
+        turn = make_turn_record("p1", "Bob", ActionType.CHECK, phase=GamePhase.FLOP)
         round_record = make_round_record(GamePhase.FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
 
@@ -71,7 +71,7 @@ class TestActionNotation:
         round_records = {
             "p1": make_round_level_player_record("p1", "Carol", Seat.SEAT_2),
         }
-        turn = make_turn_record("p1", "Carol", Seat.SEAT_2, ActionType.CALL)
+        turn = make_turn_record("p1", "Carol", ActionType.CALL)
         round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
 
@@ -88,7 +88,7 @@ class TestActionNotation:
             "p1": make_round_level_player_record("p1", "Dave", Seat.SEAT_0),
         }
         turn = make_turn_record(
-            "p1", "Dave", Seat.SEAT_0, ActionType.BET, amount=100, phase=GamePhase.FLOP
+            "p1", "Dave", ActionType.BET, amount=100, phase=GamePhase.FLOP
         )
         round_record = make_round_record(GamePhase.FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
@@ -107,7 +107,7 @@ class TestActionNotation:
         round_records = {
             "p1": make_round_level_player_record("p1", "Eve", Seat.SEAT_3),
         }
-        turn = make_turn_record("p1", "Eve", Seat.SEAT_3, ActionType.RAISE, amount=200)
+        turn = make_turn_record("p1", "Eve", ActionType.RAISE, amount=200)
         round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
 
@@ -123,7 +123,7 @@ class TestActionNotation:
         round_records = {
             "p1": make_round_level_player_record("p1", "Frank", Seat.SEAT_4),
         }
-        turn = make_turn_record("p1", "Frank", Seat.SEAT_4, ActionType.ALL_IN, amount=500)
+        turn = make_turn_record("p1", "Frank", ActionType.ALL_IN, amount=500)
         round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
 
@@ -142,7 +142,7 @@ class TestActionNotation:
             "p1": make_round_level_player_record("p1", "Alice", Seat.SEAT_0),
         }
         turn = make_turn_record(
-            "p1", "Alice", Seat.SEAT_0, ActionType.POST_SMALL_BLIND, amount=25
+            "p1", "Alice", ActionType.POST_SMALL_BLIND, amount=25
         )
         round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
@@ -162,7 +162,7 @@ class TestActionNotation:
             "p1": make_round_level_player_record("p1", "Bob", Seat.SEAT_1),
         }
         turn = make_turn_record(
-            "p1", "Bob", Seat.SEAT_1, ActionType.POST_BIG_BLIND, amount=50
+            "p1", "Bob", ActionType.POST_BIG_BLIND, amount=50
         )
         round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
@@ -183,7 +183,7 @@ class TestPositionAbbreviations:
         round_records = {
             "p1": make_round_level_player_record("p1", "Alice", Seat.SEAT_0),
         }
-        turn = make_turn_record("p1", "Alice", Seat.SEAT_0, ActionType.FOLD)
+        turn = make_turn_record("p1", "Alice", ActionType.FOLD)
         round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
 
@@ -199,7 +199,7 @@ class TestPositionAbbreviations:
         round_records = {
             "p1": make_round_level_player_record("p1", "Bob", Seat.SEAT_1),
         }
-        turn = make_turn_record("p1", "Bob", Seat.SEAT_1, ActionType.CALL)
+        turn = make_turn_record("p1", "Bob", ActionType.CALL)
         round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
 
@@ -215,7 +215,7 @@ class TestPositionAbbreviations:
         round_records = {
             "p1": make_round_level_player_record("p1", "Carol", Seat.SEAT_2),
         }
-        turn = make_turn_record("p1", "Carol", Seat.SEAT_2, ActionType.CHECK)
+        turn = make_turn_record("p1", "Carol", ActionType.CHECK)
         round_record = make_round_record(GamePhase.FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
 
@@ -233,7 +233,7 @@ class TestPositionAbbreviations:
         round_records = {
             "p1": make_round_level_player_record("p1", "Dave", Seat.SEAT_3),
         }
-        turn = make_turn_record("p1", "Dave", Seat.SEAT_3, ActionType.RAISE, amount=60)
+        turn = make_turn_record("p1", "Dave", ActionType.RAISE, amount=60)
         round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
 
@@ -251,7 +251,7 @@ class TestPositionAbbreviations:
         round_records = {
             "p1": make_round_level_player_record("p1", "Eve", Seat.SEAT_4),
         }
-        turn = make_turn_record("p1", "Eve", Seat.SEAT_4, ActionType.CALL)
+        turn = make_turn_record("p1", "Eve", ActionType.CALL)
         round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
 
@@ -267,7 +267,7 @@ class TestPositionAbbreviations:
         round_records = {
             "p1": make_round_level_player_record("p1", "Frank", Seat.SEAT_5),
         }
-        turn = make_turn_record("p1", "Frank", Seat.SEAT_5, ActionType.FOLD)
+        turn = make_turn_record("p1", "Frank", ActionType.FOLD)
         round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
 
@@ -391,7 +391,7 @@ class TestCurrentPhaseMarker:
             "p1": make_round_level_player_record("p1", "Alice", Seat.SEAT_0),
             "p2": make_round_level_player_record("p2", "Bob", Seat.SEAT_1),
         }
-        turn = make_turn_record("p1", "Alice", Seat.SEAT_0, ActionType.RAISE, amount=60)
+        turn = make_turn_record("p1", "Alice", ActionType.RAISE, amount=60)
         round_record = make_round_record(GamePhase.PRE_FLOP, round_records, [turn])
         hand = make_hand_record(1, player_records, [round_record])
 
@@ -407,7 +407,7 @@ class TestCurrentPhaseMarker:
         round_records = {
             "p1": make_round_level_player_record("p1", "Alice", Seat.SEAT_0),
         }
-        preflop_turn = make_turn_record("p1", "Alice", Seat.SEAT_0, ActionType.RAISE, amount=60)
+        preflop_turn = make_turn_record("p1", "Alice", ActionType.RAISE, amount=60)
         preflop_round = make_round_record(GamePhase.PRE_FLOP, round_records, [preflop_turn])
         hand = make_hand_record(1, player_records, [preflop_round])
 
@@ -426,7 +426,7 @@ class TestCurrentPhaseMarker:
         round_records = {
             "p1": make_round_level_player_record("p1", "Alice", Seat.SEAT_0),
         }
-        preflop_turn = make_turn_record("p1", "Alice", Seat.SEAT_0, ActionType.CALL)
+        preflop_turn = make_turn_record("p1", "Alice", ActionType.CALL)
         preflop_round = make_round_record(GamePhase.PRE_FLOP, round_records, [preflop_turn])
         hand = make_hand_record(1, player_records, [preflop_round])
 
@@ -528,9 +528,9 @@ class TestPreviousHandsFormat:
         }
         turns = [
             make_turn_record(
-                "p1", "Alice", Seat.SEAT_0, ActionType.RAISE, amount=60, turn_number=1
+                "p1", "Alice", ActionType.RAISE, amount=60, turn_number=1
             ),
-            make_turn_record("p2", "Bob", Seat.SEAT_1, ActionType.CALL, turn_number=2),
+            make_turn_record("p2", "Bob", ActionType.CALL, turn_number=2),
         ]
         round_record = make_round_record(GamePhase.PRE_FLOP, round_records, turns)
         outcome = make_hand_outcome(
@@ -689,10 +689,10 @@ class TestEdgeCases:
             "p1": make_round_level_player_record("p1", "Alice", Seat.SEAT_0),
             "p2": make_round_level_player_record("p2", "Bob", Seat.SEAT_1),
         }
-        preflop_turn = make_turn_record("p1", "Alice", Seat.SEAT_0, ActionType.RAISE, amount=60)
+        preflop_turn = make_turn_record("p1", "Alice", ActionType.RAISE, amount=60)
         preflop_round = make_round_record(GamePhase.PRE_FLOP, round_records, [preflop_turn])
         flop_turn = make_turn_record(
-            "p2", "Bob", Seat.SEAT_1, ActionType.BET, amount=100, phase=GamePhase.FLOP
+            "p2", "Bob", ActionType.BET, amount=100, phase=GamePhase.FLOP
         )
         flop_round = make_round_record(GamePhase.FLOP, round_records, [flop_turn])
         hand = make_hand_record(1, player_records, [preflop_round, flop_round])
@@ -775,10 +775,10 @@ class TestSerializeRecentRecordsIntegration:
             hand1_round_records,
             [
                 make_turn_record(
-                    "alice", "Alice", Seat.SEAT_0, ActionType.RAISE, 60, turn_number=1
+                    "alice", "Alice", ActionType.RAISE, 60, turn_number=1
                 ),
-                make_turn_record("bob", "Bob", Seat.SEAT_1, ActionType.FOLD, turn_number=2),
-                make_turn_record("carol", "Carol", Seat.SEAT_2, ActionType.FOLD, turn_number=3),
+                make_turn_record("bob", "Bob", ActionType.FOLD, turn_number=2),
+                make_turn_record("carol", "Carol", ActionType.FOLD, turn_number=3),
             ],
         )
         hand1_outcome = make_hand_outcome(
@@ -817,9 +817,9 @@ class TestSerializeRecentRecordsIntegration:
             GamePhase.PRE_FLOP,
             hand2_round_records,
             [
-                make_turn_record("bob", "Bob", Seat.SEAT_1, ActionType.RAISE, 100, turn_number=1),
-                make_turn_record("carol", "Carol", Seat.SEAT_2, ActionType.CALL, turn_number=2),
-                make_turn_record("alice", "Alice", Seat.SEAT_0, ActionType.FOLD, turn_number=3),
+                make_turn_record("bob", "Bob", ActionType.RAISE, 100, turn_number=1),
+                make_turn_record("carol", "Carol", ActionType.CALL, turn_number=2),
+                make_turn_record("alice", "Alice", ActionType.FOLD, turn_number=3),
             ],
         )
         hand2_flop = make_round_record(
@@ -829,7 +829,6 @@ class TestSerializeRecentRecordsIntegration:
                 make_turn_record(
                     "carol",
                     "Carol",
-                    Seat.SEAT_2,
                     ActionType.CHECK,
                     phase=GamePhase.FLOP,
                     turn_number=1,
@@ -837,7 +836,6 @@ class TestSerializeRecentRecordsIntegration:
                 make_turn_record(
                     "bob",
                     "Bob",
-                    Seat.SEAT_1,
                     ActionType.BET,
                     50,
                     phase=GamePhase.FLOP,
@@ -846,7 +844,6 @@ class TestSerializeRecentRecordsIntegration:
                 make_turn_record(
                     "carol",
                     "Carol",
-                    Seat.SEAT_2,
                     ActionType.CALL,
                     phase=GamePhase.FLOP,
                     turn_number=3,
@@ -898,13 +895,13 @@ class TestSerializeRecentRecordsIntegration:
             hand3_round_records,
             [
                 make_turn_record(
-                    "carol", "Carol", Seat.SEAT_2, ActionType.RAISE, 100, turn_number=1
+                    "carol", "Carol", ActionType.RAISE, 100, turn_number=1
                 ),
                 make_turn_record(
-                    "alice", "Alice", Seat.SEAT_0, ActionType.ALL_IN, 400, turn_number=2
+                    "alice", "Alice", ActionType.ALL_IN, 400, turn_number=2
                 ),
-                make_turn_record("bob", "Bob", Seat.SEAT_1, ActionType.FOLD, turn_number=3),
-                make_turn_record("carol", "Carol", Seat.SEAT_2, ActionType.CALL, turn_number=4),
+                make_turn_record("bob", "Bob", ActionType.FOLD, turn_number=3),
+                make_turn_record("carol", "Carol", ActionType.CALL, turn_number=4),
             ],
         )
         alice_win_cards = Hand(Card(Suit.SPADES, Rank.ACE), Card(Suit.HEARTS, Rank.KING))
@@ -988,11 +985,11 @@ class TestSerializeRecentRecordsIntegration:
             hand1_round_records,
             [
                 make_turn_record(
-                    "alice", "Alice", Seat.SEAT_0, ActionType.RAISE, 60, turn_number=1
+                    "alice", "Alice", ActionType.RAISE, 60, turn_number=1
                 ),
-                make_turn_record("bob", "Bob", Seat.SEAT_1, ActionType.RAISE, 150, turn_number=2),
-                make_turn_record("carol", "Carol", Seat.SEAT_2, ActionType.FOLD, turn_number=3),
-                make_turn_record("alice", "Alice", Seat.SEAT_0, ActionType.FOLD, turn_number=4),
+                make_turn_record("bob", "Bob", ActionType.RAISE, 150, turn_number=2),
+                make_turn_record("carol", "Carol", ActionType.FOLD, turn_number=3),
+                make_turn_record("alice", "Alice", ActionType.FOLD, turn_number=4),
             ],
         )
         hand1_outcome = make_hand_outcome(
@@ -1031,9 +1028,9 @@ class TestSerializeRecentRecordsIntegration:
             GamePhase.PRE_FLOP,
             hand2_round_records,
             [
-                make_turn_record("bob", "Bob", Seat.SEAT_1, ActionType.RAISE, 100, turn_number=1),
-                make_turn_record("carol", "Carol", Seat.SEAT_2, ActionType.FOLD, turn_number=2),
-                make_turn_record("alice", "Alice", Seat.SEAT_0, ActionType.CALL, turn_number=3),
+                make_turn_record("bob", "Bob", ActionType.RAISE, 100, turn_number=1),
+                make_turn_record("carol", "Carol", ActionType.FOLD, turn_number=2),
+                make_turn_record("alice", "Alice", ActionType.CALL, turn_number=3),
             ],
         )
         hand2_flop = make_round_record(
@@ -1043,7 +1040,6 @@ class TestSerializeRecentRecordsIntegration:
                 make_turn_record(
                     "alice",
                     "Alice",
-                    Seat.SEAT_0,
                     ActionType.CHECK,
                     phase=GamePhase.FLOP,
                     turn_number=1,
@@ -1051,7 +1047,6 @@ class TestSerializeRecentRecordsIntegration:
                 make_turn_record(
                     "bob",
                     "Bob",
-                    Seat.SEAT_1,
                     ActionType.BET,
                     100,
                     phase=GamePhase.FLOP,
@@ -1060,7 +1055,6 @@ class TestSerializeRecentRecordsIntegration:
                 make_turn_record(
                     "alice",
                     "Alice",
-                    Seat.SEAT_0,
                     ActionType.CALL,
                     phase=GamePhase.FLOP,
                     turn_number=3,
@@ -1156,15 +1150,15 @@ class TestSerializeCurrentHandActionsIntegration:
             GamePhase.PRE_FLOP,
             round_records,
             [
-                make_turn_record("dave", "Dave", Seat.SEAT_3, ActionType.RAISE, 60, turn_number=1),
-                make_turn_record("eve", "Eve", Seat.SEAT_4, ActionType.CALL, turn_number=2),
+                make_turn_record("dave", "Dave", ActionType.RAISE, 60, turn_number=1),
+                make_turn_record("eve", "Eve", ActionType.CALL, turn_number=2),
                 make_turn_record(
-                    "alice", "Alice", Seat.SEAT_0, ActionType.RAISE, 180, turn_number=3
+                    "alice", "Alice", ActionType.RAISE, 180, turn_number=3
                 ),
-                make_turn_record("bob", "Bob", Seat.SEAT_1, ActionType.FOLD, turn_number=4),
-                make_turn_record("carol", "Carol", Seat.SEAT_2, ActionType.CALL, turn_number=5),
-                make_turn_record("dave", "Dave", Seat.SEAT_3, ActionType.FOLD, turn_number=6),
-                make_turn_record("eve", "Eve", Seat.SEAT_4, ActionType.CALL, turn_number=7),
+                make_turn_record("bob", "Bob", ActionType.FOLD, turn_number=4),
+                make_turn_record("carol", "Carol", ActionType.CALL, turn_number=5),
+                make_turn_record("dave", "Dave", ActionType.FOLD, turn_number=6),
+                make_turn_record("eve", "Eve", ActionType.CALL, turn_number=7),
             ],
         )
 
@@ -1176,7 +1170,6 @@ class TestSerializeCurrentHandActionsIntegration:
                 make_turn_record(
                     "carol",
                     "Carol",
-                    Seat.SEAT_2,
                     ActionType.CHECK,
                     phase=GamePhase.FLOP,
                     turn_number=1,
@@ -1184,7 +1177,6 @@ class TestSerializeCurrentHandActionsIntegration:
                 make_turn_record(
                     "eve",
                     "Eve",
-                    Seat.SEAT_4,
                     ActionType.BET,
                     100,
                     phase=GamePhase.FLOP,
@@ -1193,7 +1185,6 @@ class TestSerializeCurrentHandActionsIntegration:
                 make_turn_record(
                     "alice",
                     "Alice",
-                    Seat.SEAT_0,
                     ActionType.RAISE,
                     250,
                     phase=GamePhase.FLOP,
@@ -1202,13 +1193,12 @@ class TestSerializeCurrentHandActionsIntegration:
                 make_turn_record(
                     "carol",
                     "Carol",
-                    Seat.SEAT_2,
                     ActionType.FOLD,
                     phase=GamePhase.FLOP,
                     turn_number=4,
                 ),
                 make_turn_record(
-                    "eve", "Eve", Seat.SEAT_4, ActionType.CALL, phase=GamePhase.FLOP, turn_number=5
+                    "eve", "Eve", ActionType.CALL, phase=GamePhase.FLOP, turn_number=5
                 ),
             ],
         )
@@ -1262,9 +1252,9 @@ class TestSerializeCurrentHandActionsIntegration:
             round_records,
             [
                 make_turn_record(
-                    "alice", "Alice", Seat.SEAT_0, ActionType.RAISE, 100, turn_number=1
+                    "alice", "Alice", ActionType.RAISE, 100, turn_number=1
                 ),
-                make_turn_record("bob", "Bob", Seat.SEAT_1, ActionType.CALL, turn_number=2),
+                make_turn_record("bob", "Bob", ActionType.CALL, turn_number=2),
             ],
         )
 
@@ -1276,7 +1266,6 @@ class TestSerializeCurrentHandActionsIntegration:
                 make_turn_record(
                     "alice",
                     "Alice",
-                    Seat.SEAT_0,
                     ActionType.BET,
                     150,
                     phase=GamePhase.FLOP,
@@ -1285,7 +1274,6 @@ class TestSerializeCurrentHandActionsIntegration:
                 make_turn_record(
                     "bob",
                     "Bob",
-                    Seat.SEAT_1,
                     ActionType.RAISE,
                     400,
                     phase=GamePhase.FLOP,
@@ -1294,7 +1282,6 @@ class TestSerializeCurrentHandActionsIntegration:
                 make_turn_record(
                     "alice",
                     "Alice",
-                    Seat.SEAT_0,
                     ActionType.CALL,
                     phase=GamePhase.FLOP,
                     turn_number=3,
@@ -1310,7 +1297,6 @@ class TestSerializeCurrentHandActionsIntegration:
                 make_turn_record(
                     "alice",
                     "Alice",
-                    Seat.SEAT_0,
                     ActionType.CHECK,
                     phase=GamePhase.TURN,
                     turn_number=1,
@@ -1318,7 +1304,6 @@ class TestSerializeCurrentHandActionsIntegration:
                 make_turn_record(
                     "bob",
                     "Bob",
-                    Seat.SEAT_1,
                     ActionType.BET,
                     300,
                     phase=GamePhase.TURN,
@@ -1327,14 +1312,13 @@ class TestSerializeCurrentHandActionsIntegration:
                 make_turn_record(
                     "alice",
                     "Alice",
-                    Seat.SEAT_0,
                     ActionType.ALL_IN,
                     800,
                     phase=GamePhase.TURN,
                     turn_number=3,
                 ),
                 make_turn_record(
-                    "bob", "Bob", Seat.SEAT_1, ActionType.CALL, phase=GamePhase.TURN, turn_number=4
+                    "bob", "Bob", ActionType.CALL, phase=GamePhase.TURN, turn_number=4
                 ),
             ],
         )
@@ -1347,7 +1331,6 @@ class TestSerializeCurrentHandActionsIntegration:
                 make_turn_record(
                     "bob",
                     "Bob",
-                    Seat.SEAT_1,
                     ActionType.CHECK,
                     phase=GamePhase.RIVER,
                     turn_number=1,

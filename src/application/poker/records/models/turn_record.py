@@ -1,4 +1,4 @@
-"""Turn record model - individual player action with complete context."""
+"""Turn record model - individual player action."""
 
 from __future__ import annotations
 
@@ -9,13 +9,11 @@ from typing import Any
 from src.domain.models.narration import Narration
 
 from .outcomes import ActionRecord
-from .player_records import TurnLevelPlayerRecord
 
 
 @dataclass(frozen=True, slots=True)
 class TurnRecord:
     round_turn_number: int
-    player_record: TurnLevelPlayerRecord
     action: ActionRecord
     timestamp: datetime
     narration: Narration | None = None
@@ -27,7 +25,6 @@ class TurnRecord:
     def to_dict(self) -> dict[str, Any]:
         return {
             "round_turn_number": self.round_turn_number,
-            "player_record": self.player_record.to_dict(),
             "action": self.action.to_dict(),
             "timestamp": self.timestamp.isoformat(),
             "narration": self.narration.to_dict() if self.narration else None,
@@ -35,14 +32,12 @@ class TurnRecord:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> TurnRecord:
-        player_record = TurnLevelPlayerRecord.from_dict(data["player_record"])
         action = ActionRecord.from_dict(data["action"])
         narration_data = data.get("narration")
         narration = Narration.from_dict(narration_data) if narration_data else None
 
         return cls(
             round_turn_number=data["round_turn_number"],
-            player_record=player_record,
             action=action,
             timestamp=datetime.fromisoformat(data["timestamp"]),
             narration=narration,

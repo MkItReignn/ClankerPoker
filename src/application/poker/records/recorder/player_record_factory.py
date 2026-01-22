@@ -3,19 +3,17 @@
 from __future__ import annotations
 
 from src.application.poker.records.models import (HandLevelPlayerRecord,
-                                                  RoundLevelPlayerRecord,
-                                                  TurnLevelPlayerRecord)
+                                                  RoundLevelPlayerRecord)
 from src.config.poker.config import PokerPlayerConfig
-from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game
 from src.domain.models.llm_model import LlmModel
-from src.domain.models.player import HandParticipationStatus, Player
+from src.domain.models.player import HandParticipationStatus
 from src.domain.models.position import PositionName, TablePositionMapping
 from src.domain.rules.position_manager import PositionManager
 
 
 class PlayerRecordFactory:
-    """Creates player record snapshots at hand, round, and turn levels."""
+    """Creates player record snapshots at hand and round levels."""
 
     def __init__(self, player_configs: dict[str, PokerPlayerConfig]) -> None:
         self._player_configs = player_configs
@@ -76,17 +74,3 @@ class PlayerRecordFactory:
                 is_all_in=player.is_all_in(),
             )
         return records
-
-    def create_turn_level_player_record(
-        self, player: Player, invested_before: int
-    ) -> TurnLevelPlayerRecord:
-        """Create turn-level player record capturing state before action."""
-        return TurnLevelPlayerRecord(
-            player_id=player.id,
-            player_name=self._get_player_name(player.id),
-            seat=player.seat,
-            chips=player.remaining_chips,
-            model_id=self._get_player_model_id(player.id),
-            total_invested_before_action=ChipAmount(invested_before),
-            can_raise=player.can_raise,
-        )

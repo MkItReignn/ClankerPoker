@@ -9,7 +9,6 @@ from .player_records import (
     PlayerConfig,
     PlayerRecordSnapshot,
     RoundLevelPlayerRecord,
-    TurnLevelPlayerRecord,
 )
 from .round_record import RoundRecord
 from .turn_record import TurnRecord
@@ -26,7 +25,6 @@ __all__ = [
     "GameLevelPlayerRecord",
     "HandLevelPlayerRecord",
     "RoundLevelPlayerRecord",
-    "TurnLevelPlayerRecord",
     # Player configuration
     "PlayerConfig",
     # Outcomes and actions

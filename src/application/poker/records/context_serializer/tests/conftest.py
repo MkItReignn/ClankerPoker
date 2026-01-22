@@ -13,7 +13,6 @@ from src.application.poker.records.models import (ActionRecord, GameMetadata,
                                                   PlayerOutcome,
                                                   RoundLevelPlayerRecord,
                                                   RoundRecord, ShowdownResult,
-                                                  TurnLevelPlayerRecord,
                                                   TurnRecord)
 from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.config.tournament.config import PayoutStructure
@@ -104,25 +103,6 @@ def make_round_level_player_record(
     )
 
 
-def make_turn_level_player_record(
-    player_id: str,
-    player_name: str,
-    seat: Seat,
-    chips: int = 1000,
-    total_invested: int = 0,
-) -> TurnLevelPlayerRecord:
-    """Create a TurnLevelPlayerRecord for testing."""
-    return TurnLevelPlayerRecord(
-        player_id=player_id,
-        player_name=player_name,
-        seat=seat,
-        chips=ChipAmount(chips),
-        model_id=LlmModel.NONE,
-        total_invested_before_action=ChipAmount(total_invested),
-        can_raise=True,
-    )
-
-
 def make_action_record(
     player_id: str,
     player_name: str,
@@ -144,7 +124,6 @@ def make_action_record(
 def make_turn_record(
     player_id: str,
     player_name: str,
-    seat: Seat,
     action_type: ActionType,
     amount: int | None = None,
     phase: GamePhase = GamePhase.PRE_FLOP,
@@ -152,7 +131,6 @@ def make_turn_record(
 ) -> TurnRecord:
     return TurnRecord(
         round_turn_number=turn_number,
-        player_record=make_turn_level_player_record(player_id, player_name, seat),
         action=make_action_record(player_id, player_name, action_type, amount, phase),
         timestamp=datetime.now(),
     )
