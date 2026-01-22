@@ -70,16 +70,6 @@ class RecordLogger:
         )
 
     def log_round_advanced(self, hand: HandRecord, round_record: RoundRecord) -> None:
-        """Log betting round advancement with community cards."""
-        pot = 0
-        if round_record.turns:
-            pot = round_record.turns[-1].pot_after.value
-        elif round_record.player_records:
-            pot = sum(
-                p_record.chips_at_round_start.value - p_record.chips.value
-                for p_record in round_record.player_records.values()
-            )
-
         phase = round_record.phase.value.upper()
         board = " ".join(str(card) for card in round_record.community_cards)
 
@@ -87,19 +77,13 @@ class RecordLogger:
             f"*** {phase} ***",
             hand=hand.hand_number,
             board=board,
-            pot=pot,
         )
 
     def log_betting_round_ended(self, hand: HandRecord, round_record: RoundRecord) -> None:
-        """Log betting round completion with player status."""
         action_counts: dict[str, int] = {}
         for turn in round_record.turns:
             action_type = turn.action.action_type.value
             action_counts[action_type] = action_counts.get(action_type, 0) + 1
-
-        pot = 0
-        if round_record.turns:
-            pot = round_record.turns[-1].pot_after.value
 
         folded = [
             ps.player_name
@@ -113,13 +97,11 @@ class RecordLogger:
             hand=hand.hand_number,
             phase=round_record.phase.value,
             actions=action_counts,
-            pot=pot,
             folded=folded if folded else None,
             all_in=all_in if all_in else None,
         )
 
     def log_action_taken(self, turn: TurnRecord, hand_number: int) -> None:
-        """Log player action."""
         chips_before = turn.player_record.chips.value
         amount = turn.action.amount.value if turn.action.amount else 0
         chips_after = chips_before - amount
@@ -131,7 +113,6 @@ class RecordLogger:
             action=turn.action.action_type.value,
             amount=amount,
             stack=f"{chips_before} → {chips_after}",
-            pot=turn.pot_after.value,
         )
 
     def log_hand_completed(self, hand: HandRecord, outcome: HandOutcome) -> None:

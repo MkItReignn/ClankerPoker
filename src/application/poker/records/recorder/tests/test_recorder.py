@@ -737,66 +737,6 @@ class TestActionRecording:
         assert turn.action.action_type == ActionType.BET
         assert turn.action.amount == bet_amount
 
-    def test_captures_pot_changes(
-        self,
-        recorder: Recorder,
-        player_factory: Callable[..., Player],
-        game_factory: Callable[..., Game],
-        game_metadata: GameMetadata,
-    ) -> None:
-        """Pot before and after action are recorded."""
-        pot_before = ChipAmount(30)
-        pot_after = ChipAmount(130)
-        bet_amount = ChipAmount(100)
-
-        players_before = [
-            player_factory(
-                player_id="player-1",
-                seat=Seat.SEAT_0,
-                remaining_chips=STARTING_CHIPS,
-                stack_at_hand_start=STARTING_CHIPS,
-            ),
-            player_factory(
-                player_id="player-2",
-                seat=Seat.SEAT_1,
-                remaining_chips=STARTING_CHIPS,
-                stack_at_hand_start=STARTING_CHIPS,
-            ),
-        ]
-        state_before = game_factory(players=players_before, pot_amount=pot_before)
-
-        players_after = [
-            player_factory(
-                player_id="player-1",
-                seat=Seat.SEAT_0,
-                remaining_chips=ChipAmount(900),
-                total_invested_this_hand=bet_amount,
-                stack_at_hand_start=STARTING_CHIPS,
-            ),
-            player_factory(
-                player_id="player-2",
-                seat=Seat.SEAT_1,
-                remaining_chips=STARTING_CHIPS,
-                stack_at_hand_start=STARTING_CHIPS,
-            ),
-        ]
-        state_after = game_factory(players=players_after, pot_amount=pot_after)
-
-        recorder.record_game_start(state_before, game_metadata)
-        recorder.record_hand_start(state_before)
-        recorder.record_round_start(state_before)
-
-        bet_action = Action(action_type=ActionType.BET, amount=bet_amount)
-        response = ActionResponse(action=bet_action)
-        recorder.record_action(state_before, state_after, "player-1", response)
-
-        assert recorder.record is not None
-        hand = recorder.record.current_hand
-        assert hand is not None
-        turn = hand.rounds[0].turns[0]
-        assert turn.pot_before == pot_before
-        assert turn.pot_after == pot_after
-
     def test_captures_player_state_before_action(
         self,
         recorder: Recorder,
@@ -1168,14 +1108,10 @@ class TestBlindPostingRecording:
         sb_turn = current_round.turns[0]
         assert sb_turn.action.action_type == ActionType.POST_SMALL_BLIND
         assert sb_turn.action.amount == SMALL_BLIND
-        assert sb_turn.pot_before == ChipAmount(0)
-        assert sb_turn.pot_after == SMALL_BLIND
 
         bb_turn = current_round.turns[1]
         assert bb_turn.action.action_type == ActionType.POST_BIG_BLIND
         assert bb_turn.action.amount == BIG_BLIND
-        assert bb_turn.pot_before == SMALL_BLIND
-        assert bb_turn.pot_after == ChipAmount(SMALL_BLIND.value + BIG_BLIND.value)
 
     def test_records_blinds_in_heads_up_game(
         self,
@@ -1331,7 +1267,6 @@ class TestBlindPostingRecording:
         sb_turn = current_round.turns[0]
         assert sb_turn.action.action_type == ActionType.POST_SMALL_BLIND
         assert sb_turn.action.amount == insufficient_chips
-        assert sb_turn.pot_after == insufficient_chips
 
     def test_bb_goes_all_in_with_insufficient_chips(
         self,
@@ -1415,8 +1350,6 @@ class TestBlindPostingRecording:
         bb_turn = current_round.turns[1]
         assert bb_turn.action.action_type == ActionType.POST_BIG_BLIND
         assert bb_turn.action.amount == insufficient_chips
-        assert bb_turn.pot_before == SMALL_BLIND
-        assert bb_turn.pot_after == ChipAmount(SMALL_BLIND.value + insufficient_chips.value)
 
     def test_both_blinds_go_all_in_with_insufficient_chips(
         self,
@@ -1485,11 +1418,7 @@ class TestBlindPostingRecording:
         sb_turn = current_round.turns[0]
         assert sb_turn.action.action_type == ActionType.POST_SMALL_BLIND
         assert sb_turn.action.amount == sb_chips
-        assert sb_turn.pot_before == ChipAmount(0)
-        assert sb_turn.pot_after == sb_chips
 
         bb_turn = current_round.turns[1]
         assert bb_turn.action.action_type == ActionType.POST_BIG_BLIND
         assert bb_turn.action.amount == bb_chips
-        assert bb_turn.pot_before == sb_chips
-        assert bb_turn.pot_after == ChipAmount(sb_chips.value + bb_chips.value)

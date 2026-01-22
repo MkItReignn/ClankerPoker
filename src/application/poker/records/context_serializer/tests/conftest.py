@@ -149,19 +149,12 @@ def make_turn_record(
     amount: int | None = None,
     phase: GamePhase = GamePhase.PRE_FLOP,
     turn_number: int = 1,
-    pot_before: int = 0,
-    pot_after: int = 0,
 ) -> TurnRecord:
-    """Create a TurnRecord for testing."""
     return TurnRecord(
         round_turn_number=turn_number,
         player_record=make_turn_level_player_record(player_id, player_name, seat),
         action=make_action_record(player_id, player_name, action_type, amount, phase),
         timestamp=datetime.now(),
-        pot_before=ChipAmount(pot_before),
-        pot_after=ChipAmount(pot_after),
-        current_bet_before=ChipAmount(0),
-        current_bet_after=ChipAmount(amount or 0),
     )
 
 

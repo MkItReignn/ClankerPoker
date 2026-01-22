@@ -19,7 +19,6 @@ from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game, GamePhase
 from src.domain.models.narration import Narration
 from src.domain.models.player import Player
-from src.domain.rules.betting_calculator import BettingCalculator
 from src.domain.rules.position_manager import PositionManager
 from src.logger.factories import get_generic_logger
 
@@ -144,7 +143,6 @@ class Recorder:
         player_id: str,
         response: ActionResponse[Action, Narration],
     ) -> None:
-        """Record an action taken by a player."""
         if self._record is None or self._record.current_hand is None:
             return
 
@@ -176,10 +174,6 @@ class Recorder:
             player_record=turn_player_record,
             action=action_record,
             timestamp=datetime.now(),
-            pot_before=state_before.pot,
-            pot_after=state_after.pot,
-            current_bet_before=self._get_bet_to_match(state_before),
-            current_bet_after=self._get_bet_to_match(state_after),
             narration=response.narration,
         )
 
@@ -216,7 +210,6 @@ class Recorder:
                 action_type=ActionType.POST_SMALL_BLIND,
                 amount=sb_amount,
                 phase=state_after.current_phase,
-                pot_after=sb_amount,
             )
 
         if bb_player is not None:
@@ -226,7 +219,6 @@ class Recorder:
                 action_type=ActionType.POST_BIG_BLIND,
                 amount=bb_amount,
                 phase=state_after.current_phase,
-                pot_after=sb_amount + bb_amount,
             )
 
     def _record_blind_turn(
@@ -236,7 +228,6 @@ class Recorder:
         action_type: ActionType,
         amount: ChipAmount,
         phase: GamePhase,
-        pot_after: ChipAmount,
     ) -> None:
         turn_player_record = self._player_record_factory.create_turn_level_player_record(
             player, invested_before=0
@@ -251,18 +242,11 @@ class Recorder:
             timestamp=datetime.now(),
         )
 
-        pot_before = ChipAmount(pot_after.value - amount.value)
-
         turn_record = TurnRecord(
             round_turn_number=len(current_round.turns) + 1,
             player_record=turn_player_record,
             action=action_record,
             timestamp=datetime.now(),
-            pot_before=pot_before,
-            pot_after=pot_after,
-            current_bet_before=ChipAmount(0) if action_type == ActionType.POST_SMALL_BLIND else amount,
-            current_bet_after=amount,
-            narration=None,
         )
 
         current_round.add_turn(turn_record)
@@ -277,7 +261,3 @@ class Recorder:
         if player.stack_at_hand_start is None:
             return 0
         return player.stack_at_hand_start.value - player.remaining_chips.value
-
-    @staticmethod
-    def _get_bet_to_match(state: Game) -> ChipAmount:
-        return BettingCalculator.get_max_invested_this_hand(state.players_in_hand())
