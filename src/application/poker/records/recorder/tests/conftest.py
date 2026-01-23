@@ -59,12 +59,16 @@ def player_factory(sample_bot: Bot) -> Callable[..., Player]:
         hole_cards: Hand | None = None,
         stack_at_hand_start: ChipAmount | None = None,
         can_raise: bool = True,
+        name: str | None = None,
     ) -> Player:
         if total_invested_this_hand is None:
             total_invested_this_hand = ChipAmount(0)
+        if name is None:
+            name = f"Player {player_id}"
 
         return Player(
             id=player_id,
+            name=name,
             bot_id=sample_bot.id,
             seat=seat,
             remaining_chips=remaining_chips,

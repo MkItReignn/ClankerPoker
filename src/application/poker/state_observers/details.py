@@ -62,7 +62,7 @@ class HandStartedDetails:
 
 
 @dataclass(frozen=True, slots=True)
-class HoleCardsDealtDetails:
+class HoleCardDealtDetail:
     player_id: str
     player_name: str
     cards: Hand
@@ -75,6 +75,14 @@ class HoleCardsDealtDetails:
             "cards": [card.to_dict() for card in self.cards.cards],
             "deal_order": self.deal_order,
         }
+
+
+@dataclass(frozen=True, slots=True)
+class HoleCardsDealtDetails:
+    players: dict[str, HoleCardDealtDetail]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {pid: detail.to_dict() for pid, detail in self.players.items()}
 
 
 @dataclass(frozen=True, slots=True)

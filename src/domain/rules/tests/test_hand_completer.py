@@ -1015,6 +1015,7 @@ class TestPlayerElimination:
 
         p3 = Player(
             id=PlayerId("p3"),
+            name="Player p3",
             bot_id=sample_bot.id,
             seat=Seat.SEAT_2,
             remaining_chips=ChipAmount(0),

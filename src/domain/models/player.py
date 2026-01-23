@@ -29,6 +29,7 @@ class HandParticipationStatus(Enum):
 @dataclass(frozen=True, slots=True)
 class Player:
     id: PlayerId
+    name: str
     bot_id: BotId
     seat: Seat
     remaining_chips: ChipAmount
@@ -45,6 +46,8 @@ class Player:
     def __post_init__(self) -> None:
         if not self.id:
             raise ValueError("Player id cannot be empty")
+        if not self.name:
+            raise ValueError("Player name cannot be empty")
         if self.remaining_chips.value < 0:
             raise ValueError(f"Remaining chips cannot be negative: {self.remaining_chips.value}")
         if self.total_invested_this_hand.value < 0:

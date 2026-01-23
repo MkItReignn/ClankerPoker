@@ -1,0 +1,294 @@
+from __future__ import annotations
+
+from typing import Protocol
+
+from src.application.poker.state_observers.details import (
+    ActionAppliedDetails,
+    BlindInfo,
+    BlindsPostedDetails,
+    EliminatedInfo,
+    GameCompletedDetails,
+    GameStartedDetails,
+    HandCompletedDetails,
+    HandStartedDetails,
+    HoleCardDealtDetail,
+    HoleCardsDealtDetails,
+    PlayerToActDetails,
+    RoundCompletedDetails,
+    RoundStartedDetails,
+    ShowdownInfo,
+    WinnerInfo,
+)
+from src.domain.models.actions import ActionType
+from src.domain.models.chips import ChipAmount
+from src.domain.models.game import Game, GamePhase
+from src.domain.models.narration import Narration
+from src.domain.rules.available_action_calculator import AvailableActionCalculator
+from src.domain.rules.hand_evaluator import HandEvaluator
+from src.domain.rules.position_manager import PositionManager
+
+
+class HasActionTypeAndAmount(Protocol):
+    @property
+    def action_type(self) -> ActionType: ...
+
+    @property
+    def amount(self) -> ChipAmount | None: ...
+
+
+class HasActionFields(Protocol):
+    @property
+    def action(self) -> HasActionTypeAndAmount: ...
+
+    @property
+    def narration(self) -> Narration | None: ...
+
+
+class DetailsFactory:
+    """Static factory for deriving Details objects from Game state.
+
+    Centralizes all derivation logic. StateManager passes raw data,
+    Notifier uses this factory, Observers receive typed Details.
+    """
+
+    @staticmethod
+    def game_started(game: Game) -> GameStartedDetails:
+        return GameStartedDetails(
+            player_count=len(game.players),
+            starting_chips=game.tournament_config.starting_chip_stack,
+        )
+
+    @staticmethod
+    def game_completed(game: Game) -> GameCompletedDetails:
+        active_players = game.get_active_players()
+        if not active_players:
+            raise ValueError("Cannot complete game: no active players")
+        winner = active_players[0]
+        return GameCompletedDetails(
+            winner_id=winner.id,
+            winner_name=winner.name,
+            total_hands=game.hand_state.hand_number,
+        )
+
+    @staticmethod
+    def hand_started(game: Game) -> HandStartedDetails:
+        return HandStartedDetails(
+            hand_number=game.hand_state.hand_number,
+            button_seat=game.button_seat,
+        )
+
+    @staticmethod
+    def hand_completed(game: Game) -> HandCompletedDetails:
+        winners = DetailsFactory._derive_winners(game)
+        eliminated = DetailsFactory._derive_eliminated(game)
+        showdown = DetailsFactory._derive_showdown_info(game)
+        return HandCompletedDetails(
+            winners=winners,
+            eliminated=eliminated,
+            showdown=showdown,
+        )
+
+    @staticmethod
+    def round_started(game: Game) -> RoundStartedDetails:
+        new_cards = DetailsFactory._derive_new_cards(game)
+        return RoundStartedDetails(
+            phase=game.current_phase,
+            new_cards=new_cards,
+        )
+
+    @staticmethod
+    def round_completed() -> RoundCompletedDetails:
+        return RoundCompletedDetails()
+
+    @staticmethod
+    def blinds_posted(game: Game) -> BlindsPostedDetails:
+        sb_player, bb_player = DetailsFactory._derive_blind_players(game)
+        return BlindsPostedDetails(
+            small_blind=BlindInfo(
+                player_id=sb_player.id if sb_player else "",
+                player_name=sb_player.name if sb_player else "",
+                amount=(
+                    sb_player.total_invested_this_hand
+                    if sb_player
+                    else game.current_blind_level.small_blind
+                ),
+            ),
+            big_blind=BlindInfo(
+                player_id=bb_player.id if bb_player else "",
+                player_name=bb_player.name if bb_player else "",
+                amount=(
+                    bb_player.total_invested_this_hand
+                    if bb_player
+                    else game.current_blind_level.big_blind
+                ),
+            ),
+        )
+
+    @staticmethod
+    def hole_cards_dealt(game: Game) -> HoleCardsDealtDetails:
+        deal_order_map = DetailsFactory._derive_all_deal_orders(game)
+        players_details: dict[str, HoleCardDealtDetail] = {}
+
+        for player in game.players_in_hand():
+            if player.hole_cards is not None:
+                players_details[player.id] = HoleCardDealtDetail(
+                    player_id=player.id,
+                    player_name=player.name,
+                    cards=player.hole_cards,
+                    deal_order=deal_order_map.get(player.id, 0),
+                )
+
+        return HoleCardsDealtDetails(players=players_details)
+
+    @staticmethod
+    def player_to_act(game: Game) -> PlayerToActDetails:
+        player_id = game.get_player_to_act_id()
+        if player_id is None:
+            raise ValueError("No player to act")
+
+        player = game.players.get_by_id(player_id)
+        if player is None:
+            raise ValueError(f"Player {player_id} not found")
+
+        available_actions = DetailsFactory._derive_available_actions(game, player_id)
+        return PlayerToActDetails(
+            player_id=player.id,
+            player_name=player.name,
+            available_actions=available_actions,
+        )
+
+    @staticmethod
+    def action_applied(
+        game: Game, player_id: str, response: HasActionFields
+    ) -> ActionAppliedDetails:
+        player = game.players.get_by_id(player_id)
+        if player is None:
+            raise ValueError(f"Player {player_id} not found")
+
+        return ActionAppliedDetails(
+            player_id=player.id,
+            player_name=player.name,
+            action_type=response.action.action_type,
+            amount=response.action.amount,
+            narration=response.narration,
+        )
+
+    # =========================================================================
+    # Private derivation helpers
+    # =========================================================================
+
+    @staticmethod
+    def _derive_new_cards(game: Game) -> tuple:
+        match game.current_phase:
+            case GamePhase.FLOP:
+                return tuple(game.community_cards[0:3])
+            case GamePhase.TURN:
+                return (game.community_cards[3],)
+            case GamePhase.RIVER:
+                return (game.community_cards[4],)
+            case _:
+                return ()
+
+    @staticmethod
+    def _derive_blind_players(game: Game) -> tuple:
+        positions = PositionManager.resolve_positions_for_hand(
+            all_players=list(game.players),
+            previous_button_seat=game.button_seat,
+            advance_button=False,
+        )
+        sb_player = game.players.get_by_seat(positions.small_blind_seat)
+        bb_player = game.players.get_by_seat(positions.big_blind_seat)
+        return sb_player, bb_player
+
+    @staticmethod
+    def _derive_all_deal_orders(game: Game) -> dict[str, int]:
+        positions = PositionManager.resolve_positions_for_hand(
+            all_players=list(game.players),
+            previous_button_seat=game.button_seat,
+            advance_button=False,
+        )
+        players_in_hand = list(game.players_in_hand())
+        betting_order = PositionManager.get_betting_order(
+            position_mapping=positions,
+            phase=GamePhase.PRE_FLOP,
+            players_in_hand=players_in_hand,
+        )
+
+        deal_orders: dict[str, int] = {}
+        for order, seat in enumerate(betting_order, start=1):
+            player = game.players.get_by_seat(seat)
+            if player is not None:
+                deal_orders[player.id] = order
+
+        return deal_orders
+
+    @staticmethod
+    def _derive_showdown_info(game: Game) -> list[ShowdownInfo] | None:
+        if game.current_phase != GamePhase.SHOWDOWN:
+            return None
+
+        players_in_hand = list(game.players_in_hand())
+        if len(players_in_hand) <= 1:
+            return None
+
+        results: list[ShowdownInfo] = []
+        for player in players_in_hand:
+            if player.hole_cards is not None and len(game.community_cards) == 5:
+                evaluation = HandEvaluator.evaluate_hand_strength(
+                    player.hole_cards, game.community_cards
+                )
+                results.append(
+                    ShowdownInfo(
+                        player_id=player.id,
+                        player_name=player.name,
+                        cards=player.hole_cards,
+                        hand_evaluation=evaluation,
+                    )
+                )
+        return results if results else None
+
+    @staticmethod
+    def _derive_available_actions(game: Game, player_id: str) -> list[ActionType]:
+        available = AvailableActionCalculator.calculate_available_actions(
+            game, player_id
+        )
+        return [a.action_type for a in available]
+
+    @staticmethod
+    def _derive_winners(game: Game) -> list[WinnerInfo]:
+        if game.outcome is None:
+            return []
+
+        winners: list[WinnerInfo] = []
+        for player_id, amount in game.outcome.winners:
+            player = game.players.get_by_id(player_id)
+            if player:
+                winners.append(
+                    WinnerInfo(
+                        player_id=player_id,
+                        player_name=player.name,
+                        amount=amount,
+                        pot_type="main",
+                    )
+                )
+        return winners
+
+    @staticmethod
+    def _derive_eliminated(game: Game) -> list[EliminatedInfo]:
+        if game.outcome is None:
+            return []
+
+        eliminated: list[EliminatedInfo] = []
+        for player in game.players:
+            if (
+                player.elimination_hand_number == game.hand_state.hand_number
+                and player.table_finish_position is not None
+            ):
+                eliminated.append(
+                    EliminatedInfo(
+                        player_id=player.id,
+                        player_name=player.name,
+                        finish_position=player.table_finish_position,
+                    )
+                )
+        return eliminated

@@ -76,6 +76,7 @@ class GameInitializer:
 
             player = Player(
                 id=config.player_id,
+                name=config.name,
                 bot_id=BotId(config.name),
                 seat=Seat.from_int(i),
                 remaining_chips=ChipAmount(starting_chips),
