@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from src.domain.models.chips import ChipAmount
 
@@ -20,6 +21,12 @@ class Pot:
 
     def is_eligible(self, player_id: PlayerId) -> bool:
         return player_id in self.eligible_player_ids
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "amount": self.amount.value,
+            "eligible_player_ids": list(self.eligible_player_ids),
+        }
 
 
 @dataclass(slots=True)
@@ -47,3 +54,10 @@ class PotState:
 
     def get_pots_for_player(self, player_id: PlayerId) -> list[Pot]:
         return [pot for pot in self.all_pots() if pot.is_eligible(player_id)]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "main_pot": self.main_pot.to_dict(),
+            "side_pots": [pot.to_dict() for pot in self.side_pots],
+            "total": self.total_amount().value,
+        }

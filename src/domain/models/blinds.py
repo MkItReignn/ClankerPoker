@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from src.domain.models.chips import ChipAmount
 
@@ -22,3 +23,10 @@ class BlindLevel:
             raise ValueError(
                 f"Big blind must be exactly 2x small blind: {self.big_blind.value} != {self.small_blind.value * 2}"
             )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "small_blind": self.small_blind.value,
+            "big_blind": self.big_blind.value,
+            "level": self.level,
+        }

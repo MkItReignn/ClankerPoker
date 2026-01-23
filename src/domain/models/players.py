@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
+from typing import Any
 
 from src.domain.models.player import HandParticipationStatus, Player, PlayerId
 from src.domain.models.seat import Seat
@@ -143,3 +144,6 @@ class Players:
         return Players(
             _players={pid: transform(p) if predicate(p) else p for pid, p in self._players.items()}
         )
+
+    def to_dict(self) -> list[dict[str, Any]]:
+        return [player.to_dict() for player in self._players.values()]

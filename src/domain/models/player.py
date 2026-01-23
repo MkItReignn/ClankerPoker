@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
 from enum import Enum
+from typing import Any
 
 from src.domain.models.bot import BotId
 from src.domain.models.chips import ChipAmount
@@ -126,3 +127,20 @@ class Player:
                 can_raise=True,
             )
         return self
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "bot_id": self.bot_id,
+            "seat": self.seat.value,
+            "remaining_chips": self.remaining_chips.value,
+            "hole_cards": self.hole_cards.to_dict() if self.hole_cards else None,
+            "betting_status": self.betting_status.value,
+            "participation_status": self.participation_status.value,
+            "total_invested_this_hand": self.total_invested_this_hand.value,
+            "is_all_in": self.is_all_in(),
+            "hands_played": self.hands_played,
+            "elimination_hand_number": self.elimination_hand_number,
+            "table_finish_position": self.table_finish_position,
+        }

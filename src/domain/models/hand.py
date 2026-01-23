@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from src.domain.models.card import Card
 
@@ -20,3 +21,6 @@ class Hand:
 
     def __str__(self) -> str:
         return f"{self.card1} {self.card2}"
+
+    def to_dict(self) -> list[dict[str, Any]]:
+        return [self.card1.to_dict(), self.card2.to_dict()]

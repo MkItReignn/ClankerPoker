@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from src.domain.models.blinds import BlindLevel
 
@@ -102,6 +102,17 @@ class GameIdentity:
             if self.completed_at < self.started_at:
                 raise ValueError("completed_at cannot be before started_at")
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+            "started_at": self.started_at.isoformat() if self.started_at else None,
+            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "status": self.status.value,
+            "seed": self.seed,
+        }
+
 
 @dataclass(slots=True)
 class HandState:
@@ -123,6 +134,13 @@ class HandState:
                 f"Community card count must be one of {valid_card_counts}, got {len(self.community_cards)}"
             )
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "hand_number": self.hand_number,
+            "current_phase": self.current_phase.value,
+            "community_cards": [card.to_dict() for card in self.community_cards],
+        }
+
 
 NO_POSITION_TO_ACT: int = -1
 
@@ -143,6 +161,12 @@ class BettingState:
             raise ValueError(
                 f"Position to act must be non-negative or {NO_POSITION_TO_ACT}: {self.position_to_act}"
             )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "last_raise_increment": self.last_raise_increment.value,
+            "position_to_act": self.position_to_act,
+        }
 
 
 @dataclass(frozen=True, slots=True)
@@ -379,3 +403,15 @@ class Game:
             return active_players[0]
 
         return None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "identity": self.identity.to_dict(),
+            "hand_state": self.hand_state.to_dict(),
+            "pot_state": self.pot_state.to_dict(),
+            "betting_state": self.betting_state.to_dict(),
+            "button_seat": self.button_seat.value,
+            "blind_level": self.current_blind_level.to_dict(),
+            "players": self.players.to_dict(),
+            "player_to_act_id": self.get_player_to_act_id(),
+        }
