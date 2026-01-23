@@ -19,7 +19,13 @@ from src.domain.models.game import Game
 
 class GameStateNotifier:
     def __init__(self, observers: list[GameStateObserver]) -> None:
-        self._observers: list[GameStateObserver] = observers
+        self._observers: list[GameStateObserver] = list(observers)
+
+    def add_observer(self, observer: GameStateObserver) -> None:
+        self._observers.append(observer)
+
+    def remove_observer(self, observer: GameStateObserver) -> None:
+        self._observers.remove(observer)
 
     async def on_game_started(self, game: Game) -> None:
         details: GameStartedDetails = DetailsFactory.game_started(game)
