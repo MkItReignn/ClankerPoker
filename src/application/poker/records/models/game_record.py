@@ -8,6 +8,7 @@ from typing import Any
 
 from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.config.tournament.config import PayoutStructure
+from src.domain.models.game import Game
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.chips import ChipAmount
 from src.domain.models.llm_model import LlmModel
@@ -88,6 +89,18 @@ class GameMetadata:
             payout_structure=PayoutStructure(data["payout_structure"]),
             started_at=started_at,
             completed_at=completed_at,
+        )
+
+    @classmethod
+    def from_game(cls, game: Game) -> GameMetadata:
+        return cls(
+            seed=game.identity.seed,
+            buy_in_amount=game.tournament_config.buy_in_amount,
+            starting_chip_stack=game.tournament_config.starting_chip_stack,
+            blind_schedule=game.tournament_config.blind_schedule,
+            payout_structure=game.tournament_config.payout_structure,
+            started_at=game.identity.started_at,
+            completed_at=game.identity.completed_at,
         )
 
 

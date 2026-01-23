@@ -352,4 +352,4 @@ async def run_turn(
 
     response = await action_provider.get_action(context, available_actions, config)
 
-    return state.apply_action(player_id, response)
+    return await state.apply_action(player_id, response)

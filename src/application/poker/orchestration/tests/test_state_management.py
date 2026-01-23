@@ -28,36 +28,39 @@ from .conftest import (BIG_BLIND, SMALL_BLIND, STARTING_CHIPS, TEST_GAME_ID,
 class TestInitializeGame:
     """Tests for game initialization behavior."""
 
-    def test_transitions_status_to_in_progress(
+    @pytest.mark.asyncio
+    async def test_transitions_status_to_in_progress(
         self,
         poker_state: PokerStateManager,
     ) -> None:
         """Given runner, when initialized, status becomes IN_PROGRESS."""
         # Act
-        poker_state.initialize()
+        await poker_state.initialize()
 
         # Assert
         assert poker_state.game.status == GameStatus.IN_PROGRESS
 
-    def test_starts_hand_number_one(
+    @pytest.mark.asyncio
+    async def test_starts_hand_number_one(
         self,
         poker_state: PokerStateManager,
     ) -> None:
         """Given new runner, when initialized, hand number is 1."""
         # Act
-        poker_state.initialize()
+        await poker_state.initialize()
 
         # Assert
         assert poker_state.game.hand_state.hand_number == 1
         assert poker_state.game.hand_state.is_initial_hand_setup is False
 
-    def test_deals_hole_cards_to_all_players(
+    @pytest.mark.asyncio
+    async def test_deals_hole_cards_to_all_players(
         self,
         poker_state: PokerStateManager,
     ) -> None:
         """Given new runner, when initialized, all players have hole cards."""
         # Act
-        poker_state.initialize()
+        await poker_state.initialize()
 
         # Assert
         for player in poker_state.game.players:
@@ -65,7 +68,8 @@ class TestInitializeGame:
             assert player.hole_cards.card1 is not None
             assert player.hole_cards.card2 is not None
 
-    def test_posts_blinds_from_correct_positions(
+    @pytest.mark.asyncio
+    async def test_posts_blinds_from_correct_positions(
         self,
         poker_state: PokerStateManager,
     ) -> None:
@@ -74,14 +78,15 @@ class TestInitializeGame:
         In heads-up: button posts small blind, other player posts big blind.
         """
         # Act
-        poker_state.initialize()
+        await poker_state.initialize()
 
         # Assert: total invested across players equals SB + BB
         total_invested = sum(p.total_invested_this_hand.value for p in poker_state.game.players)
         expected_blinds = SMALL_BLIND.value + BIG_BLIND.value
         assert total_invested == expected_blinds
 
-    def test_players_have_invested_blind_amounts(
+    @pytest.mark.asyncio
+    async def test_players_have_invested_blind_amounts(
         self,
         poker_state: PokerStateManager,
     ) -> None:
@@ -91,14 +96,15 @@ class TestInitializeGame:
         The pot amount is only updated when the hand resolves.
         """
         # Act
-        poker_state.initialize()
+        await poker_state.initialize()
 
         # Assert: Players have invested their blinds
         investments = [p.total_invested_this_hand.value for p in poker_state.game.players]
         assert SMALL_BLIND.value in investments
         assert BIG_BLIND.value in investments
 
-    def test_initializes_record(
+    @pytest.mark.asyncio
+    async def test_initializes_record(
         self,
         poker_state: PokerStateManager,
     ) -> None:
@@ -107,7 +113,7 @@ class TestInitializeGame:
         assert poker_state.record is None
 
         # Act
-        poker_state.initialize()
+        await poker_state.initialize()
 
         # Assert
         assert poker_state.record is not None
@@ -125,7 +131,7 @@ class TestRunTurn:
     ) -> None:
         """Given player's turn, when they fold, they are no longer in hand."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
         provider = scripted_provider_factory([fold()])
 
         # Act
@@ -147,7 +153,7 @@ class TestRunTurn:
     ) -> None:
         """Given player needs to call, when they call, their investment increases."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
         total_invested_before = sum(
             p.total_invested_this_hand.value for p in poker_state.game.players
         )
@@ -173,7 +179,7 @@ class TestRunTurn:
     ) -> None:
         """Given hand complete (one player folded), run_turn returns None."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
         provider = scripted_provider_factory([fold()])
 
         # One player folds, hand is complete
@@ -196,7 +202,7 @@ class TestRunTurn:
     ) -> None:
         """Given player takes action, action is recorded in game record."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
         provider = scripted_provider_factory([call()])
 
         # Act
@@ -226,7 +232,7 @@ class TestAdvanceGamePhase:
     ) -> None:
         """Given one player remaining, when phase advances, hand completes."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
         provider = scripted_provider_factory([fold()])
 
         result = await run_turn(poker_state, provider)
@@ -238,9 +244,9 @@ class TestAdvanceGamePhase:
 
         # Act - complete hand via atomic state transitions
         assert poker_state.is_hand_complete()
-        poker_state.resolve_hand()
-        poker_state.mark_game_complete_if_over()
-        poker_state.start_new_hand()
+        await poker_state.resolve_hand()
+        await poker_state.mark_game_complete_if_over()
+        await poker_state.start_new_hand()
 
         # Assert: Hand completed and new hand started
         assert poker_state.game.hand_state.hand_number == 2
@@ -253,7 +259,7 @@ class TestAdvanceGamePhase:
     ) -> None:
         """Given preflop betting complete, when phase advances, moves to FLOP."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
         assert poker_state.game.current_phase == GamePhase.PRE_FLOP
 
         # Complete preflop: small blind calls, big blind checks
@@ -269,7 +275,7 @@ class TestAdvanceGamePhase:
         # Act - use explicit advance_round instead of deprecated advance_game_phase
         assert poker_state.is_round_complete()
         assert not poker_state.is_hand_complete()
-        poker_state.start_next_round()
+        await poker_state.start_next_round()
 
         # Assert
         assert poker_state.game.current_phase == GamePhase.FLOP
@@ -283,7 +289,7 @@ class TestAdvanceGamePhase:
     ) -> None:
         """Given advancing to FLOP, 3 community cards are dealt."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
         assert len(poker_state.game.community_cards) == 0
 
         # Complete preflop
@@ -294,7 +300,7 @@ class TestAdvanceGamePhase:
                 break
 
         # Act - use explicit advance_round instead of deprecated advance_game_phase
-        poker_state.start_next_round()
+        await poker_state.start_next_round()
 
         # Assert
         assert len(poker_state.game.community_cards) == 3
@@ -373,15 +379,15 @@ class TestGameRecording:
     ) -> None:
         """Given hand completes via fold, record contains the completed hand."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
         provider = scripted_provider_factory([fold()])
 
         # Act: Run one turn (fold) and complete hand
         result = await run_turn(poker_state, provider)
         assert result is not None
         assert poker_state.is_hand_complete()
-        poker_state.resolve_hand()
-        poker_state.mark_game_complete_if_over()
+        await poker_state.resolve_hand()
+        await poker_state.mark_game_complete_if_over()
 
         # Assert
         record = poker_state.record
@@ -396,7 +402,7 @@ class TestGameRecording:
     ) -> None:
         """Given players win/lose pots, record tracks chip changes."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
 
         # One player folds, other wins blinds
         provider = scripted_provider_factory([fold()])
@@ -405,8 +411,8 @@ class TestGameRecording:
 
         # Complete the hand
         assert poker_state.is_hand_complete()
-        poker_state.resolve_hand()
-        poker_state.mark_game_complete_if_over()
+        await poker_state.resolve_hand()
+        await poker_state.mark_game_complete_if_over()
 
         # Assert
         record = poker_state.record
@@ -421,7 +427,8 @@ class TestGameRecording:
 class TestDeterminism:
     """Tests for deterministic game behavior based on seed."""
 
-    def test_same_seed_produces_same_initial_state(
+    @pytest.mark.asyncio
+    async def test_same_seed_produces_same_initial_state(
         self,
         two_player_config: PokerGameConfig,
         tournament_config: TournamentConfig,
@@ -442,8 +449,8 @@ class TestDeterminism:
         )
 
         # Act
-        runner1.initialize()
-        runner2.initialize()
+        await runner1.initialize()
+        await runner2.initialize()
 
         # Assert: Same hole cards dealt
         for player1, player2 in zip(runner1.game.players, runner2.game.players, strict=True):
@@ -465,13 +472,14 @@ class TestEdgeCases:
         with pytest.raises(RuntimeError, match="Game not initialized"):
             _ = poker_state.game
 
-    def test_is_game_complete_returns_false_for_active_game(
+    @pytest.mark.asyncio
+    async def test_is_game_complete_returns_false_for_active_game(
         self,
         poker_state: PokerStateManager,
     ) -> None:
         """Given IN_PROGRESS game, is_game_complete returns False."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
 
         # Act & Assert
         assert poker_state.is_game_complete() is False
@@ -484,7 +492,7 @@ class TestEdgeCases:
     ) -> None:
         """Given 3-player game, one fold does not end the hand."""
         # Arrange
-        three_player_state.initialize()
+        await three_player_state.initialize()
         provider = scripted_provider_factory([fold()])
 
         # Act
@@ -508,7 +516,7 @@ class TestBetAndRaiseActions:
     ) -> None:
         """Given post-flop with no bet, when player bets, their investment increases."""
         # Arrange: Complete preflop to get to flop
-        poker_state.initialize()
+        await poker_state.initialize()
         preflop_actions = [call(), check()]  # SB calls, BB checks
         provider = scripted_provider_factory(preflop_actions)
 
@@ -518,7 +526,7 @@ class TestBetAndRaiseActions:
                 break
 
         # Advance to flop
-        poker_state.start_next_round()
+        await poker_state.start_next_round()
         assert poker_state.game.current_phase == GamePhase.FLOP
 
         # Act: First player bets
@@ -539,7 +547,7 @@ class TestBetAndRaiseActions:
     ) -> None:
         """Given player faces a bet, when they raise, the bet amount increases."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
 
         # Preflop: SB raises instead of just calling
         raise_amount = BIG_BLIND.value * 3  # 3x BB raise
@@ -570,7 +578,7 @@ class TestPhaseProgression:
     ) -> None:
         """Given 2 players checking through, game progresses PRE_FLOP→FLOP→TURN→RIVER→SHOWDOWN."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
         assert poker_state.game.current_phase == GamePhase.PRE_FLOP
         assert len(poker_state.game.community_cards) == 0
 
@@ -590,7 +598,7 @@ class TestPhaseProgression:
         assert poker_state.game.is_round_complete()
 
         # Advance to FLOP
-        poker_state.start_next_round()
+        await poker_state.start_next_round()
         assert poker_state.game.current_phase == GamePhase.FLOP
         assert len(poker_state.game.community_cards) == 3
 
@@ -602,7 +610,7 @@ class TestPhaseProgression:
         assert poker_state.game.is_round_complete()
 
         # Advance to TURN
-        poker_state.start_next_round()
+        await poker_state.start_next_round()
         assert poker_state.game.current_phase == GamePhase.TURN
         assert len(poker_state.game.community_cards) == 4
 
@@ -614,7 +622,7 @@ class TestPhaseProgression:
         assert poker_state.game.is_round_complete()
 
         # Advance to RIVER
-        poker_state.start_next_round()
+        await poker_state.start_next_round()
         assert poker_state.game.current_phase == GamePhase.RIVER
         assert len(poker_state.game.community_cards) == 5
 
@@ -626,13 +634,13 @@ class TestPhaseProgression:
         assert poker_state.game.is_round_complete()
 
         # Complete hand: RIVER complete -> transition to showdown -> resolve
-        poker_state.start_next_round()
+        await poker_state.start_next_round()
         assert poker_state.game.current_phase == GamePhase.SHOWDOWN
-        poker_state.resolve_hand()
-        poker_state.mark_game_complete_if_over()
+        await poker_state.resolve_hand()
+        await poker_state.mark_game_complete_if_over()
 
         # Start new hand
-        poker_state.start_new_hand()
+        await poker_state.start_new_hand()
 
         # Assert: Hand completed and new hand started (hand number 2)
         assert poker_state.game.hand_state.hand_number == 2
@@ -645,7 +653,7 @@ class TestPhaseProgression:
     ) -> None:
         """Given FLOP complete, when advancing to TURN, 1 additional card is dealt."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
         actions = [call(), check()] + [check()] * 2  # Preflop + Flop
         provider = scripted_provider_factory(actions)
 
@@ -654,7 +662,7 @@ class TestPhaseProgression:
             result = await run_turn(poker_state, provider)
             if result is None:
                 break
-        poker_state.start_next_round()  # To FLOP
+        await poker_state.start_next_round()  # To FLOP
 
         # Complete flop
         for _ in range(2):
@@ -665,7 +673,7 @@ class TestPhaseProgression:
         assert len(poker_state.game.community_cards) == 3
 
         # Act: Advance to TURN
-        poker_state.start_next_round()
+        await poker_state.start_next_round()
 
         # Assert
         assert poker_state.game.current_phase == GamePhase.TURN
@@ -679,7 +687,7 @@ class TestPhaseProgression:
     ) -> None:
         """Given TURN complete, when advancing to RIVER, 1 additional card is dealt."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
         actions = [call(), check()] + [check()] * 4  # Preflop + Flop + Turn
         provider = scripted_provider_factory(actions)
 
@@ -688,14 +696,14 @@ class TestPhaseProgression:
             result = await run_turn(poker_state, provider)
             if result is None:
                 break
-        poker_state.start_next_round()  # To FLOP
+        await poker_state.start_next_round()  # To FLOP
 
         # Complete flop
         for _ in range(2):
             result = await run_turn(poker_state, provider)
             if result is None:
                 break
-        poker_state.start_next_round()  # To TURN
+        await poker_state.start_next_round()  # To TURN
 
         # Complete turn
         for _ in range(2):
@@ -706,7 +714,7 @@ class TestPhaseProgression:
         assert len(poker_state.game.community_cards) == 4
 
         # Act: Advance to RIVER
-        poker_state.start_next_round()
+        await poker_state.start_next_round()
 
         # Assert
         assert poker_state.game.current_phase == GamePhase.RIVER
@@ -724,7 +732,7 @@ class TestShowdown:
     ) -> None:
         """Given 2 players reach showdown, winner is determined by hand evaluation."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
 
         # Check all streets to reach showdown
         actions = [call(), check()] + [check()] * 6
@@ -738,12 +746,12 @@ class TestShowdown:
                 if result is None:
                     break
             if poker_state.game.is_round_complete() and phase != GamePhase.RIVER:
-                poker_state.start_next_round()
+                await poker_state.start_next_round()
 
         # Act: Complete hand (triggers showdown)
-        poker_state.start_next_round()
-        poker_state.resolve_hand()
-        poker_state.mark_game_complete_if_over()
+        await poker_state.start_next_round()
+        await poker_state.resolve_hand()
+        await poker_state.mark_game_complete_if_over()
 
         # Assert: Hand completed, winner received pot
         record = poker_state.record
@@ -769,7 +777,7 @@ class TestShowdown:
     ) -> None:
         """Given 3 players reach showdown, winner is correctly determined."""
         # Arrange
-        three_player_state.initialize()
+        await three_player_state.initialize()
 
         # All 3 players check through all streets
         # PRE_FLOP: call, call, check (3 actions)
@@ -786,12 +794,12 @@ class TestShowdown:
                 if result is None:
                     break
             if three_player_state.game.is_round_complete() and phase != GamePhase.RIVER:
-                three_player_state.start_next_round()
+                await three_player_state.start_next_round()
 
         # Act: Complete hand (RIVER → SHOWDOWN)
-        three_player_state.start_next_round()
-        three_player_state.resolve_hand()
-        three_player_state.mark_game_complete_if_over()
+        await three_player_state.start_next_round()
+        await three_player_state.resolve_hand()
+        await three_player_state.mark_game_complete_if_over()
 
         # Assert
         record = three_player_state.record
@@ -888,7 +896,7 @@ class TestCompleteGame:
     ) -> None:
         """Given hand plays through all streets, record tracks each round."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
         actions = [call(), check()] + [check()] * 6
         provider = scripted_provider_factory(actions)
 
@@ -901,11 +909,11 @@ class TestCompleteGame:
                     break
             if poker_state.game.is_round_complete():
                 if i < len(phases) - 1:  # Not RIVER yet
-                    poker_state.start_next_round()
+                    await poker_state.start_next_round()
                 else:  # After RIVER, transition to showdown and resolve
-                    poker_state.start_next_round()
-                    poker_state.resolve_hand()
-                    poker_state.mark_game_complete_if_over()
+                    await poker_state.start_next_round()
+                    await poker_state.resolve_hand()
+                    await poker_state.mark_game_complete_if_over()
 
         # Assert: Record contains all rounds
         record = poker_state.record
@@ -924,7 +932,7 @@ class TestCompleteGame:
     ) -> None:
         """Given multiple hands played, button position rotates."""
         # Arrange
-        poker_state.initialize()
+        await poker_state.initialize()
         first_button = poker_state.game.button_seat
 
         # Complete first hand via fold
@@ -934,9 +942,9 @@ class TestCompleteGame:
 
         # Complete hand and start new one
         assert poker_state.is_hand_complete()
-        poker_state.resolve_hand()
-        poker_state.mark_game_complete_if_over()
-        poker_state.start_new_hand()
+        await poker_state.resolve_hand()
+        await poker_state.mark_game_complete_if_over()
+        await poker_state.start_new_hand()
 
         # Assert: Button has rotated
         assert poker_state.game.button_seat != first_button

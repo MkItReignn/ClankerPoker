@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
 from src.application.poker.context.types import PokerDecisionContext
 from src.application.poker.orchestration.state_manager import PokerStateManager
@@ -15,9 +14,6 @@ from src.domain.models.available_action import AvailableActions
 from src.domain.models.game import Game, GamePhase
 from src.domain.models.narration import Narration
 from src.logger.factories import get_generic_logger
-
-if TYPE_CHECKING:
-    from src.application.poker.events.publisher import FrontEndEventPublisher
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,22 +63,15 @@ class PokerOrchestrator:
             state.start_new_hand()                # If game continues
 
     Key Design Principles:
-    1. Events are published BEFORE state transitions
-    2. The state manager manages all state; orchestrator just sequences calls
-    3. Each loop level has clear entry/exit points for events
-    4. Optional event publisher enables headless mode
+    1. The state manager manages all state; orchestrator just sequences calls
+    2. Each loop level has clear entry/exit points
 
     Example:
         ```python
         state = PokerStateManager(config, tournament_config, game_id, seed)
         provider = LLMActionProvider(client)
-        publisher = FrontEndEventPublisher(transport)
 
-        orchestrator = PokerOrchestrator(
-            state=state,
-            action_provider=provider,
-            event_publisher=publisher,  # Optional
-        )
+        orchestrator = PokerOrchestrator(state=state, action_provider=provider)
 
         result = await orchestrator.run_game()
         print(f"Winner: {result.winner_name}")
@@ -95,20 +84,10 @@ class PokerOrchestrator:
         self,
         state: PokerStateManager,
         action_provider: PokerActionProvider,
-        event_publisher: FrontEndEventPublisher | None = None,
         max_hands: int | None = None,
     ) -> None:
-        """Initialize the orchestrator.
-
-        Args:
-            state: The poker state manager (manages all game state).
-            action_provider: Provider for getting player actions (LLM or bot).
-            event_publisher: Optional event publisher for UI updates.
-            max_hands: Optional safety limit on number of hands.
-        """
         self._state = state
         self._action_provider = action_provider
-        self._event_publisher = event_publisher
         self._max_hands = max_hands
         self._total_actions = 0
 
@@ -118,17 +97,9 @@ class PokerOrchestrator:
         Returns:
             GameResult with winner and statistics.
         """
-        # Initialize game
-        self._state.initialize()
+        await self._state.initialize()
         self._total_actions = 0
         hands_played = 0
-
-        # Set up event publisher if provided
-        if self._event_publisher is not None:
-            self._event_publisher.set_game_id(self._state.game.id)
-            self._event_publisher.set_player_names(self._state.player_names)
-            self._event_publisher.set_player_configs(self._state._config.player_configs)
-            await self._event_publisher.publish_game_started_sequence(self._state.game)
 
         # ===== GAME LOOP =====
         while not self._state.is_game_complete():
@@ -146,16 +117,9 @@ class PokerOrchestrator:
 
             # Start new hand if game continues
             if not self._state.is_game_complete():
-                self._state.start_new_hand()
-                if self._event_publisher is not None:
-                    self._event_publisher.reset_action_counts()
+                await self._state.start_new_hand()
 
-        # Game complete
         winner = self._determine_winner()
-        if self._event_publisher is not None:
-            await self._event_publisher.publish_game_ended_sequence(
-                self._state.game, winner, hands_played
-            )
 
         return GameResult(
             winner_id=winner[0] if winner else None,
@@ -168,10 +132,6 @@ class PokerOrchestrator:
 
     async def _run_hand(self) -> None:
         """Run a single hand to completion."""
-        # Publish hand started
-        if self._event_publisher is not None:
-            await self._event_publisher.publish_hand_started_sequence(self._state.game)
-
         # ===== HAND LOOP =====
         while not self._state.is_hand_complete():
             # Check for run-out scenario (all players all-in)
@@ -182,20 +142,11 @@ class PokerOrchestrator:
             # Run betting round
             await self._run_betting_round()
 
-            prev_phase = self._state.game.current_phase
-            new_phase = self._state.start_next_round()
-            if new_phase is not None and self._event_publisher is not None:
-                await self._event_publisher.publish_phase_transition_sequence(
-                    self._state.game, prev_phase
-                )
-
-        # Publish hand completion BEFORE state transitions
-        if self._event_publisher is not None:
-            await self._event_publisher.publish_hand_completion_sequence(self._state.game)
+            await self._state.start_next_round()
 
         # Resolve hand and check for game completion
-        self._state.resolve_hand()
-        self._state.mark_game_complete_if_over()
+        await self._state.resolve_hand()
+        await self._state.mark_game_complete_if_over()
 
     async def _run_betting_round(self) -> None:
         """Run a single betting round to completion."""
@@ -215,40 +166,21 @@ class PokerOrchestrator:
 
     async def _execute_player_turn(self, player_id: str) -> None:
         """Get and apply a single player action."""
-        game = self._state.game
         available_actions = self._state.get_available_actions(player_id)
-
-        # Publish player_to_act
-        if self._event_publisher is not None:
-            await self._event_publisher.on_player_to_act(game, player_id, available_actions)
-
-        # Get action from provider
         context = self._state.build_context(player_id)
         config = self._state.get_player_config(player_id)
+
         response: ActionResponse[Action, Narration] = await self._action_provider.get_action(
             context, available_actions, config
         )
 
-        turn_result = self._state.apply_action(player_id, response)
-
-        if self._event_publisher is not None:
-            await self._event_publisher.on_action_applied(self._state.game, turn_result)
-
+        await self._state.apply_action(player_id, response)
         self._total_actions += 1
 
     async def _deal_remaining_community_cards(self) -> None:
-        """Deal remaining community cards when all players are all-in.
-
-        Advances through FLOP, TURN, RIVER, SHOWDOWN without betting.
-        """
+        """Deal remaining community cards when all players are all-in."""
         while self._state.game.current_phase != GamePhase.SHOWDOWN:
-            prev_phase = self._state.game.current_phase
-            self._state.start_next_round()
-
-            if self._event_publisher is not None:
-                await self._event_publisher.publish_phase_transition_sequence(
-                    self._state.game, prev_phase
-                )
+            await self._state.start_next_round()
 
     def _determine_winner(self) -> tuple[str, str] | None:
         """Determine the game winner.
