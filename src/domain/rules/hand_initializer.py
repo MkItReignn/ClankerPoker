@@ -13,6 +13,7 @@ from src.domain.models.hand import Hand
 from src.domain.models.player import (BettingRoundActionStatus,
                                       HandParticipationStatus, Player)
 from src.domain.models.pot import Pot, PotState
+from src.domain.rules.pot_calculator import PotCalculator
 from src.domain.rules.position_manager import PositionManager
 
 
@@ -139,6 +140,11 @@ class HandInitializer:
             }
         )
 
+        # Calculate pot state from player investments
+        updated_pot_state = PotCalculator.calculate_pot_state(
+            updated_players.get_all_players_invested_in_current_hand()
+        )
+
         # Now determine betting order (depends on who went all-in from blinds)
         players_in_hand = [p for p in updated_players if p.is_in_hand()]
         betting_order = PositionManager.get_betting_order(
@@ -155,7 +161,7 @@ class HandInitializer:
             identity=game.identity,
             tournament_config=game.tournament_config,
             hand_state=game.hand_state,
-            pot_state=game.pot_state,
+            pot_state=updated_pot_state,
             betting_state=updated_betting_state,
             button_seat=game.button_seat,
             blind_state=game.blind_state,

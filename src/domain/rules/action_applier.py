@@ -17,6 +17,7 @@ from src.domain.models.players import Players
 from src.domain.rules.available_action_calculator import \
     AvailableActionCalculator
 from src.domain.rules.betting_calculator import BettingCalculator
+from src.domain.rules.pot_calculator import PotCalculator
 
 
 @dataclass(frozen=True, slots=True)
@@ -436,12 +437,16 @@ class ActionApplier:
     def _build_updated_game(
         game: Game, updated_players: Players, updated_betting_state: BettingState
     ) -> Game:
-        """Build new Game instance with updated players and betting state."""
+        """Build new Game instance with updated players, betting state, and pot."""
+        updated_pot_state = PotCalculator.calculate_pot_state(
+            updated_players.get_all_players_invested_in_current_hand()
+        )
+
         return Game(
             identity=game.identity,
             tournament_config=game.tournament_config,
             hand_state=game.hand_state,
-            pot_state=game.pot_state,
+            pot_state=updated_pot_state,
             betting_state=updated_betting_state,
             button_seat=game.button_seat,
             blind_state=game.blind_state,

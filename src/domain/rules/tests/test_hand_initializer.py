@@ -684,9 +684,9 @@ class TestBlindSchedule:
 
 
 class TestPotStateReset:
-    """Pot state is reset for new hand with eligible players."""
+    """Pot state is calculated from blind investments for new hand."""
 
-    def test_pot_starts_at_zero(
+    def test_pot_reflects_blind_investments(
         self,
         sample_player_factory: Callable[..., Player],
         minimal_game_factory: Callable[..., Game],
@@ -701,7 +701,8 @@ class TestPotStateReset:
         new_game, _ = HandInitializer.setup_hand(game, deck)
         new_game = HandInitializer.post_blinds(new_game)
 
-        assert new_game.pot_state.main_pot.amount == ChipAmount(0)
+        # Main pot: both players contributed 10 (SB amount) = 20 total
+        assert new_game.pot_state.main_pot.amount == ChipAmount(20)
 
     def test_pot_eligible_players_includes_only_active_players(
         self,
@@ -729,7 +730,7 @@ class TestPotStateReset:
         assert "p2" in new_game.pot_state.main_pot.eligible_player_ids
         assert "p3" not in new_game.pot_state.main_pot.eligible_player_ids
 
-    def test_side_pots_are_cleared(
+    def test_side_pot_created_for_big_blind_extra(
         self,
         sample_player_factory: Callable[..., Player],
         minimal_game_factory: Callable[..., Game],
@@ -744,4 +745,6 @@ class TestPotStateReset:
         new_game, _ = HandInitializer.setup_hand(game, deck)
         new_game = HandInitializer.post_blinds(new_game)
 
-        assert new_game.pot_state.side_pots == []
+        # Side pot: BB's extra 10 (20 - 10) that only BB contributed
+        assert len(new_game.pot_state.side_pots) == 1
+        assert new_game.pot_state.side_pots[0].amount == ChipAmount(10)

@@ -31,12 +31,14 @@ class TestFoldAction:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -57,12 +59,14 @@ class TestFoldAction:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -87,6 +91,7 @@ class TestFoldAction:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
             hole_cards=hole_cards,
         )
@@ -94,6 +99,7 @@ class TestFoldAction:
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -115,12 +121,14 @@ class TestFoldAction:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=initial_chips,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -149,6 +157,7 @@ class TestFoldAction:
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=initial_invested,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -169,12 +178,14 @@ class TestFoldAction:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -225,14 +236,14 @@ class TestCheckAction:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
-            total_invested_this_hand=ChipAmount(0),
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
-            total_invested_this_hand=ChipAmount(0),
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -254,14 +265,14 @@ class TestCheckAction:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=initial_chips,
-            total_invested_this_hand=ChipAmount(0),
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
-            total_invested_this_hand=ChipAmount(0),
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -311,14 +322,14 @@ class TestCheckAction:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
-            total_invested_this_hand=ChipAmount(0),
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
-            total_invested_this_hand=ChipAmount(0),
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -339,14 +350,14 @@ class TestCheckAction:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
-            total_invested_this_hand=ChipAmount(0),
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
-            total_invested_this_hand=ChipAmount(0),
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -1817,18 +1828,21 @@ class TestNextPlayerCalculation:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         player3 = sample_player_factory(
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player1, player2, player3])
@@ -1848,12 +1862,14 @@ class TestNextPlayerCalculation:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         game = minimal_game_factory([player1, player2])
@@ -1873,12 +1889,14 @@ class TestNextPlayerCalculation:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         player2 = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player1, player2])
@@ -1898,12 +1916,14 @@ class TestNextPlayerCalculation:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         folded_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             participation_status=HandParticipationStatus.FOLDED,
             betting_status=BettingRoundActionStatus.ACTED,
         )
@@ -1911,6 +1931,7 @@ class TestNextPlayerCalculation:
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         game = minimal_game_factory([player1, folded_player, player3])
@@ -1930,18 +1951,21 @@ class TestNextPlayerCalculation:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         acted_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         player3 = sample_player_factory(
             player_id="player-3",
             seat=Seat.SEAT_2,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         game = minimal_game_factory([player1, acted_player, player3])
@@ -1992,12 +2016,14 @@ class TestGameStatePreservation:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -2018,12 +2044,14 @@ class TestGameStatePreservation:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -2042,12 +2070,14 @@ class TestGameStatePreservation:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -2066,12 +2096,14 @@ class TestGameStatePreservation:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -2081,7 +2113,7 @@ class TestGameStatePreservation:
 
         assert updated_game.hand_state == game.hand_state
 
-    def test_preserves_pot_state_after_action(
+    def test_pot_state_calculated_from_investments_after_action(
         self,
         sample_player_factory: Callable[..., Player],
         minimal_game_factory: Callable[..., Game],
@@ -2090,12 +2122,14 @@ class TestGameStatePreservation:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -2103,7 +2137,8 @@ class TestGameStatePreservation:
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
-        assert updated_game.pot_state == game.pot_state
+        total_invested = BIG_BLIND_STANDARD.value * 2
+        assert updated_game.pot_state.main_pot.amount.value == total_invested
 
     def test_preserves_button_seat_after_action(
         self,
@@ -2114,12 +2149,14 @@ class TestGameStatePreservation:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -2138,12 +2175,14 @@ class TestGameStatePreservation:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -2162,12 +2201,14 @@ class TestGameStatePreservation:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         other_player = sample_player_factory(
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
@@ -2194,6 +2235,7 @@ class TestEdgeCases:
             player_id="player-1",
             seat=Seat.SEAT_0,
             remaining_chips=MEDIUM_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
             hole_cards=hole_cards,
         )
@@ -2201,6 +2243,7 @@ class TestEdgeCases:
             player_id="player-2",
             seat=Seat.SEAT_1,
             remaining_chips=LARGE_CHIPS,
+            total_invested_this_hand=BIG_BLIND_STANDARD,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
