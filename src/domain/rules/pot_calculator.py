@@ -3,6 +3,7 @@ from __future__ import annotations
 from src.domain.models.chips import ChipAmount
 from src.domain.models.player import HandParticipationStatus, Player, PlayerId
 from src.domain.models.pot import Pot, PotState
+from dataclasses import replace
 
 
 class PotCalculator:
@@ -72,13 +73,19 @@ class PotCalculator:
             chips_per_player: int = level - previous_level
             # Pot size based on ALL contributors (including folded)
             pot_size: ChipAmount = ChipAmount(chips_per_player * len(contributors_at_level))
-
-            pots.append(
-                Pot(
-                    amount=pot_size,
-                    eligible_player_ids=frozenset(eligible_player_ids),  # Only IN_HAND
+            
+            if len(eligible_player_ids) > 0:
+                pots.append(
+                    Pot(
+                        amount=pot_size,
+                        eligible_player_ids=frozenset(eligible_player_ids),  # Only IN_HAND
+                    )
                 )
-            )
+            else:
+                last_pot = pots[-1]
+                new_pot_size = last_pot.amount + pot_size
+                pots[-1] = replace(last_pot, amount=new_pot_size)
+
 
             previous_level: int = level
 

@@ -7,7 +7,7 @@ from collections.abc import Callable
 import pytest
 
 from src.domain.models.chips import ChipAmount
-from src.domain.models.player import Player
+from src.domain.models.player import HandParticipationStatus, Player
 from src.domain.models.seat import Seat
 from src.domain.rules.pot_calculator import PotCalculator
 
@@ -338,6 +338,117 @@ class TestEligiblePlayerIds:
 
         highest_side_pot = result.side_pots[-1]
         assert highest_side_pot.eligible_player_ids == frozenset({"player-3"})
+
+
+class TestFoldedPlayerContributions:
+    """Folded players contribute chips but are not eligible to win."""
+
+    def test_folded_player_invested_more_than_remaining_in_hand_player(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """SB all-in for 25, BB folds with 50 invested. A wins all 75 chips."""
+        small_blind = sample_player_factory(
+            player_id="small-blind",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(25),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+
+        big_blind = sample_player_factory(
+            player_id="big-blind",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(100),
+            total_invested_this_hand=ChipAmount(50),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        result = PotCalculator.calculate_pot_state([small_blind, big_blind])
+
+        assert result.main_pot.amount == ChipAmount(75)
+        assert result.main_pot.eligible_player_ids == frozenset({"small-blind"})
+        assert len(result.side_pots) == 0
+
+    def test_folded_player_invested_less_than_all_in_hand_players(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """Folded player's chips still contribute to pot they could reach."""
+        player_a = sample_player_factory(
+            player_id="player-a",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+
+        player_b = sample_player_factory(
+            player_id="player-b",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(500),
+            total_invested_this_hand=ChipAmount(100),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+
+        folded_player = sample_player_factory(
+            player_id="folded",
+            seat=Seat.SEAT_2,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(50),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        result = PotCalculator.calculate_pot_state([player_a, player_b, folded_player])
+
+        total = result.main_pot.amount
+        for side_pot in result.side_pots:
+            total = total + side_pot.amount
+        assert total == ChipAmount(250)
+
+        assert result.main_pot.eligible_player_ids == frozenset({"player-a", "player-b"})
+
+    def test_folded_player_invested_between_two_in_hand_levels(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
+        """A: 100, B: 200 in-hand; C: 150 folded. C's chips split across pots for B."""
+        player_a = sample_player_factory(
+            player_id="player-a",
+            seat=Seat.SEAT_0,
+            remaining_chips=ChipAmount(0),
+            total_invested_this_hand=ChipAmount(100),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+
+        player_b = sample_player_factory(
+            player_id="player-b",
+            seat=Seat.SEAT_1,
+            remaining_chips=ChipAmount(500),
+            total_invested_this_hand=ChipAmount(200),
+            participation_status=HandParticipationStatus.IN_HAND,
+        )
+
+        folded_player = sample_player_factory(
+            player_id="folded",
+            seat=Seat.SEAT_2,
+            remaining_chips=ChipAmount(200),
+            total_invested_this_hand=ChipAmount(150),
+            participation_status=HandParticipationStatus.FOLDED,
+        )
+
+        result = PotCalculator.calculate_pot_state([player_a, player_b, folded_player])
+
+        total = result.main_pot.amount
+        for side_pot in result.side_pots:
+            total = total + side_pot.amount
+        assert total == ChipAmount(450)
+
+        assert result.main_pot.amount == ChipAmount(300)
+        assert result.main_pot.eligible_player_ids == frozenset({"player-a", "player-b"})
+
+        assert len(result.side_pots) == 2
+        assert result.side_pots[0].amount == ChipAmount(100)
+        assert result.side_pots[0].eligible_player_ids == frozenset({"player-b"})
+        assert result.side_pots[1].amount == ChipAmount(50)
+        assert result.side_pots[1].eligible_player_ids == frozenset({"player-b"})
 
 
 class TestEdgeCases:
