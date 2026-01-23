@@ -58,12 +58,11 @@ class HandInitializer:
 
         # Deal hole cards and reset players for new hand
         player_updates: dict[str, Player] = {}
-        for player in game.players:
-            if player.participation_status != HandParticipationStatus.ELIMINATED:
-                card1 = updated_deck.deal_card()
-                card2 = updated_deck.deal_card()
-                updated_player = player.reset_for_new_hand(Hand(card1=card1, card2=card2))
-                player_updates[player.id] = updated_player
+        for player in active_players:
+            card1 = updated_deck.deal_card()
+            card2 = updated_deck.deal_card()
+            updated_player = player.reset_for_new_hand(Hand(card1=card1, card2=card2))
+            player_updates[player.id] = updated_player
 
         updated_players = game.players.replace_all(player_updates)
 

@@ -224,7 +224,10 @@ class BotActionProvider:
         for player_id, player_cfg in bot_config.player_configs.items():
             selector_factory = personality_to_selector[player_cfg.personality]
             selector = selector_factory(seed=seed)
-            player_configs[player_id] = BotPlayerConfig(selector=selector)
+            player_configs[player_id] = BotPlayerConfig(
+                selector=selector,
+                narration_template=BotPlayerConfig.DEFAULT_NARRATION_TEMPLATE,
+            )
 
         return cls.with_player_configs(player_configs)
 

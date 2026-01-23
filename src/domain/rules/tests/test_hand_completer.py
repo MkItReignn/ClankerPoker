@@ -2241,3 +2241,241 @@ class TestPotDistributionChipConservation:
         assert (
             player5.remaining_chips.value == 4900
         ), f"P5 (folded) should have 4900 chips, got {player5.remaining_chips.value}"
+
+
+class TestEliminatedPlayerStateCleanup:
+    """Test that eliminated players have hand-specific state properly cleared.
+
+    Prevents chip inflation bug where stale total_invested_this_hand values
+    from eliminated players were incorrectly included in subsequent pot calculations.
+    """
+
+    def test_eliminated_player_investment_reset_to_zero(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Eliminated player's total_invested_this_hand is reset to zero."""
+        p1 = sample_player_factory(
+            PlayerId("p1"),
+            Seat.SEAT_0,
+            ChipAmount(500),
+            total_invested_this_hand=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.ACE, Suit.HEARTS),
+                make_card(Rank.ACE, Suit.SPADES),
+            ),
+        )
+        p1 = replace(p1, stack_at_hand_start=ChipAmount(1000))
+
+        p2 = sample_player_factory(
+            PlayerId("p2"),
+            Seat.SEAT_1,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.KING, Suit.HEARTS),
+                make_card(Rank.KING, Suit.SPADES),
+            ),
+        )
+        p2 = replace(p2, stack_at_hand_start=ChipAmount(500))
+
+        players = Players.from_list([p1, p2])
+        game = minimal_game_factory(players=list(players))
+
+        community_cards = [
+            make_card(Rank.TWO, Suit.CLUBS),
+            make_card(Rank.FIVE, Suit.DIAMONDS),
+            make_card(Rank.SEVEN, Suit.SPADES),
+            make_card(Rank.NINE, Suit.HEARTS),
+            make_card(Rank.THREE, Suit.CLUBS),
+        ]
+
+        pot_state = PotState(
+            main_pot=Pot(
+                amount=ChipAmount(1000),
+                eligible_player_ids=frozenset({p1.id, p2.id}),
+            ),
+            side_pots=[],
+        )
+
+        game = replace(
+            game,
+            players=players,
+            pot_state=pot_state,
+            hand_state=replace(
+                game.hand_state,
+                current_phase=GamePhase.SHOWDOWN,
+                community_cards=community_cards,
+            ),
+        )
+
+        completed_game = HandCompleter.complete(game)
+
+        eliminated = completed_game.players.get_by_id(p2.id)
+        assert eliminated is not None
+        assert eliminated.participation_status == HandParticipationStatus.ELIMINATED
+        assert eliminated.total_invested_this_hand.value == 0
+
+    def test_eliminated_player_hole_cards_cleared(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """Eliminated player's hole_cards are set to None."""
+        p1 = sample_player_factory(
+            PlayerId("p1"),
+            Seat.SEAT_0,
+            ChipAmount(500),
+            total_invested_this_hand=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.ACE, Suit.HEARTS),
+                make_card(Rank.ACE, Suit.SPADES),
+            ),
+        )
+        p1 = replace(p1, stack_at_hand_start=ChipAmount(1000))
+
+        p2 = sample_player_factory(
+            PlayerId("p2"),
+            Seat.SEAT_1,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(500),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.KING, Suit.HEARTS),
+                make_card(Rank.KING, Suit.SPADES),
+            ),
+        )
+        p2 = replace(p2, stack_at_hand_start=ChipAmount(500))
+
+        players = Players.from_list([p1, p2])
+        game = minimal_game_factory(players=list(players))
+
+        community_cards = [
+            make_card(Rank.TWO, Suit.CLUBS),
+            make_card(Rank.FIVE, Suit.DIAMONDS),
+            make_card(Rank.SEVEN, Suit.SPADES),
+            make_card(Rank.NINE, Suit.HEARTS),
+            make_card(Rank.THREE, Suit.CLUBS),
+        ]
+
+        pot_state = PotState(
+            main_pot=Pot(
+                amount=ChipAmount(1000),
+                eligible_player_ids=frozenset({p1.id, p2.id}),
+            ),
+            side_pots=[],
+        )
+
+        game = replace(
+            game,
+            players=players,
+            pot_state=pot_state,
+            hand_state=replace(
+                game.hand_state,
+                current_phase=GamePhase.SHOWDOWN,
+                community_cards=community_cards,
+            ),
+        )
+
+        completed_game = HandCompleter.complete(game)
+
+        eliminated = completed_game.players.get_by_id(p2.id)
+        assert eliminated is not None
+        assert eliminated.participation_status == HandParticipationStatus.ELIMINATED
+        assert eliminated.hole_cards is None
+
+    def test_multiple_eliminations_all_have_state_cleared(
+        self,
+        sample_player_factory: Callable[..., Player],
+        minimal_game_factory: Callable[..., Game],
+    ) -> None:
+        """All eliminated players have investment and cards cleared."""
+        p1 = sample_player_factory(
+            PlayerId("p1"),
+            Seat.SEAT_0,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(1000),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.ACE, Suit.HEARTS),
+                make_card(Rank.ACE, Suit.SPADES),
+            ),
+        )
+        p1 = replace(p1, stack_at_hand_start=ChipAmount(1000))
+
+        p2 = sample_player_factory(
+            PlayerId("p2"),
+            Seat.SEAT_1,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(1000),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.KING, Suit.HEARTS),
+                make_card(Rank.KING, Suit.SPADES),
+            ),
+        )
+        p2 = replace(p2, stack_at_hand_start=ChipAmount(1000))
+
+        p3 = sample_player_factory(
+            PlayerId("p3"),
+            Seat.SEAT_2,
+            ChipAmount(0),
+            total_invested_this_hand=ChipAmount(1000),
+            participation_status=HandParticipationStatus.IN_HAND,
+            hole_cards=make_hand(
+                make_card(Rank.QUEEN, Suit.HEARTS),
+                make_card(Rank.QUEEN, Suit.SPADES),
+            ),
+        )
+        p3 = replace(p3, stack_at_hand_start=ChipAmount(1000))
+
+        players = Players.from_list([p1, p2, p3])
+        game = minimal_game_factory(players=list(players))
+
+        community_cards = [
+            make_card(Rank.TWO, Suit.CLUBS),
+            make_card(Rank.FIVE, Suit.DIAMONDS),
+            make_card(Rank.SEVEN, Suit.SPADES),
+            make_card(Rank.NINE, Suit.HEARTS),
+            make_card(Rank.THREE, Suit.CLUBS),
+        ]
+
+        pot_state = PotState(
+            main_pot=Pot(
+                amount=ChipAmount(3000),
+                eligible_player_ids=frozenset({p1.id, p2.id, p3.id}),
+            ),
+            side_pots=[],
+        )
+
+        game = replace(
+            game,
+            players=players,
+            pot_state=pot_state,
+            hand_state=replace(
+                game.hand_state,
+                current_phase=GamePhase.SHOWDOWN,
+                community_cards=community_cards,
+            ),
+        )
+
+        completed_game = HandCompleter.complete(game)
+
+        # P1 wins (Aces), P2 and P3 eliminated
+        player2 = completed_game.players.get_by_id(p2.id)
+        player3 = completed_game.players.get_by_id(p3.id)
+
+        assert player2 is not None
+        assert player3 is not None
+
+        assert player2.participation_status == HandParticipationStatus.ELIMINATED
+        assert player2.total_invested_this_hand.value == 0
+        assert player2.hole_cards is None
+
+        assert player3.participation_status == HandParticipationStatus.ELIMINATED
+        assert player3.total_invested_this_hand.value == 0
+        assert player3.hole_cards is None
