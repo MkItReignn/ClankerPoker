@@ -1,8 +1,8 @@
 """Persistence implementations."""
 
-from src.infrastructure.persistence.json_history_repository import \
-    JsonGameHistoryRepository
+from src.infrastructure.persistence.json_record_repository import \
+    JsonGameRecordRepository
 
 __all__ = [
-    "JsonGameHistoryRepository",
+    "JsonGameRecordRepository",
 ]
