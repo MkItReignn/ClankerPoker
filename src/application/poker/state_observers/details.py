@@ -32,16 +32,34 @@ class GameStartedDetails:
 
 
 @dataclass(frozen=True, slots=True)
+class FinalStanding:
+    player_id: str
+    player_name: str
+    finish_position: int
+    elimination_hand: int | None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "player_id": self.player_id,
+            "player_name": self.player_name,
+            "finish_position": self.finish_position,
+            "elimination_hand": self.elimination_hand,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class GameCompletedDetails:
     winner_id: str
     winner_name: str
     total_hands: int
+    final_standings: tuple[FinalStanding, ...]
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "winner_id": self.winner_id,
             "winner_name": self.winner_name,
             "total_hands": self.total_hands,
+            "final_standings": [s.to_dict() for s in self.final_standings],
         }
 
 

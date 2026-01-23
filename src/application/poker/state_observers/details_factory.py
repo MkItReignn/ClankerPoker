@@ -3,12 +3,13 @@ from __future__ import annotations
 from typing import Protocol
 
 from src.application.poker.state_observers.details import (
-    HandOutcomeDetails,
     ActionAppliedDetails,
     BlindInfo,
     BlindsPostedDetails,
+    FinalStanding,
     GameCompletedDetails,
     GameStartedDetails,
+    HandOutcomeDetails,
     HandStartedDetails,
     HoleCardDealtDetail,
     HoleCardsDealtDetails,
@@ -57,10 +58,34 @@ class DetailsFactory:
         if not active_players:
             raise ValueError("Cannot complete game: no active players")
         winner = active_players[0]
+
+        standings: list[FinalStanding] = [
+            FinalStanding(
+                player_id=winner.id,
+                player_name=winner.name,
+                finish_position=1,
+                elimination_hand=None,
+            )
+        ]
+
+        eliminated = [p for p in game.players if p.id != winner.id]
+        eliminated.sort(key=lambda p: p.table_finish_position or 0)
+
+        for player in eliminated:
+            standings.append(
+                FinalStanding(
+                    player_id=player.id,
+                    player_name=player.name,
+                    finish_position=player.table_finish_position or 0,
+                    elimination_hand=player.elimination_hand_number,
+                )
+            )
+
         return GameCompletedDetails(
             winner_id=winner.id,
             winner_name=winner.name,
             total_hands=game.hand_state.hand_number,
+            final_standings=tuple(standings),
         )
 
     @staticmethod
