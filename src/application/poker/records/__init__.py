@@ -6,13 +6,10 @@ from src.application.poker.records.models import (
     GameLevelPlayerRecord,
     GameRecord,
     HandLevelPlayerRecord,
-    HandOutcome,
     HandRecord,
-    PlayerOutcome,
     PlayerRecordSnapshot,
     RoundLevelPlayerRecord,
     RoundRecord,
-    ShowdownResult,
     TurnRecord,
 )
 
@@ -27,11 +24,8 @@ __all__ = [
     "GameLevelPlayerRecord",
     "HandLevelPlayerRecord",
     "RoundLevelPlayerRecord",
-    # Outcomes and actions
+    # Actions
     "ActionRecord",
-    "HandOutcome",
-    "PlayerOutcome",
-    "ShowdownResult",
     # Utilities
     "RecordToLlmContextSerializer",
 ]

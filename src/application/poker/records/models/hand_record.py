@@ -11,7 +11,7 @@ from src.domain.models.card import Card
 from src.domain.models.game import GamePhase
 from src.domain.models.seat import Seat
 
-from .outcomes import HandOutcome
+from .hand_outcome_record import HandOutcomeRecord
 from .player_records import HandLevelPlayerRecord, RoundLevelPlayerRecord
 from .round_record import RoundRecord
 
@@ -23,7 +23,7 @@ class HandRecord:
     blinds: BlindLevel
     player_records: dict[str, HandLevelPlayerRecord]
     rounds: list[RoundRecord] = field(default_factory=list)
-    outcome: HandOutcome | None = None
+    outcome: HandOutcomeRecord | None = None
     started_at: datetime = field(default_factory=datetime.now)
     completed_at: datetime | None = None
 
@@ -48,7 +48,7 @@ class HandRecord:
     def current_round(self) -> RoundRecord | None:
         return self.rounds[-1] if self.rounds else None
 
-    def complete(self, outcome: HandOutcome) -> None:
+    def complete(self, outcome: HandOutcomeRecord) -> None:
         self.outcome = outcome
         self.completed_at = datetime.now()
 
@@ -107,7 +107,7 @@ class HandRecord:
         # Deserialize outcome
         outcome_data = data.get("outcome")
         if outcome_data:
-            hand.outcome = HandOutcome.from_dict(outcome_data)
+            hand.outcome = HandOutcomeRecord.from_dict(outcome_data)
             completed_at = data.get("completed_at")
             if completed_at:
                 hand.completed_at = datetime.fromisoformat(completed_at)

@@ -1,5 +1,3 @@
-"""Behavioral tests for DetailsFactory."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -10,18 +8,14 @@ from src.application.poker.state_observers.details import (
     ActionAppliedDetails,
     BlindInfo,
     BlindsPostedDetails,
-    EliminatedInfo,
     GameCompletedDetails,
     GameStartedDetails,
-    HandCompletedDetails,
     HandStartedDetails,
     HoleCardDealtDetail,
     HoleCardsDealtDetails,
     PlayerToActDetails,
     RoundCompletedDetails,
     RoundStartedDetails,
-    ShowdownInfo,
-    WinnerInfo,
 )
 from src.application.poker.state_observers.details_factory import (
     DetailsFactory,
@@ -31,9 +25,9 @@ from src.application.poker.state_observers.details_factory import (
 from src.domain.models.actions import ActionType
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import GamePhase, HandOutcome
+from src.domain.models.game import GamePhase, HandOutcome as GameHandOutcome
 from src.domain.models.hand import Hand
-from src.domain.models.narration import Narration
+from src.domain.models.narration import Narration, NarrationText
 from src.domain.models.player import (
     BettingRoundActionStatus,
     HandParticipationStatus,
@@ -55,8 +49,6 @@ class MockActionResponse:
 
 
 class TestGameStarted:
-    """Tests for game_started deriving player count and starting chips."""
-
     def test_returns_player_count_from_game(self, game_factory, sample_player_factory):
         players = [
             sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
@@ -84,8 +76,6 @@ class TestGameStarted:
 
 
 class TestGameCompleted:
-    """Tests for game_completed deriving winner info."""
-
     def test_returns_winner_info_when_one_active_player(
         self, game_factory, sample_player_factory
     ):
@@ -131,8 +121,6 @@ class TestGameCompleted:
 
 
 class TestHandStarted:
-    """Tests for hand_started deriving hand number and button seat."""
-
     def test_returns_hand_number_from_game(self, game_factory, sample_player_factory):
         players = [
             sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
@@ -157,21 +145,6 @@ class TestHandStarted:
 
 
 class TestHandCompleted:
-    """Tests for hand_completed deriving winners, eliminated, and showdown."""
-
-    def test_returns_empty_winners_when_no_outcome(
-        self, game_factory, sample_player_factory
-    ):
-        players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
-        ]
-        game = game_factory(players=players, outcome=None)
-
-        result = DetailsFactory.hand_completed(game)
-
-        assert result.winners == []
-
     def test_returns_winners_from_outcome(self, game_factory, sample_player_factory):
         players = [
             sample_player_factory(
@@ -181,7 +154,7 @@ class TestHandCompleted:
                 PlayerId("p2"), Seat.SEAT_1, ChipAmount(500), name="Bob"
             ),
         ]
-        outcome = HandOutcome(
+        outcome = GameHandOutcome(
             hand_number=1, winners=[(PlayerId("p1"), ChipAmount(100))]
         )
         game = game_factory(players=players, outcome=outcome)
@@ -192,19 +165,6 @@ class TestHandCompleted:
         assert result.winners[0].player_id == "p1"
         assert result.winners[0].player_name == "Alice"
         assert result.winners[0].amount == ChipAmount(100)
-
-    def test_returns_empty_eliminated_when_no_outcome(
-        self, game_factory, sample_player_factory
-    ):
-        players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
-        ]
-        game = game_factory(players=players, outcome=None)
-
-        result = DetailsFactory.hand_completed(game)
-
-        assert result.eliminated == []
 
     def test_returns_eliminated_players_from_current_hand(
         self, game_factory, sample_player_factory
@@ -218,9 +178,10 @@ class TestHandCompleted:
                 name="Busted Bob",
                 elimination_hand_number=3,
                 table_finish_position=2,
+                participation_status=HandParticipationStatus.ELIMINATED,
             ),
         ]
-        outcome = HandOutcome(
+        outcome = GameHandOutcome(
             hand_number=3, winners=[(PlayerId("p1"), ChipAmount(100))]
         )
         game = game_factory(players=players, hand_number=3, outcome=outcome)
@@ -243,16 +204,17 @@ class TestHandCompleted:
                 ChipAmount(0),
                 elimination_hand_number=1,
                 table_finish_position=3,
+                participation_status=HandParticipationStatus.ELIMINATED,
             ),
         ]
-        outcome = HandOutcome(
+        outcome = GameHandOutcome(
             hand_number=3, winners=[(PlayerId("p1"), ChipAmount(100))]
         )
         game = game_factory(players=players, hand_number=3, outcome=outcome)
 
         result = DetailsFactory.hand_completed(game)
 
-        assert result.eliminated == []
+        assert len(result.eliminated) == 0
 
     def test_returns_none_showdown_when_not_showdown_phase(
         self, game_factory, sample_player_factory, sample_hand
@@ -261,9 +223,17 @@ class TestHandCompleted:
             sample_player_factory(
                 PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000), hole_cards=sample_hand
             ),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p2"),
+                Seat.SEAT_1,
+                ChipAmount(1000),
+                participation_status=HandParticipationStatus.FOLDED,
+            ),
         ]
-        game = game_factory(players=players, current_phase=GamePhase.RIVER)
+        outcome = GameHandOutcome(
+            hand_number=1, winners=[(PlayerId("p1"), ChipAmount(100))]
+        )
+        game = game_factory(players=players, current_phase=GamePhase.PRE_FLOP, outcome=outcome)
 
         result = DetailsFactory.hand_completed(game)
 
@@ -286,7 +256,10 @@ class TestHandCompleted:
                 participation_status=HandParticipationStatus.FOLDED,
             ),
         ]
-        game = game_factory(players=players, current_phase=GamePhase.SHOWDOWN)
+        outcome = GameHandOutcome(
+            hand_number=1, winners=[(PlayerId("p1"), ChipAmount(100))]
+        )
+        game = game_factory(players=players, current_phase=GamePhase.SHOWDOWN, outcome=outcome)
 
         result = DetailsFactory.hand_completed(game)
 
@@ -319,7 +292,10 @@ class TestHandCompleted:
                 name="King Player",
             ),
         ]
-        game = game_factory(players=players, current_phase=GamePhase.SHOWDOWN)
+        outcome = GameHandOutcome(
+            hand_number=1, winners=[(PlayerId("p1"), ChipAmount(100))]
+        )
+        game = game_factory(players=players, current_phase=GamePhase.SHOWDOWN, outcome=outcome)
 
         result = DetailsFactory.hand_completed(game)
 
@@ -330,8 +306,6 @@ class TestHandCompleted:
 
 
 class TestRoundStarted:
-    """Tests for round_started deriving phase and new cards."""
-
     def test_returns_current_phase(self, game_factory, sample_player_factory):
         players = [
             sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
@@ -435,8 +409,6 @@ class TestRoundStarted:
 
 
 class TestRoundCompleted:
-    """Tests for round_completed returning empty details."""
-
     def test_returns_empty_details(self):
         result = DetailsFactory.round_completed()
 
@@ -444,8 +416,6 @@ class TestRoundCompleted:
 
 
 class TestBlindsPosted:
-    """Tests for blinds_posted deriving blind player info."""
-
     def test_returns_small_and_big_blind_info(
         self, game_factory, sample_player_factory
     ):
@@ -479,8 +449,6 @@ class TestBlindsPosted:
 
 
 class TestHoleCardsDealt:
-    """Tests for hole_cards_dealt deriving all player hole cards."""
-
     def test_returns_hole_cards_for_all_players_in_hand(
         self, game_factory, sample_player_factory
     ):
@@ -576,8 +544,6 @@ class TestHoleCardsDealt:
 
 
 class TestPlayerToAct:
-    """Tests for player_to_act deriving current player and available actions."""
-
     def test_returns_player_info_when_player_to_act_exists(
         self, game_factory, sample_player_factory
     ):
@@ -626,8 +592,6 @@ class TestPlayerToAct:
 
 
 class TestActionApplied:
-    """Tests for action_applied deriving action details from response."""
-
     def test_returns_action_details_from_response(
         self, game_factory, sample_player_factory
     ):
@@ -662,7 +626,7 @@ class TestActionApplied:
             sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
         ]
         game = game_factory(players=players)
-        narration = Narration(thought_process="I have a strong hand, going all-in!")
+        narration = Narration(thought_process=NarrationText("I have a strong hand, going all-in!"))
         response = MockActionResponse(
             action=MockAction(action_type=ActionType.ALL_IN, amount=ChipAmount(1000)),
             narration=narration,

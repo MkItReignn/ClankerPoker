@@ -1,11 +1,27 @@
 from src.application.poker.state_observers.details import (
-    ActionAppliedDetails, BlindInfo, BlindsPostedDetails, EliminatedInfo,
-    GameCompletedDetails, GameStartedDetails, HandCompletedDetails,
-    HandStartedDetails, HoleCardDealtDetail, HoleCardsDealtDetails,
-    PlayerToActDetails, RoundCompletedDetails, RoundStartedDetails,
-    ShowdownInfo, WinnerInfo)
+    ActionAppliedDetails,
+    BlindInfo,
+    BlindsPostedDetails,
+    EliminatedInfo,
+    GameCompletedDetails,
+    GameStartedDetails,
+    HandOutcomeDetails,
+    HandStartedDetails,
+    HoleCardDealtDetail,
+    HoleCardsDealtDetails,
+    PlayerOutcome,
+    PlayerToActDetails,
+    RoundCompletedDetails,
+    RoundStartedDetails,
+    ShowdownResult,
+    WinnerInfo,
+)
 from src.application.poker.state_observers.details_factory import (
-    DetailsFactory, HasActionFields, HasActionTypeAndAmount)
+    DetailsFactory,
+    HasActionFields,
+    HasActionTypeAndAmount,
+)
+from src.application.poker.state_observers.hand_outcome_builder import HandOutcomeBuilder
 from src.application.poker.state_observers.notifier import GameStateNotifier
 from src.application.poker.state_observers.protocol import GameStateObserver
 
@@ -18,6 +34,8 @@ __all__ = [
     "DetailsFactory",
     "HasActionFields",
     "HasActionTypeAndAmount",
+    # Builder
+    "HandOutcomeBuilder",
     # Details
     "ActionAppliedDetails",
     "BlindInfo",
@@ -25,13 +43,14 @@ __all__ = [
     "EliminatedInfo",
     "GameCompletedDetails",
     "GameStartedDetails",
-    "HandCompletedDetails",
+    "HandOutcomeDetails",
     "HandStartedDetails",
     "HoleCardDealtDetail",
     "HoleCardsDealtDetails",
+    "PlayerOutcome",
     "PlayerToActDetails",
     "RoundCompletedDetails",
     "RoundStartedDetails",
-    "ShowdownInfo",
+    "ShowdownResult",
     "WinnerInfo",
 ]

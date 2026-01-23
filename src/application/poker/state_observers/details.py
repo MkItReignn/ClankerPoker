@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Any
 
 from src.domain.models.actions import ActionType
 from src.domain.models.card import Card
@@ -112,6 +112,166 @@ class BlindsPostedDetails:
 
 
 # =============================================================================
+# Hand Outcome Details
+# =============================================================================
+
+
+@dataclass(frozen=True, slots=True)
+class WinnerInfo:
+    player_id: str
+    player_name: str
+    amount: ChipAmount
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "player_id": self.player_id,
+            "player_name": self.player_name,
+            "amount": self.amount.value,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> WinnerInfo:
+        return cls(
+            player_id=data["player_id"],
+            player_name=data["player_name"],
+            amount=ChipAmount(data["amount"]),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class EliminatedInfo:
+    player_id: str
+    player_name: str
+    finish_position: int
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "player_id": self.player_id,
+            "player_name": self.player_name,
+            "finish_position": self.finish_position,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> EliminatedInfo:
+        return cls(
+            player_id=data["player_id"],
+            player_name=data["player_name"],
+            finish_position=data["finish_position"],
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ShowdownResult:
+    player_id: str
+    player_name: str
+    hole_cards: Hand
+    hand_evaluation: HandEvaluation
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "player_id": self.player_id,
+            "player_name": self.player_name,
+            "hole_cards": [
+                self.hole_cards.card1.to_dict(),
+                self.hole_cards.card2.to_dict(),
+            ],
+            "hand_evaluation": self.hand_evaluation.to_dict(),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ShowdownResult:
+        if "hole_cards" in data and isinstance(data["hole_cards"], str):
+            raise ValueError(
+                "Legacy showdown result format detected. Cannot deserialize string-based hole_cards."
+            )
+
+        hole_cards = Hand(
+            card1=Card.from_dict(data["hole_cards"][0]),
+            card2=Card.from_dict(data["hole_cards"][1]),
+        )
+
+        eval_data = data.get("hand_evaluation", {})
+        if "hand_description" in data and "hand_evaluation" not in data:
+            raise ValueError(
+                "Legacy showdown result format detected. Cannot deserialize string-based hand_description."
+            )
+
+        hand_evaluation = HandEvaluation.from_dict(eval_data)
+
+        return cls(
+            player_id=data["player_id"],
+            player_name=data["player_name"],
+            hole_cards=hole_cards,
+            hand_evaluation=hand_evaluation,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class PlayerOutcome:
+    player_id: str
+    player_name: str
+    chips_won: ChipAmount
+    final_stack: ChipAmount
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "player_id": self.player_id,
+            "player_name": self.player_name,
+            "chips_won": self.chips_won.value,
+            "final_stack": self.final_stack.value,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> PlayerOutcome:
+        return cls(
+            player_id=data["player_id"],
+            player_name=data["player_name"],
+            chips_won=ChipAmount(data["chips_won"]),
+            final_stack=ChipAmount(data["final_stack"]),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class HandOutcomeDetails:
+    winners: tuple[WinnerInfo, ...]
+    eliminated: tuple[EliminatedInfo, ...]
+    showdown: tuple[ShowdownResult, ...] | None
+    pot_amount: ChipAmount
+    player_outcomes: tuple[PlayerOutcome, ...]
+
+    def __post_init__(self) -> None:
+        if not self.winners:
+            raise ValueError("winners cannot be empty")
+        if self.pot_amount.value <= 0:
+            raise ValueError(f"pot_amount must be positive: {self.pot_amount.value}")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "winners": [w.to_dict() for w in self.winners],
+            "eliminated": [e.to_dict() for e in self.eliminated],
+            "showdown": [s.to_dict() for s in self.showdown] if self.showdown else None,
+            "pot_amount": self.pot_amount.value,
+            "player_outcomes": [p.to_dict() for p in self.player_outcomes],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> HandOutcomeDetails:
+        return cls(
+            winners=tuple(WinnerInfo.from_dict(w) for w in data["winners"]),
+            eliminated=tuple(EliminatedInfo.from_dict(e) for e in data.get("eliminated", [])),
+            showdown=(
+                tuple(ShowdownResult.from_dict(s) for s in data["showdown"])
+                if data.get("showdown")
+                else None
+            ),
+            pot_amount=ChipAmount(data["pot_amount"]),
+            player_outcomes=tuple(
+                PlayerOutcome.from_dict(p) for p in data.get("player_outcomes", [])
+            ),
+        )
+
+
+# =============================================================================
 # Betting Actions
 # =============================================================================
 
@@ -169,68 +329,3 @@ class RoundStartedDetails:
 class RoundCompletedDetails:
     def to_dict(self) -> dict[str, Any]:
         return {}
-
-
-# =============================================================================
-# Hand Completion
-# =============================================================================
-
-
-@dataclass(frozen=True, slots=True)
-class WinnerInfo:
-    player_id: str
-    player_name: str
-    amount: ChipAmount
-    pot_type: Literal["main", "side"]
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "player_id": self.player_id,
-            "player_name": self.player_name,
-            "amount": self.amount.value,
-            "pot_type": self.pot_type,
-        }
-
-
-@dataclass(frozen=True, slots=True)
-class EliminatedInfo:
-    player_id: str
-    player_name: str
-    finish_position: int
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "player_id": self.player_id,
-            "player_name": self.player_name,
-            "finish_position": self.finish_position,
-        }
-
-
-@dataclass(frozen=True, slots=True)
-class ShowdownInfo:
-    player_id: str
-    player_name: str
-    cards: Hand
-    hand_evaluation: HandEvaluation
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "player_id": self.player_id,
-            "player_name": self.player_name,
-            "cards": [card.to_dict() for card in self.cards.cards],
-            "hand_evaluation": self.hand_evaluation.to_dict(),
-        }
-
-
-@dataclass(frozen=True, slots=True)
-class HandCompletedDetails:
-    winners: list[WinnerInfo]
-    eliminated: list[EliminatedInfo]
-    showdown: list[ShowdownInfo] | None
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "winners": [w.to_dict() for w in self.winners],
-            "eliminated": [e.to_dict() for e in self.eliminated],
-            "showdown": [s.to_dict() for s in self.showdown] if self.showdown else None,
-        }

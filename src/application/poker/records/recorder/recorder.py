@@ -1,29 +1,29 @@
-"""Game state recorder for capturing game state snapshots."""
-
 from __future__ import annotations
 
 from datetime import datetime
 
-from src.application.poker.records.models import (ActionRecord, GameMetadata,
-                                                  GameRecord, PlayerConfig,
-                                                  RoundRecord, TurnRecord)
+from src.application.poker.records.models import (
+    ActionRecord,
+    GameMetadata,
+    GameRecord,
+    PlayerConfig,
+    RoundRecord,
+    TurnRecord,
+)
 from src.application.poker.state_observers.details import (
     ActionAppliedDetails,
     BlindInfo,
     BlindsPostedDetails,
     GameCompletedDetails,
     GameStartedDetails,
-    HandCompletedDetails,
+    HandOutcomeDetails,
     HandStartedDetails,
     HoleCardsDealtDetails,
     PlayerToActDetails,
     RoundCompletedDetails,
     RoundStartedDetails,
 )
-from src.application.poker.records.recorder.hand_outcome_builder import \
-    HandOutcomeBuilder
-from src.application.poker.records.recorder.player_record_factory import \
-    PlayerRecordFactory
+from src.application.poker.records.recorder.player_record_factory import PlayerRecordFactory
 from src.application.poker.records.recorder.record_logger import RecordLogger
 from src.config.poker.config import PokerPlayerConfig
 from src.domain.models.actions import ActionType
@@ -32,19 +32,12 @@ from src.logger.factories import get_generic_logger
 
 
 class Recorder:
-    """Records game state snapshots at each level of the game hierarchy.
-
-    Coordinates recording at game, hand, round, and turn levels.
-    Delegates record building to specialized factories.
-    """
-
     def __init__(self, player_configs: dict[str, PokerPlayerConfig]) -> None:
         self._player_configs = player_configs
         self._record: GameRecord | None = None
         self._logger = get_generic_logger(__name__.removeprefix("src."))
         self._record_logger = RecordLogger()
         self._player_record_factory = PlayerRecordFactory(player_configs)
-        self._hand_outcome_builder = HandOutcomeBuilder(player_configs)
 
     @property
     def record(self) -> GameRecord | None:
@@ -98,13 +91,12 @@ class Recorder:
         if self._record.current_hand is not None:
             self._record_logger.log_hand_started(self._record.current_hand)
 
-    async def on_hand_completed(self, game: Game, details: HandCompletedDetails) -> None:
+    async def on_hand_completed(self, game: Game, details: HandOutcomeDetails) -> None:
         if self._record is None or self._record.current_hand is None:
             return
 
-        outcome = self._hand_outcome_builder.build(game)
-        self._record.complete_hand(outcome)
-        self._record_logger.log_hand_completed_with_eliminations(self._record)
+        self._record.complete_hand(details)
+        self._record_logger.log_hand_completed_with_eliminations(self._record, details)
 
     # =========================================================================
     # Round Lifecycle

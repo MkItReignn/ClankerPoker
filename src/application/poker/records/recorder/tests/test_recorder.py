@@ -21,16 +21,19 @@ from src.application.poker.state_observers.details import (
     BlindsPostedDetails,
     GameCompletedDetails,
     GameStartedDetails,
-    HandCompletedDetails,
+    HandOutcomeDetails,
     HandStartedDetails,
+    PlayerOutcome,
     RoundCompletedDetails,
     RoundStartedDetails,
+    WinnerInfo,
 )
+from src.application.poker.state_observers.details_factory import DetailsFactory
 from src.config.poker.config import PokerPlayerConfig
 from src.domain.models.actions import ActionType
 from src.domain.models.card import Rank
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game, GamePhase, HandOutcome
+from src.domain.models.game import Game, GamePhase, HandOutcome as GameHandOutcome
 from src.domain.models.player import (
     BettingRoundActionStatus,
     HandParticipationStatus,
@@ -59,6 +62,20 @@ def make_round_started_details(game: Game) -> RoundStartedDetails:
     return RoundStartedDetails(
         phase=game.current_phase,
         new_cards=tuple(game.community_cards) if game.community_cards else (),
+    )
+
+
+def make_mock_hand_outcome(game: Game) -> HandOutcomeDetails:
+    winner_id = game.players[0].id
+    winner_name = game.players[0].name
+    pot = game.pot if game.pot.value > 0 else ChipAmount(100)
+
+    return HandOutcomeDetails(
+        winners=(WinnerInfo(player_id=winner_id, player_name=winner_name, amount=pot),),
+        eliminated=(),
+        showdown=None,
+        pot_amount=pot,
+        player_outcomes=(),
     )
 
 
@@ -128,7 +145,7 @@ class TestGameLifecycle:
         completed_game = game_factory(
             players=players,
             status=GameStatus.COMPLETED,
-            outcome=HandOutcome(hand_number=5, winners=[("player-1", ChipAmount(100))]),
+            outcome=GameHandOutcome(hand_number=5, winners=[("player-1", ChipAmount(100))]),
         )
 
         await recorder.on_game_started(completed_game, make_game_started_details(completed_game))
@@ -358,7 +375,7 @@ class TestHandOutcome:
         game = game_factory(
             players=players,
             pot_amount=pot_amount,
-            outcome=HandOutcome(
+            outcome=GameHandOutcome(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
@@ -368,16 +385,15 @@ class TestHandOutcome:
         await recorder.on_game_started(game, make_game_started_details(game))
         await recorder.on_hand_started(game, make_hand_started_details(game))
 
-        details = HandCompletedDetails(winners=[], eliminated=[], showdown=None)
-        await recorder.on_hand_completed(game, details)
+        await recorder.on_hand_completed(game, make_mock_hand_outcome(game))
 
         assert recorder.record is not None
         assert len(recorder.record.completed_hands) == 1
 
         completed_hand = recorder.record.completed_hands[0]
         assert completed_hand.outcome is not None
-        assert "player-1" in completed_hand.outcome.winner_ids
-        assert completed_hand.outcome.was_showdown is False
+        assert any(w.player_id == "player-1" for w in completed_hand.outcome.winners)
+        assert completed_hand.outcome.showdown is None
 
     @pytest.mark.asyncio
     async def test_records_showdown_with_hand_evaluations(
@@ -409,7 +425,7 @@ class TestHandOutcome:
             players=players,
             pot_amount=pot_amount,
             current_phase=GamePhase.SHOWDOWN,
-            outcome=HandOutcome(
+            outcome=GameHandOutcome(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
@@ -418,17 +434,17 @@ class TestHandOutcome:
         await recorder.on_game_started(game, make_game_started_details(game))
         await recorder.on_hand_started(game, make_hand_started_details(game))
 
-        details = HandCompletedDetails(winners=[], eliminated=[], showdown=None)
+        details = DetailsFactory.hand_completed(game)
         await recorder.on_hand_completed(game, details)
 
         assert recorder.record is not None
         completed_hand = recorder.record.completed_hands[0]
         assert completed_hand.outcome is not None
-        assert completed_hand.outcome.was_showdown is True
-        assert len(completed_hand.outcome.showdown_results) == 2
+        assert completed_hand.outcome.showdown is not None
+        assert len(completed_hand.outcome.showdown) == 2
 
         # Verify showdown results contain hand evaluations
-        for result in completed_hand.outcome.showdown_results:
+        for result in completed_hand.outcome.showdown:
             assert result.hole_cards is not None
             assert result.hand_evaluation is not None
 
@@ -759,8 +775,7 @@ class TestEdgeCases:
         await recorder.on_round_started(two_player_game, make_round_started_details(two_player_game))
         await recorder.on_round_completed(two_player_game, RoundCompletedDetails())
 
-        details = HandCompletedDetails(winners=[], eliminated=[], showdown=None)
-        await recorder.on_hand_completed(two_player_game, details)
+        await recorder.on_hand_completed(two_player_game, make_mock_hand_outcome(two_player_game))
 
         game_details = GameCompletedDetails(
             winner_id="player-1",

@@ -1,9 +1,9 @@
 from src.application.poker.state_observers.details import (
+    HandOutcomeDetails,
     ActionAppliedDetails,
     BlindsPostedDetails,
     GameCompletedDetails,
     GameStartedDetails,
-    HandCompletedDetails,
     HandStartedDetails,
     HoleCardsDealtDetails,
     PlayerToActDetails,
@@ -19,12 +19,6 @@ from src.domain.models.game import Game
 
 
 class GameStateNotifier:
-    """Composite pattern - notifies all observers of state changes.
-
-    Accepts raw parameters from StateManager, uses DetailsFactory to derive
-    Details objects, and passes them to observers.
-    """
-
     def __init__(self, observers: list[GameStateObserver]) -> None:
         self._observers: list[GameStateObserver] = observers
 
@@ -44,7 +38,7 @@ class GameStateNotifier:
             await observer.on_hand_started(game, details)
 
     async def on_hand_completed(self, game: Game) -> None:
-        details: HandCompletedDetails = DetailsFactory.hand_completed(game)
+        details: HandOutcomeDetails = DetailsFactory.hand_completed(game)
         for observer in self._observers:
             await observer.on_hand_completed(game, details)
 

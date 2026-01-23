@@ -1,8 +1,7 @@
-"""Poker game record models - hierarchical structure for tracking game progression."""
-
+from .action_record import ActionRecord
 from .game_record import GameMetadata, GameRecord
+from .hand_outcome_record import HandOutcomeRecord
 from .hand_record import HandRecord
-from .outcomes import ActionRecord, HandOutcome, PlayerOutcome, ShowdownResult
 from .player_records import (
     GameLevelPlayerRecord,
     HandLevelPlayerRecord,
@@ -27,9 +26,8 @@ __all__ = [
     "RoundLevelPlayerRecord",
     # Player configuration
     "PlayerConfig",
-    # Outcomes and actions
+    # Actions
     "ActionRecord",
-    "HandOutcome",
-    "PlayerOutcome",
-    "ShowdownResult",
+    # Outcomes
+    "HandOutcomeRecord",
 ]

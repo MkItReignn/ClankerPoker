@@ -421,7 +421,7 @@ class TestGameRecording:
 
         completed_hand = record.completed_hands[0]
         assert completed_hand.outcome is not None
-        assert len(completed_hand.outcome.winner_ids) == 1
+        assert len(completed_hand.outcome.winners) == 1
 
 
 class TestDeterminism:
@@ -760,10 +760,10 @@ class TestShowdown:
 
         completed_hand = record.completed_hands[0]
         assert completed_hand.outcome is not None
-        assert len(completed_hand.outcome.winner_ids) >= 1
+        assert len(completed_hand.outcome.winners) >= 1
 
         # Winner should have gained chips (minus blinds already invested)
-        winner_id = completed_hand.outcome.winner_ids[0]
+        winner_id = completed_hand.outcome.winners[0].player_id
         winner = poker_state.game.players.get_by_id(winner_id)
         assert winner is not None
         # Winner has more chips than starting (they won the pot)

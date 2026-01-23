@@ -16,7 +16,7 @@ from src.application.poker.records.context_serializer.tests.conftest import (
     make_game_record, make_hand_level_player_record, make_hand_outcome,
     make_hand_record, make_round_level_player_record, make_round_record,
     make_showdown_result, make_turn_record)
-from src.application.poker.records.models import PlayerOutcome
+from src.application.poker.state_observers.details import PlayerOutcome
 from src.domain.models.actions import ActionType
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount

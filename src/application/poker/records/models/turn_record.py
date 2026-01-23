@@ -8,7 +8,7 @@ from typing import Any
 
 from src.domain.models.narration import Narration
 
-from .outcomes import ActionRecord
+from .action_record import ActionRecord
 
 
 @dataclass(frozen=True, slots=True)

@@ -14,8 +14,10 @@ from src.domain.models.chips import ChipAmount
 from src.domain.models.llm_model import LlmModel
 from src.domain.models.seat import Seat
 
+from src.application.poker.state_observers.details import HandOutcomeDetails
+
+from .hand_outcome_record import HandOutcomeRecord
 from .hand_record import HandRecord
-from .outcomes import HandOutcome
 from .player_records import GameLevelPlayerRecord, HandLevelPlayerRecord, PlayerConfig
 
 DEFAULT_HAND_HISTORY_COUNT = 5
@@ -156,17 +158,22 @@ class GameRecord:
         )
         return self.current_hand
 
-    def complete_hand(self, outcome: HandOutcome) -> None:
+    def complete_hand(self, outcome: HandOutcomeDetails) -> None:
         if self.current_hand is None:
             raise ValueError("No current hand to complete")
 
-        self.current_hand.complete(outcome)
+        hand_outcome_record = HandOutcomeRecord.from_details(outcome)
+        self.current_hand.complete(hand_outcome_record)
         self.completed_hands.append(self.current_hand)
+
+        # Build set of eliminated player IDs for quick lookup
+        eliminated_player_ids = {e.player_id for e in outcome.eliminated}
 
         # Update game-level player records based on hand outcome
         for player_outcome in outcome.player_outcomes:
             if player_outcome.player_id in self.player_records:
                 old_record = self.player_records[player_outcome.player_id]
+                was_eliminated = player_outcome.player_id in eliminated_player_ids
                 self.player_records[player_outcome.player_id] = GameLevelPlayerRecord(
                     player_id=old_record.player_id,
                     player_name=old_record.player_name,
@@ -175,10 +182,10 @@ class GameRecord:
                     model_id=old_record.model_id,
                     player_config=old_record.player_config,
                     hands_played=old_record.hands_played + 1,
-                    is_eliminated=player_outcome.was_eliminated,
+                    is_eliminated=was_eliminated,
                     elimination_hand_number=(
                         self.current_hand.hand_number
-                        if player_outcome.was_eliminated
+                        if was_eliminated
                         else old_record.elimination_hand_number
                     ),
                     table_finish_position=old_record.table_finish_position,

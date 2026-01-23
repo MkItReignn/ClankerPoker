@@ -6,14 +6,23 @@ from datetime import datetime
 
 import pytest
 
-from src.application.poker.records.models import (ActionRecord, GameMetadata,
-                                                  GameRecord,
-                                                  HandLevelPlayerRecord,
-                                                  HandOutcome, HandRecord,
-                                                  PlayerOutcome,
-                                                  RoundLevelPlayerRecord,
-                                                  RoundRecord, ShowdownResult,
-                                                  TurnRecord)
+from src.application.poker.records.models import (
+    ActionRecord,
+    GameMetadata,
+    GameRecord,
+    HandLevelPlayerRecord,
+    HandRecord,
+    RoundLevelPlayerRecord,
+    RoundRecord,
+    TurnRecord,
+)
+from src.application.poker.state_observers.details import (
+    EliminatedInfo,
+    HandOutcomeDetails,
+    PlayerOutcome,
+    ShowdownResult,
+    WinnerInfo,
+)
 from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.config.tournament.config import PayoutStructure
 from src.domain.models.actions import ActionType
@@ -140,7 +149,7 @@ def make_hand_record(
     hand_number: int,
     player_records: dict[str, HandLevelPlayerRecord],
     rounds: list[RoundRecord] | None = None,
-    outcome: HandOutcome | None = None,
+    outcome: HandOutcomeDetails | None = None,
 ) -> HandRecord:
     """Create a HandRecord for testing."""
     hand = HandRecord(
@@ -182,23 +191,38 @@ def make_hand_outcome(
     was_showdown: bool = False,
     showdown_results: tuple[ShowdownResult, ...] = (),
     player_outcomes: tuple[PlayerOutcome, ...] | None = None,
-) -> HandOutcome:
-    """Create a HandOutcome for testing."""
+    eliminated: tuple[EliminatedInfo, ...] = (),
+) -> HandOutcomeDetails:
+    chips_per_winner = pot_amount // len(winner_ids) if winner_ids else pot_amount
+
     if player_outcomes is None:
         player_outcomes = tuple(
             PlayerOutcome(
                 player_id=winner_id,
                 player_name=f"Player_{winner_id}",
-                chips_won=ChipAmount(pot_amount // len(winner_ids)),
+                chips_won=ChipAmount(chips_per_winner),
                 final_stack=ChipAmount(1000),
             )
             for winner_id in winner_ids
         )
-    return HandOutcome(
-        winner_ids=winner_ids,
+
+    # Build winner name lookup from player_outcomes
+    player_name_map = {po.player_id: po.player_name for po in player_outcomes}
+
+    winners = tuple(
+        WinnerInfo(
+            player_id=winner_id,
+            player_name=player_name_map.get(winner_id, f"Player_{winner_id}"),
+            amount=ChipAmount(chips_per_winner),
+        )
+        for winner_id in winner_ids
+    )
+
+    return HandOutcomeDetails(
+        winners=winners,
+        eliminated=eliminated,
+        showdown=showdown_results if was_showdown and showdown_results else None,
         pot_amount=ChipAmount(pot_amount),
-        was_showdown=was_showdown,
-        showdown_results=showdown_results,
         player_outcomes=player_outcomes,
     )
 

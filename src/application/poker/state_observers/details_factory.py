@@ -3,29 +3,27 @@ from __future__ import annotations
 from typing import Protocol
 
 from src.application.poker.state_observers.details import (
+    HandOutcomeDetails,
     ActionAppliedDetails,
     BlindInfo,
     BlindsPostedDetails,
-    EliminatedInfo,
     GameCompletedDetails,
     GameStartedDetails,
-    HandCompletedDetails,
     HandStartedDetails,
     HoleCardDealtDetail,
     HoleCardsDealtDetails,
     PlayerToActDetails,
     RoundCompletedDetails,
     RoundStartedDetails,
-    ShowdownInfo,
-    WinnerInfo,
 )
 from src.domain.models.actions import ActionType
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game, GamePhase
 from src.domain.models.narration import Narration
 from src.domain.rules.available_action_calculator import AvailableActionCalculator
-from src.domain.rules.hand_evaluator import HandEvaluator
 from src.domain.rules.position_manager import PositionManager
+
+from src.application.poker.state_observers.hand_outcome_builder import HandOutcomeBuilder
 
 
 class HasActionTypeAndAmount(Protocol):
@@ -45,12 +43,6 @@ class HasActionFields(Protocol):
 
 
 class DetailsFactory:
-    """Static factory for deriving Details objects from Game state.
-
-    Centralizes all derivation logic. StateManager passes raw data,
-    Notifier uses this factory, Observers receive typed Details.
-    """
-
     @staticmethod
     def game_started(game: Game) -> GameStartedDetails:
         return GameStartedDetails(
@@ -78,15 +70,8 @@ class DetailsFactory:
         )
 
     @staticmethod
-    def hand_completed(game: Game) -> HandCompletedDetails:
-        winners = DetailsFactory._derive_winners(game)
-        eliminated = DetailsFactory._derive_eliminated(game)
-        showdown = DetailsFactory._derive_showdown_info(game)
-        return HandCompletedDetails(
-            winners=winners,
-            eliminated=eliminated,
-            showdown=showdown,
-        )
+    def hand_completed(game: Game) -> HandOutcomeDetails:
+        return HandOutcomeBuilder.build(game)
 
     @staticmethod
     def round_started(game: Game) -> RoundStartedDetails:
@@ -223,72 +208,8 @@ class DetailsFactory:
         return deal_orders
 
     @staticmethod
-    def _derive_showdown_info(game: Game) -> list[ShowdownInfo] | None:
-        if game.current_phase != GamePhase.SHOWDOWN:
-            return None
-
-        players_in_hand = list(game.players_in_hand())
-        if len(players_in_hand) <= 1:
-            return None
-
-        results: list[ShowdownInfo] = []
-        for player in players_in_hand:
-            if player.hole_cards is not None and len(game.community_cards) == 5:
-                evaluation = HandEvaluator.evaluate_hand_strength(
-                    player.hole_cards, game.community_cards
-                )
-                results.append(
-                    ShowdownInfo(
-                        player_id=player.id,
-                        player_name=player.name,
-                        cards=player.hole_cards,
-                        hand_evaluation=evaluation,
-                    )
-                )
-        return results if results else None
-
-    @staticmethod
     def _derive_available_actions(game: Game, player_id: str) -> list[ActionType]:
         available = AvailableActionCalculator.calculate_available_actions(
             game, player_id
         )
         return [a.action_type for a in available]
-
-    @staticmethod
-    def _derive_winners(game: Game) -> list[WinnerInfo]:
-        if game.outcome is None:
-            return []
-
-        winners: list[WinnerInfo] = []
-        for player_id, amount in game.outcome.winners:
-            player = game.players.get_by_id(player_id)
-            if player:
-                winners.append(
-                    WinnerInfo(
-                        player_id=player_id,
-                        player_name=player.name,
-                        amount=amount,
-                        pot_type="main",
-                    )
-                )
-        return winners
-
-    @staticmethod
-    def _derive_eliminated(game: Game) -> list[EliminatedInfo]:
-        if game.outcome is None:
-            return []
-
-        eliminated: list[EliminatedInfo] = []
-        for player in game.players:
-            if (
-                player.elimination_hand_number == game.hand_state.hand_number
-                and player.table_finish_position is not None
-            ):
-                eliminated.append(
-                    EliminatedInfo(
-                        player_id=player.id,
-                        player_name=player.name,
-                        finish_position=player.table_finish_position,
-                    )
-                )
-        return eliminated

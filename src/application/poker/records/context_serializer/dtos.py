@@ -181,20 +181,19 @@ class HandDto:
 
         if hand.outcome is not None:
             outcome = hand.outcome
-            player_names = {po.player_id: po.player_name for po in outcome.player_outcomes}
 
             winner_name_list: list[str] = []
-            for winner_id in outcome.winner_ids:
-                if viewer_id and winner_id == viewer_id:
+            for winner in outcome.winners:
+                if viewer_id and winner.player_id == viewer_id:
                     winner_name_list.append("you")
                 else:
-                    winner_name_list.append(player_names.get(winner_id, winner_id))
+                    winner_name_list.append(winner.player_name)
             winner_names = tuple(winner_name_list)
 
             pot = outcome.pot_amount
-            was_showdown = outcome.was_showdown
+            was_showdown = outcome.showdown is not None
 
-            if was_showdown and outcome.showdown_results:
+            if was_showdown and outcome.showdown:
                 shown_hands = tuple(
                     (
                         (
@@ -204,7 +203,7 @@ class HandDto:
                         ),
                         showdown_result.hole_cards,
                     )
-                    for showdown_result in outcome.showdown_results
+                    for showdown_result in outcome.showdown
                 )
 
         return cls(
