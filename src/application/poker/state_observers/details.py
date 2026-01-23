@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from src.domain.models.actions import ActionType
+from src.domain.models.available_action import AvailableActions
 from src.domain.models.card import Card
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import GamePhase
@@ -280,13 +281,13 @@ class HandOutcomeDetails:
 class PlayerToActDetails:
     player_id: str
     player_name: str
-    available_actions: list[ActionType]
+    available_actions: tuple[AvailableActions, ...]
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "player_id": self.player_id,
             "player_name": self.player_name,
-            "available_actions": [action.value for action in self.available_actions],
+            "available_actions": [action.to_dict() for action in self.available_actions],
         }
 
 

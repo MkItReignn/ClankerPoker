@@ -19,7 +19,6 @@ from src.application.poker.state_observers.details import (
     HandOutcomeDetails,
     HandStartedDetails,
     HoleCardsDealtDetails,
-    PlayerToActDetails,
     RoundCompletedDetails,
     RoundStartedDetails,
 )
@@ -218,10 +217,5 @@ class Recorder:
 
     async def on_hole_cards_dealt(
         self, game: Game, details: HoleCardsDealtDetails
-    ) -> None:
-        del game, details
-
-    async def on_player_to_act(
-        self, game: Game, details: PlayerToActDetails
     ) -> None:
         del game, details

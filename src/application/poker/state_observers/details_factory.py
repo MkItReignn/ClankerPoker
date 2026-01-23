@@ -17,6 +17,7 @@ from src.application.poker.state_observers.details import (
     RoundStartedDetails,
 )
 from src.domain.models.actions import ActionType
+from src.domain.models.available_action import AvailableActions
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game, GamePhase
 from src.domain.models.narration import Narration
@@ -208,8 +209,8 @@ class DetailsFactory:
         return deal_orders
 
     @staticmethod
-    def _derive_available_actions(game: Game, player_id: str) -> list[ActionType]:
+    def _derive_available_actions(game: Game, player_id: str) -> tuple[AvailableActions, ...]:
         available = AvailableActionCalculator.calculate_available_actions(
             game, player_id
         )
-        return [a.action_type for a in available]
+        return tuple(available)

@@ -16,11 +16,11 @@ from src.application.poker.state_observers.details import (
     HandOutcomeDetails,
     HandStartedDetails,
     HoleCardsDealtDetails,
-    PlayerToActDetails,
     RoundCompletedDetails,
     RoundStartedDetails,
 )
-from src.domain.models.game import Game
+from src.application.poker.state_observers.details_factory import DetailsFactory
+from src.domain.models.game import Game, GamePhase
 
 
 class EventTransport(Protocol):
@@ -84,18 +84,25 @@ class EventPublisher:
 
     async def on_round_started(self, game: Game, details: RoundStartedDetails) -> None:
         await self._publish(EventType.ROUND_STARTED, game, details.to_dict())
+        if game.current_phase in (GamePhase.FLOP, GamePhase.TURN, GamePhase.RIVER):
+            await self._maybe_publish_player_to_act(game)
 
     async def on_round_completed(self, game: Game, details: RoundCompletedDetails) -> None:
         await self._publish(EventType.ROUND_COMPLETED, game, details.to_dict())
 
     async def on_blinds_posted(self, game: Game, details: BlindsPostedDetails) -> None:
         await self._publish(EventType.BLINDS_POSTED, game, details.to_dict())
+        await self._maybe_publish_player_to_act(game)
 
     async def on_action_applied(self, game: Game, details: ActionAppliedDetails) -> None:
         await self._publish(EventType.ACTION_APPLIED, game, details.to_dict())
+        await self._maybe_publish_player_to_act(game)
 
     async def on_hole_cards_dealt(self, game: Game, details: HoleCardsDealtDetails) -> None:
         await self._publish(EventType.HOLE_CARDS_DEALT, game, details.to_dict())
 
-    async def on_player_to_act(self, game: Game, details: PlayerToActDetails) -> None:
+    async def _maybe_publish_player_to_act(self, game: Game) -> None:
+        if game.get_player_to_act_id() is None:
+            return
+        details = DetailsFactory.player_to_act(game)
         await self._publish(EventType.PLAYER_TO_ACT, game, details.to_dict())

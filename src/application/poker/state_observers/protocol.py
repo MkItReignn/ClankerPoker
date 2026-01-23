@@ -10,7 +10,6 @@ from src.application.poker.state_observers.details import (
     GameStartedDetails,
     HandStartedDetails,
     HoleCardsDealtDetails,
-    PlayerToActDetails,
     RoundCompletedDetails,
     RoundStartedDetails,
 )
@@ -35,5 +34,3 @@ class GameStateObserver(Protocol):
     async def on_action_applied(self, game: Game, details: ActionAppliedDetails) -> None: ...
 
     async def on_hole_cards_dealt(self, game: Game, details: HoleCardsDealtDetails) -> None: ...
-
-    async def on_player_to_act(self, game: Game, details: PlayerToActDetails) -> None: ...
