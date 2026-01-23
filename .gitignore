@@ -26,9 +26,6 @@ env/
 ENV/
 .venv
 
-# Poetry
-poetry.lock
-
 # IDE
 .vscode/
 .idea/
@@ -42,6 +39,10 @@ poetry.lock
 htmlcov/
 .tox/
 .hypothesis/
+
+# Cache
+.mypy_cache
+.ruff_cache
 
 # Environment variables
 .env
@@ -57,6 +58,7 @@ htmlcov/
 # Logs
 *.log
 logs/
+data/
 
 # OS
 .DS_Store
