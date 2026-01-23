@@ -72,11 +72,15 @@ class GameCompletedDetails:
 class HandStartedDetails:
     hand_number: int
     button_seat: Seat
+    sb_seat: Seat
+    bb_seat: Seat
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "hand_number": self.hand_number,
             "button_seat": self.button_seat.value,
+            "sb_seat": self.sb_seat.value,
+            "bb_seat": self.bb_seat.value,
         }
 
 

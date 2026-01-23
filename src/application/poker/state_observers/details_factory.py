@@ -90,9 +90,16 @@ class DetailsFactory:
 
     @staticmethod
     def hand_started(game: Game) -> HandStartedDetails:
+        positions = PositionManager.resolve_positions_for_hand(
+            all_players=list(game.players),
+            previous_button_seat=game.button_seat,
+            advance_button=False,
+        )
         return HandStartedDetails(
             hand_number=game.hand_state.hand_number,
             button_seat=game.button_seat,
+            sb_seat=positions.small_blind_seat,
+            bb_seat=positions.big_blind_seat,
         )
 
     @staticmethod

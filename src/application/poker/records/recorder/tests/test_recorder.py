@@ -19,6 +19,7 @@ from src.application.poker.state_observers.details import (
     ActionAppliedDetails,
     BlindInfo,
     BlindsPostedDetails,
+    FinalStanding,
     GameCompletedDetails,
     GameStartedDetails,
     HandOutcomeDetails,
@@ -28,6 +29,7 @@ from src.application.poker.state_observers.details import (
     RoundStartedDetails,
     WinnerInfo,
 )
+from src.domain.rules.position_manager import PositionManager
 from src.application.poker.state_observers.details_factory import DetailsFactory
 from src.config.poker.config import PokerPlayerConfig
 from src.domain.models.actions import ActionType
@@ -52,9 +54,16 @@ def make_game_started_details(game: Game) -> GameStartedDetails:
 
 
 def make_hand_started_details(game: Game) -> HandStartedDetails:
+    positions = PositionManager.resolve_positions_for_hand(
+        all_players=list(game.players),
+        previous_button_seat=game.button_seat,
+        advance_button=False,
+    )
     return HandStartedDetails(
         hand_number=game.hand_state.hand_number,
         button_seat=game.button_seat,
+        sb_seat=positions.small_blind_seat,
+        bb_seat=positions.big_blind_seat,
     )
 
 
@@ -154,6 +163,20 @@ class TestGameLifecycle:
             winner_id="player-1",
             winner_name=player_names["player-1"],
             total_hands=5,
+            final_standings=(
+                FinalStanding(
+                    player_id="player-1",
+                    player_name=player_names["player-1"],
+                    finish_position=1,
+                    elimination_hand=None,
+                ),
+                FinalStanding(
+                    player_id="player-2",
+                    player_name=player_names["player-2"],
+                    finish_position=2,
+                    elimination_hand=5,
+                ),
+            ),
         )
         await recorder.on_game_completed(completed_game, details)
 
@@ -781,6 +804,20 @@ class TestEdgeCases:
             winner_id="player-1",
             winner_name=player_names["player-1"],
             total_hands=1,
+            final_standings=(
+                FinalStanding(
+                    player_id="player-1",
+                    player_name=player_names["player-1"],
+                    finish_position=1,
+                    elimination_hand=None,
+                ),
+                FinalStanding(
+                    player_id="player-2",
+                    player_name=player_names["player-2"],
+                    finish_position=2,
+                    elimination_hand=1,
+                ),
+            ),
         )
         await recorder.on_game_completed(two_player_game, game_details)
 
