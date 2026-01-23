@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, Generic, TypeVar, cast
+from typing import Callable, Generic, Self, TypeVar, cast
 
 from src.application.protocols.llm import LlmClient, LlmError, LlmRequest
 from src.application.protocols.player import ActionResponse, PlayerConfig
@@ -64,6 +64,18 @@ class LlmActionProvider(Generic[TContext, TAvailableActions, TAction, TNarration
         self._fallback_selector = fallback_selector
         self._config = config
         self._prompt_config = prompt_config
+
+    async def __aenter__(self) -> Self:
+        await self._llm_client.__aenter__()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> None:
+        await self._llm_client.__aexit__(exc_type, exc_val, exc_tb)
 
     async def get_action(
         self,

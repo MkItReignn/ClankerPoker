@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, Self
 
 from src.application.poker.providers.bot_random_action_selector import \
     BotRandomActionSelector
@@ -227,3 +227,14 @@ class BotActionProvider:
             player_configs[player_id] = BotPlayerConfig(selector=selector)
 
         return cls.with_player_configs(player_configs)
+
+    async def __aenter__(self) -> Self:
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> None:
+        pass

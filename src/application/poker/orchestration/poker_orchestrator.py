@@ -4,16 +4,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from src.application.poker.context.types import PokerDecisionContext
+from src.application.poker.context import PokerDecisionContext
 from src.application.poker.orchestration.state_manager import PokerStateManager
 from src.application.poker.records.models import GameRecord
-from src.application.protocols.player import (ActionResponse,
-                                              AsyncActionProvider)
+from src.application.protocols.player import ActionResponse, AsyncActionProvider
 from src.domain.models.actions import Action
 from src.domain.models.available_action import AvailableActions
 from src.domain.models.game import Game, GamePhase
 from src.domain.models.narration import Narration
 from src.logger.factories import get_generic_logger
+
+type PokerActionProvider = AsyncActionProvider[
+    PokerDecisionContext,
+    list[AvailableActions],
+    Action,
+    Narration,
+]
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,13 +43,6 @@ class GameResult:
     total_actions: int
 
 
-# Type alias for poker action provider
-type PokerActionProvider = AsyncActionProvider[
-    "PokerDecisionContext",
-    list[AvailableActions],
-    Action,
-    Narration,
-]
 
 
 class PokerOrchestrator:
@@ -97,38 +96,39 @@ class PokerOrchestrator:
         Returns:
             GameResult with winner and statistics.
         """
-        await self._state.initialize()
-        self._total_actions = 0
-        hands_played = 0
+        async with self._action_provider:
+            await self._state.initialize()
+            self._total_actions = 0
+            hands_played = 0
 
-        # ===== GAME LOOP =====
-        while not self._state.is_game_complete():
-            # Safety limit
-            if self._max_hands is not None and hands_played >= self._max_hands:
-                self._logger.warning(
-                    "Max hands reached, stopping game",
-                    max_hands=self._max_hands,
-                )
-                break
+            # ===== GAME LOOP =====
+            while not self._state.is_game_complete():
+                # Safety limit
+                if self._max_hands is not None and hands_played >= self._max_hands:
+                    self._logger.warning(
+                        "Max hands reached, stopping game",
+                        max_hands=self._max_hands,
+                    )
+                    break
 
-            # Run one complete hand
-            await self._run_hand()
-            hands_played += 1
+                # Run one complete hand
+                await self._run_hand()
+                hands_played += 1
 
-            # Start new hand if game continues
-            if not self._state.is_game_complete():
-                await self._state.start_new_hand()
+                # Start new hand if game continues
+                if not self._state.is_game_complete():
+                    await self._state.start_new_hand()
 
-        winner = self._determine_winner()
+            winner = self._determine_winner()
 
-        return GameResult(
-            winner_id=winner[0] if winner else None,
-            winner_name=winner[1] if winner else None,
-            final_state=self._state.game,
-            record=self._state.record,
-            total_hands=hands_played,
-            total_actions=self._total_actions,
-        )
+            return GameResult(
+                winner_id=winner[0] if winner else None,
+                winner_name=winner[1] if winner else None,
+                final_state=self._state.game,
+                record=self._state.record,
+                total_hands=hands_played,
+                total_actions=self._total_actions,
+            )
 
     async def _run_hand(self) -> None:
         """Run a single hand to completion."""

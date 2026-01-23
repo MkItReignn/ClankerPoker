@@ -568,7 +568,7 @@ class TestPlayerToAct:
 
         assert result.player_id == "p1"
         assert result.player_name == "Acting Player"
-        assert isinstance(result.available_actions, list)
+        assert isinstance(result.available_actions, tuple)
 
     def test_raises_when_no_player_to_act(self, game_factory, sample_player_factory):
         players = [

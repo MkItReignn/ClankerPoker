@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol, TypeVar
+from typing import Protocol, Self, TypeVar
 
 from src.application.protocols.response import ActionResponse
 from src.domain.models.llm_model import LlmModel
@@ -50,6 +50,15 @@ class AsyncActionProvider(Protocol[TContext, TAvailableActions, TAction, TNarrat
         TAction: The action type returned.
         TNarration: The narration type for structured output.
     """
+
+    async def __aenter__(self) -> Self: ...
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> None: ...
 
     async def get_action(
         self,

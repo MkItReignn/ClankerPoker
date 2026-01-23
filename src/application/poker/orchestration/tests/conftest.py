@@ -200,17 +200,23 @@ class ScriptedActionProvider:
             return total - self.actions_taken
         return len(self._actions) - self._index
 
+    async def __aenter__(self) -> "ScriptedActionProvider":
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> None:
+        pass
+
     async def get_action(
         self,
         context: Any,
         available_actions: list[AvailableActions],
         config: PlayerConfig,
     ) -> ActionResponse[Action, None]:
-        """Return the next scripted action for the requesting player.
-
-        This method makes ScriptedActionProvider compatible with the
-        AsyncActionProvider protocol used by PokerOrchestrator.
-        """
         return await self(context, available_actions, config)
 
     async def __call__(

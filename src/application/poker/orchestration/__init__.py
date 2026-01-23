@@ -7,14 +7,13 @@ from src.application.poker.orchestration.poker_orchestrator import (
 from src.application.poker.orchestration.state_manager import PokerStateManager
 from src.application.poker.providers.bot_action_provider import \
     BotActionProvider
-from src.application.poker.providers.llm_action_provider_factory import \
-    create_poker_llm_action_provider
+from src.application.services.llm_action_provider import LlmActionProvider
 
 __all__ = [
     "BotActionProvider",
     "GameInitializer",
     "GameResult",
+    "LlmActionProvider",
     "PokerOrchestrator",
     "PokerStateManager",
-    "create_poker_llm_action_provider",
 ]

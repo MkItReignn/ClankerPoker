@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Protocol
+from typing import Protocol, Self
 
 from src.domain.models.llm_model import LlmModel
 
@@ -80,6 +80,15 @@ class LlmClient(Protocol):
     This is a simple protocol for sending requests to LLMs and receiving responses.
     Implementations handle the actual API communication.
     """
+
+    async def __aenter__(self) -> Self: ...
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> None: ...
 
     async def complete(self, request: LlmRequest) -> LlmResponse:
         """Send a request to the LLM and get a response.
