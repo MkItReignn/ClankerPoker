@@ -24,6 +24,7 @@ from src.application.poker.state_observers.details import (
 )
 from src.application.poker.records.recorder.player_record_factory import PlayerRecordFactory
 from src.application.poker.records.recorder.record_logger import RecordLogger
+from src.application.protocols.record import GameRecordRepository
 from src.config.poker.config import PokerPlayerConfig
 from src.domain.models.actions import ActionType
 from src.domain.models.game import Game, GamePhase
@@ -31,9 +32,14 @@ from src.logger.factories import get_generic_logger
 
 
 class Recorder:
-    def __init__(self, player_configs: dict[str, PokerPlayerConfig]) -> None:
+    def __init__(
+        self,
+        player_configs: dict[str, PokerPlayerConfig],
+        repository: GameRecordRepository[GameRecord] | None = None,
+    ) -> None:
         self._player_configs = player_configs
         self._record: GameRecord | None = None
+        self._repository = repository
         self._logger = get_generic_logger(__name__.removeprefix("src."))
         self._record_logger = RecordLogger()
         self._player_record_factory = PlayerRecordFactory(player_configs)
@@ -41,6 +47,11 @@ class Recorder:
     @property
     def record(self) -> GameRecord | None:
         return self._record
+
+    def _persist(self) -> None:
+        if self._repository is None or self._record is None:
+            return
+        self._repository.save(self._record)
 
     # =========================================================================
     # Game Lifecycle
@@ -65,6 +76,7 @@ class Recorder:
             )
 
         self._record_logger.log_game_started(self._record)
+        self._persist()
 
     async def on_game_completed(self, game: Game, details: GameCompletedDetails) -> None:
         if self._record is not None:
@@ -96,6 +108,7 @@ class Recorder:
 
         self._record.complete_hand(details)
         self._record_logger.log_hand_completed_with_eliminations(self._record, details)
+        self._persist()
 
     # =========================================================================
     # Round Lifecycle

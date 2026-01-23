@@ -11,6 +11,7 @@ from src.application.poker.records.models import GameRecord
 from src.application.poker.records.recorder import Recorder
 from src.application.poker.state_observers.notifier import GameStateNotifier
 from src.application.protocols.player import ActionResponse, PlayerConfig
+from src.application.protocols.record import GameRecordRepository
 from src.application.protocols.response import TurnResult
 from src.config.poker.config import PokerGameConfig
 from src.config.tournament.config import TournamentConfig
@@ -35,6 +36,7 @@ class PokerStateManager:
         game_id: str,
         seed: int,
         record: GameRecord | None = None,
+        repository: GameRecordRepository[GameRecord] | None = None,
     ) -> None:
         self._logger = get_generic_logger(__name__.removeprefix("src."))
 
@@ -51,7 +53,10 @@ class PokerStateManager:
         self._context_builder: PokerContextBuilder = PokerContextBuilder(player_names=player_names)
 
         # Initialize recorder and notifier
-        self._recorder: Recorder = Recorder(player_configs=self._config.player_configs)
+        self._recorder: Recorder = Recorder(
+            player_configs=self._config.player_configs,
+            repository=repository,
+        )
         self._notifier: GameStateNotifier = GameStateNotifier(observers=[self._recorder])
 
         # If record was provided, set it on the recorder
