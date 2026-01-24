@@ -84,7 +84,7 @@ class PokerStateManager:
         if player_id not in self._config.player_configs:
             raise ValueError(
                 f"Player configuration not found for player_id '{player_id}'. "
-                f"Please add configuration for this player in config/poker/poker.json. "
+                f"Please add configuration for this player in config/poker/poker.yaml. "
                 f"Available configured players: {list(self._config.player_configs.keys())}"
             )
 

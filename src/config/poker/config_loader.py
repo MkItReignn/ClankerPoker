@@ -1,6 +1,6 @@
 """Poker configuration loader.
 
-Loads poker game configuration from JSON files.
+Loads poker game configuration from YAML files.
 Configuration files are located at the project root in config/poker/.
 """
 
@@ -14,6 +14,7 @@ import structlog
 from src.config.base.config_loader import BaseConfigLoader
 from src.config.poker.config import PokerGameConfig, PokerPlayerConfig
 from src.config.utils.type_extractors import ConfigTypeExtractor
+from src.config.utils.yaml_file_loader import YamlFileLoader
 from src.constants.config import POKER_CONFIG_PATH
 from src.domain.models.llm_model import LlmModel
 from src.logger.factories import get_generic_logger
@@ -21,33 +22,37 @@ from src.logger.factories import get_generic_logger
 
 @final
 class PokerGameConfigLoader(BaseConfigLoader[PokerGameConfig]):
-    """Loads poker game configuration from JSON."""
+    """Loads poker game configuration from YAML."""
 
     def __init__(
         self,
         config_path: Path | None = None,
         logger: structlog.BoundLogger | None = None,
         *,
-        json_loader: Any = None,
+        yaml_loader: YamlFileLoader | None = None,
     ) -> None:
         """Initialize poker game config loader.
 
         Args:
             config_path: Path to config file. Defaults to POKER_CONFIG_PATH.
             logger: Optional logger. Defaults to creating one.
-            json_loader: Optional JSON loader (for testing).
+            yaml_loader: Optional YAML loader (for testing).
         """
         resolved_path = config_path or POKER_CONFIG_PATH
         resolved_logger = logger or get_generic_logger(__name__.removeprefix("src."))
+        self._yaml_loader = yaml_loader or YamlFileLoader(
+            config_path=resolved_path,
+            logger=resolved_logger,
+        )
         super().__init__(
             config_path=resolved_path,
             logger=resolved_logger,
-            json_loader=json_loader,
+            json_loader=None,
         )
 
     @override
     def _load_config(self) -> PokerGameConfig:
-        """Load poker game configuration from JSON.
+        """Load poker game configuration from YAML.
 
         Returns:
             PokerGameConfig object.
@@ -56,7 +61,7 @@ class PokerGameConfigLoader(BaseConfigLoader[PokerGameConfig]):
             FileNotFoundError: If config file does not exist.
             ValueError: If config cannot be parsed or required fields are missing.
         """
-        payload = self._json_loader.load()
+        payload = self._yaml_loader.load()
         extractor = ConfigTypeExtractor(logger=self._logger)
 
         player_configs_raw = extractor.get_dict_or_default(
