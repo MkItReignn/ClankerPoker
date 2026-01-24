@@ -81,6 +81,7 @@ class Recorder:
     async def on_game_completed(self, game: Game, details: GameCompletedDetails) -> None:
         if self._record is not None:
             self._record.metadata.completed_at = game.identity.completed_at
+            self._persist()
 
     # =========================================================================
     # Hand Lifecycle
