@@ -63,6 +63,7 @@ class NarrationPanel(Static):
         padding: 0 1;
         color: $text;
         margin-bottom: 1;
+        width: 100%;
     }
     """
 
