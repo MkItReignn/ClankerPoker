@@ -88,7 +88,6 @@ class Rank(Enum):
         return mapping[s]
 
     def to_long_string(self) -> str:
-        """Convert rank to long string representation (Ace, King, Queen, Jack, Ten, Nine, etc.)."""
         return {
             Rank.ACE: "Ace",
             Rank.KING: "King",
@@ -104,6 +103,11 @@ class Rank(Enum):
             Rank.THREE: "Three",
             Rank.TWO: "Two",
         }[self]
+
+    def to_plural_string(self) -> str:
+        if self == Rank.SIX:
+            return "Sixes"
+        return f"{self.to_long_string()}s"
 
 
 @dataclass(frozen=True, slots=True)
