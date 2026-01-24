@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
@@ -32,7 +32,7 @@ class PokerViewerApp(App[None]):
     TITLE = "Poker Tournament Viewer"
     CSS_PATH = Path(__file__).parent / "styles" / "poker.tcss"
 
-    BINDINGS: ClassVar[list[Binding]] = [
+    BINDINGS = [
         Binding("q", "quit", "Quit", show=True),
         Binding("space", "toggle_pause", "Pause/Resume", show=True),
         Binding("up", "scroll_log_up", "Scroll Up", show=False),
@@ -47,12 +47,14 @@ class PokerViewerApp(App[None]):
         event_delay: float = 0.3,
         show_seed: bool = False,
         seed: int | None = None,
+        shutdown_event: asyncio.Event | None = None,
     ) -> None:
         super().__init__()
         self._queue = queue
         self._event_delay = event_delay
         self._show_seed = show_seed
         self._seed = seed
+        self._shutdown_event = shutdown_event
         self._paused = False
         self._event_handler: EventHandler | None = None
 
@@ -137,3 +139,8 @@ class PokerViewerApp(App[None]):
         narration = self.query_one("#narration-panel", NarrationPanel)
         scroll = narration.query_one("#narration-scroll")
         scroll.scroll_page_down()
+
+    async def action_quit(self) -> None:
+        if self._shutdown_event:
+            self._shutdown_event.set()
+        await super().action_quit()

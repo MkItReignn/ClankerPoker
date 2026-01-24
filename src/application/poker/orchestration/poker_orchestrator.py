@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
 
 from src.application.poker.context import PokerDecisionContext
@@ -84,10 +85,12 @@ class PokerOrchestrator:
         state: PokerStateManager,
         action_provider: PokerActionProvider,
         max_hands: int | None = None,
+        shutdown_event: asyncio.Event | None = None,
     ) -> None:
         self._state = state
         self._action_provider = action_provider
         self._max_hands = max_hands
+        self._shutdown_event = shutdown_event
         self._total_actions = 0
 
     async def run_game(self) -> GameResult:
@@ -103,6 +106,10 @@ class PokerOrchestrator:
 
             # ===== GAME LOOP =====
             while not self._state.is_game_complete():
+                if self._shutdown_event and self._shutdown_event.is_set():
+                    self._logger.info("Shutdown requested, stopping game")
+                    break
+
                 # Safety limit
                 if self._max_hands is not None and hands_played >= self._max_hands:
                     self._logger.warning(
@@ -134,6 +141,9 @@ class PokerOrchestrator:
         """Run a single hand to completion."""
         # ===== HAND LOOP =====
         while not self._state.is_hand_complete():
+            if self._shutdown_event and self._shutdown_event.is_set():
+                return
+
             # Check for run-out scenario (all players all-in)
             if self._state.game.players.are_all_players_all_in():
                 await self._deal_remaining_community_cards()
@@ -152,6 +162,9 @@ class PokerOrchestrator:
         """Run a single betting round to completion."""
         # ===== BETTING ROUND LOOP =====
         while not self._state.is_round_complete():
+            if self._shutdown_event and self._shutdown_event.is_set():
+                return
+
             player_id = self._state.get_player_to_act_id()
 
             if player_id is None:

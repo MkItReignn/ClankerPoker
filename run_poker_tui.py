@@ -45,6 +45,7 @@ async def run_tournament_with_tui(
         event_queue: asyncio.Queue[PublishedEvent | None] = asyncio.Queue()
         transport: TuiEventTransport = TuiEventTransport(event_queue)
         publisher: EventPublisher = EventPublisher(transport=transport)
+        shutdown_event: asyncio.Event = asyncio.Event()
 
         deps: GameDependencies = (
             create_bot_dependencies(seed=effective_seed) if use_bot else create_llm_dependencies()
@@ -65,11 +66,14 @@ async def run_tournament_with_tui(
             state=state,
             action_provider=deps.action_provider,
             max_hands=max_hands,
+            shutdown_event=shutdown_event,
         )
 
         async def run_game() -> None:
             try:
                 await orchestrator.run_game()
+            except asyncio.CancelledError:
+                pass
             except Exception as e:
                 print(f"Game error: {e}")
                 raise
@@ -81,6 +85,7 @@ async def run_tournament_with_tui(
             event_delay=event_delay,
             show_seed=show_seed,
             seed=effective_seed if show_seed else None,
+            shutdown_event=shutdown_event,
         )
 
         async with asyncio.TaskGroup() as tg:
