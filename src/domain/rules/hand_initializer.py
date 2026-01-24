@@ -48,12 +48,38 @@ class HandInitializer:
         )
 
     @staticmethod
+    def _clear_all_hole_cards(game: Game) -> Game:
+        """Clear hole cards for all players at the start of a new hand."""
+        player_updates: dict[str, Player] = {}
+        for player in game.players:
+            if player.hole_cards is not None:
+                player_updates[player.id] = replace(player, hole_cards=None)
+
+        if not player_updates:
+            return game
+
+        updated_players = game.players.replace_all(player_updates)
+        return Game(
+            identity=game.identity,
+            tournament_config=game.tournament_config,
+            hand_state=game.hand_state,
+            pot_state=game.pot_state,
+            betting_state=game.betting_state,
+            button_seat=game.button_seat,
+            blind_state=game.blind_state,
+            players=updated_players,
+            outcome=game.outcome,
+        )
+
+    @staticmethod
     def setup_hand(game: Game, deck: Deck) -> tuple[Game, Deck]:
         active_players = game.get_active_players()
         if len(active_players) < 2:
             raise ValueError(
                 f"Cannot initialize hand: need at least 2 players, got {len(active_players)}"
             )
+
+        game = HandInitializer._clear_all_hole_cards(game)
 
         updated_deck = deepcopy(deck)
 

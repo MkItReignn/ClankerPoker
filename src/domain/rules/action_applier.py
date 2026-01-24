@@ -210,12 +210,11 @@ class ActionApplier:
 
     @staticmethod
     def _apply_fold(player: Player) -> _ActionApplicationResult:
-        """Apply fold action: player exits hand, clears cards."""
+        """Apply fold action: player exits hand."""
         updated_player = replace(
             player,
             participation_status=HandParticipationStatus.FOLDED,
             betting_status=BettingRoundActionStatus.ACTED,
-            hole_cards=None,
         )
         return _ActionApplicationResult(
             updated_player=updated_player,

@@ -78,7 +78,7 @@ class TestFoldAction:
         assert updated_player is not None
         assert updated_player.betting_status == BettingRoundActionStatus.ACTED
 
-    def test_fold_clears_player_hole_cards(
+    def test_fold_preserves_player_hole_cards(
         self,
         sample_player_factory: Callable[..., Player],
         minimal_game_factory: Callable[..., Game],
@@ -109,7 +109,7 @@ class TestFoldAction:
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
-        assert updated_player.hole_cards is None
+        assert updated_player.hole_cards == hole_cards
 
     def test_fold_does_not_change_player_chips(
         self,
@@ -2222,7 +2222,7 @@ class TestGameStatePreservation:
 class TestEdgeCases:
     """Tests for edge cases and boundary conditions."""
 
-    def test_fold_when_player_has_hole_cards_clears_them(
+    def test_fold_when_player_has_hole_cards_preserves_them(
         self,
         sample_player_factory: Callable[..., Player],
         minimal_game_factory: Callable[..., Game],
@@ -2253,7 +2253,7 @@ class TestEdgeCases:
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
-        assert updated_player.hole_cards is None
+        assert updated_player.hole_cards == hole_cards
 
     def test_call_when_player_has_exactly_call_amount_chips(
         self,

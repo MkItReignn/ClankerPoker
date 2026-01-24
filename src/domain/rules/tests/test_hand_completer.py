@@ -2319,12 +2319,12 @@ class TestEliminatedPlayerStateCleanup:
         assert eliminated.participation_status == HandParticipationStatus.ELIMINATED
         assert eliminated.total_invested_this_hand.value == 0
 
-    def test_eliminated_player_hole_cards_cleared(
+    def test_eliminated_player_hole_cards_preserved(
         self,
         sample_player_factory: Callable[..., Player],
         minimal_game_factory: Callable[..., Game],
     ) -> None:
-        """Eliminated player's hole_cards are set to None."""
+        """Eliminated player's hole_cards are preserved for showdown display."""
         p1 = sample_player_factory(
             PlayerId("p1"),
             Seat.SEAT_0,
@@ -2338,16 +2338,17 @@ class TestEliminatedPlayerStateCleanup:
         )
         p1 = replace(p1, stack_at_hand_start=ChipAmount(1000))
 
+        p2_hole_cards = make_hand(
+            make_card(Rank.KING, Suit.HEARTS),
+            make_card(Rank.KING, Suit.SPADES),
+        )
         p2 = sample_player_factory(
             PlayerId("p2"),
             Seat.SEAT_1,
             ChipAmount(0),
             total_invested_this_hand=ChipAmount(500),
             participation_status=HandParticipationStatus.IN_HAND,
-            hole_cards=make_hand(
-                make_card(Rank.KING, Suit.HEARTS),
-                make_card(Rank.KING, Suit.SPADES),
-            ),
+            hole_cards=p2_hole_cards,
         )
         p2 = replace(p2, stack_at_hand_start=ChipAmount(500))
 
@@ -2386,14 +2387,14 @@ class TestEliminatedPlayerStateCleanup:
         eliminated = completed_game.players.get_by_id(p2.id)
         assert eliminated is not None
         assert eliminated.participation_status == HandParticipationStatus.ELIMINATED
-        assert eliminated.hole_cards is None
+        assert eliminated.hole_cards == p2_hole_cards
 
-    def test_multiple_eliminations_all_have_state_cleared(
+    def test_multiple_eliminations_preserve_hole_cards(
         self,
         sample_player_factory: Callable[..., Player],
         minimal_game_factory: Callable[..., Game],
     ) -> None:
-        """All eliminated players have investment and cards cleared."""
+        """All eliminated players have investment cleared but hole cards preserved."""
         p1 = sample_player_factory(
             PlayerId("p1"),
             Seat.SEAT_0,
@@ -2407,29 +2408,31 @@ class TestEliminatedPlayerStateCleanup:
         )
         p1 = replace(p1, stack_at_hand_start=ChipAmount(1000))
 
+        p2_hole_cards = make_hand(
+            make_card(Rank.KING, Suit.HEARTS),
+            make_card(Rank.KING, Suit.SPADES),
+        )
         p2 = sample_player_factory(
             PlayerId("p2"),
             Seat.SEAT_1,
             ChipAmount(0),
             total_invested_this_hand=ChipAmount(1000),
             participation_status=HandParticipationStatus.IN_HAND,
-            hole_cards=make_hand(
-                make_card(Rank.KING, Suit.HEARTS),
-                make_card(Rank.KING, Suit.SPADES),
-            ),
+            hole_cards=p2_hole_cards,
         )
         p2 = replace(p2, stack_at_hand_start=ChipAmount(1000))
 
+        p3_hole_cards = make_hand(
+            make_card(Rank.QUEEN, Suit.HEARTS),
+            make_card(Rank.QUEEN, Suit.SPADES),
+        )
         p3 = sample_player_factory(
             PlayerId("p3"),
             Seat.SEAT_2,
             ChipAmount(0),
             total_invested_this_hand=ChipAmount(1000),
             participation_status=HandParticipationStatus.IN_HAND,
-            hole_cards=make_hand(
-                make_card(Rank.QUEEN, Suit.HEARTS),
-                make_card(Rank.QUEEN, Suit.SPADES),
-            ),
+            hole_cards=p3_hole_cards,
         )
         p3 = replace(p3, stack_at_hand_start=ChipAmount(1000))
 
@@ -2465,7 +2468,7 @@ class TestEliminatedPlayerStateCleanup:
 
         completed_game = HandCompleter.complete(game)
 
-        # P1 wins (Aces), P2 and P3 eliminated
+        # P1 wins (Aces), P2 and P3 eliminated but keep hole cards
         player2 = completed_game.players.get_by_id(p2.id)
         player3 = completed_game.players.get_by_id(p3.id)
 
@@ -2474,8 +2477,8 @@ class TestEliminatedPlayerStateCleanup:
 
         assert player2.participation_status == HandParticipationStatus.ELIMINATED
         assert player2.total_invested_this_hand.value == 0
-        assert player2.hole_cards is None
+        assert player2.hole_cards == p2_hole_cards
 
         assert player3.participation_status == HandParticipationStatus.ELIMINATED
         assert player3.total_invested_this_hand.value == 0
-        assert player3.hole_cards is None
+        assert player3.hole_cards == p3_hole_cards

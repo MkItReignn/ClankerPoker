@@ -137,7 +137,6 @@ class HandCompleter:
                 betting_status=BettingRoundActionStatus.ACTED,
                 table_finish_position=position,
                 total_invested_this_hand=ChipAmount(0),
-                hole_cards=None,
                 remaining_chips=ChipAmount(0),
             )
 

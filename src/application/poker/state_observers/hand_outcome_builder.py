@@ -93,8 +93,15 @@ class HandOutcomeBuilder:
         if game.current_phase != GamePhase.SHOWDOWN:
             return None
 
-        players_in_hand: list[Player] = list(game.players_in_hand())
-        if len(players_in_hand) <= 1:
+        showdown_players: list[Player] = [
+            p
+            for p in game.players
+            if p.hole_cards is not None
+            and p.participation_status
+            in (HandParticipationStatus.IN_HAND, HandParticipationStatus.ELIMINATED)
+        ]
+
+        if len(showdown_players) <= 1:
             return None
 
         community_cards = game.community_cards
@@ -104,20 +111,21 @@ class HandOutcomeBuilder:
             )
 
         results: list[ShowdownResult] = []
-        player: Player
-        for player in players_in_hand:
-            if player.hole_cards is not None:
-                hand_evaluation = HandEvaluator.evaluate_hand_strength(
-                    player.hole_cards, community_cards
+        for player in showdown_players:
+            hole_cards = player.hole_cards
+            if hole_cards is None:
+                continue
+            hand_evaluation = HandEvaluator.evaluate_hand_strength(
+                hole_cards, community_cards
+            )
+            results.append(
+                ShowdownResult(
+                    player_id=player.id,
+                    player_name=player.name,
+                    hole_cards=hole_cards,
+                    hand_evaluation=hand_evaluation,
                 )
-                results.append(
-                    ShowdownResult(
-                        player_id=player.id,
-                        player_name=player.name,
-                        hole_cards=player.hole_cards,
-                        hand_evaluation=hand_evaluation,
-                    )
-                )
+            )
         return tuple(results) if results else None
 
     @staticmethod
