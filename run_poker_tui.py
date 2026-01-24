@@ -14,18 +14,17 @@ import secrets
 import sys
 
 from src.application.poker.events import EventPublisher, PublishedEvent
-from src.application.poker.game_factory import (
-    GameDependencies,
-    create_bot_dependencies,
-    create_llm_dependencies,
-)
-from src.application.poker.orchestration import PokerOrchestrator, PokerStateManager
+from src.application.poker.game_factory import (GameDependencies,
+                                                create_bot_dependencies,
+                                                create_llm_dependencies)
+from src.application.poker.orchestration import (PokerOrchestrator,
+                                                 PokerStateManager)
 from src.config.tournament import TournamentConfig, TournamentConfigLoader
 from src.domain.utils.game_id import generate_game_id
+from src.infrastructure.persistence import JsonGameRecordRepository
 from src.infrastructure.realtime import TuiEventTransport
-
-# TODO: Import once presentation/tui is implemented
-# from src.presentation.tui import PokerViewerApp
+from src.logger.config import configure_logging
+from src.presentation.tui import PokerViewerApp
 
 
 async def run_tournament_with_tui(
@@ -36,6 +35,9 @@ async def run_tournament_with_tui(
 ) -> int:
     effective_seed: int = seed if seed is not None else secrets.randbits(64)
     game_id: str = generate_game_id()
+    show_seed: bool = seed is not None
+
+    configure_logging(prefix="poker_tui", dev_mode=True, verbose=False)
 
     try:
         tournament_config: TournamentConfig = TournamentConfigLoader().load()
@@ -45,16 +47,17 @@ async def run_tournament_with_tui(
         publisher: EventPublisher = EventPublisher(transport=transport)
 
         deps: GameDependencies = (
-            create_bot_dependencies(seed=effective_seed)
-            if use_bot
-            else create_llm_dependencies()
+            create_bot_dependencies(seed=effective_seed) if use_bot else create_llm_dependencies()
         )
+
+        repository: JsonGameRecordRepository = JsonGameRecordRepository()
 
         state: PokerStateManager = PokerStateManager(
             config=deps.poker_config,
             tournament_config=tournament_config,
             game_id=game_id,
             seed=effective_seed,
+            repository=repository,
         )
         state._notifier.add_observer(publisher)
 
@@ -73,24 +76,16 @@ async def run_tournament_with_tui(
             finally:
                 await transport.close()
 
-        # TODO: Replace with actual TUI app once implemented
-        # app = PokerViewerApp(event_queue=event_queue, event_delay=event_delay)
-        # async with asyncio.TaskGroup() as tg:
-        #     tg.create_task(run_game())
-        #     await app.run_async()
-
-        # Temporary: Run game and print events to console
-        async def print_events() -> None:
-            while True:
-                event: PublishedEvent | None = await event_queue.get()
-                if event is None:
-                    break
-                print(f"[{event.event_type}] {event.details}")
-                await asyncio.sleep(event_delay)
+        app = PokerViewerApp(
+            queue=event_queue,
+            event_delay=event_delay,
+            show_seed=show_seed,
+            seed=effective_seed if show_seed else None,
+        )
 
         async with asyncio.TaskGroup() as tg:
             tg.create_task(run_game())
-            tg.create_task(print_events())
+            tg.create_task(app.run_async())
 
         return 0
 

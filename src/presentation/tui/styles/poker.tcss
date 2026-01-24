@@ -1,0 +1,231 @@
+/* Poker TUI Styles */
+
+/* Main Application Layout */
+Screen {
+    background: $surface;
+}
+
+#main-container {
+    width: 100%;
+    height: 100%;
+}
+
+#left-column {
+    height: 100%;
+}
+
+#right-column {
+    height: 100%;
+}
+
+/* Header Bar */
+HeaderBar {
+    height: 3;
+    dock: top;
+    width: 100%;
+    border: solid $primary;
+    padding: 0 1;
+    background: $surface-darken-1;
+}
+
+HeaderBar #header-content {
+    text-align: center;
+    width: 100%;
+}
+
+/* Poker Table Area */
+PokerTableArea {
+    height: auto;
+    min-height: 20;
+}
+
+#top-players {
+    align: center top;
+    height: 6;
+    padding: 0 2;
+}
+
+#bottom-players {
+    align: center bottom;
+    height: 6;
+    padding: 0 2;
+}
+
+/* Player Panel */
+PlayerPanel {
+    width: 24;
+    height: 5;
+    margin: 0 1;
+    border: solid $primary;
+    padding: 0 1;
+    background: $surface-darken-1;
+}
+
+PlayerPanel.player-active {
+    border: heavy $warning;
+    background: $warning 10%;
+}
+
+PlayerPanel.player-folded {
+    opacity: 0.5;
+}
+
+PlayerPanel.player-eliminated {
+    opacity: 0.3;
+    border: dashed $error;
+}
+
+PlayerPanel.player-all-in {
+    border: solid cyan;
+    background: cyan 10%;
+}
+
+PlayerPanel.player-winner {
+    border: double $success;
+    background: $success 15%;
+}
+
+/* Table Center */
+TableCenter {
+    height: 10;
+    margin: 1 6;
+    border: round $primary-lighten-2;
+    background: $primary 5%;
+    padding: 1 2;
+}
+
+#community-cards {
+    text-align: center;
+}
+
+#pot-display {
+    text-align: center;
+    margin-top: 1;
+}
+
+#pot-breakdown {
+    text-align: center;
+    color: $text-muted;
+}
+
+/* Action Log */
+ActionLog {
+    height: 100%;
+    border: solid $primary;
+    background: $surface-darken-1;
+}
+
+ActionLog #action-log-title {
+    dock: top;
+    height: 1;
+    background: $primary-darken-2;
+    text-align: center;
+    text-style: bold;
+}
+
+ActionLog #log-scroll {
+    height: 100%;
+    padding: 0 1;
+}
+
+ActionLog .log-entry {
+    height: auto;
+}
+
+ActionLog .phase-separator {
+    text-align: center;
+    color: $text-muted;
+    margin: 1 0;
+}
+
+ActionLog .showdown-separator {
+    text-align: center;
+    color: $warning;
+    margin: 1 0;
+    text-style: bold;
+}
+
+ActionLog .winner-entry {
+    color: $success;
+    text-style: bold;
+}
+
+ActionLog .thinking-entry {
+    color: $primary-lighten-1;
+    text-style: italic;
+}
+
+/* Narration Panel */
+NarrationPanel {
+    width: 100%;
+    height: 1fr;
+    border: solid $primary;
+    background: $surface-darken-1;
+}
+
+NarrationPanel #narration-title {
+    dock: top;
+    height: 1;
+    background: $primary-darken-2;
+    text-align: center;
+    text-style: bold;
+}
+
+NarrationPanel #narration-scroll {
+    height: 100%;
+    padding: 0 1;
+}
+
+NarrationPanel .phase-header {
+    text-align: center;
+    color: $text-muted;
+    margin: 1 0;
+}
+
+NarrationPanel .community-cards {
+    text-align: center;
+    margin-bottom: 1;
+}
+
+NarrationPanel .player-thinking {
+    color: $primary-lighten-1;
+    text-style: italic;
+    margin-top: 1;
+}
+
+NarrationPanel .thought-process {
+    padding: 0 1;
+    color: $text;
+    margin-bottom: 1;
+}
+
+/* Key Hints Bar */
+KeyHintsBar {
+    dock: bottom;
+    height: 1;
+    width: 100%;
+    background: $primary-darken-3;
+    padding: 0 1;
+}
+
+KeyHintsBar #key-hints-content {
+    text-align: center;
+    width: 100%;
+}
+
+/* Suit Colors */
+.suit-heart {
+    color: red;
+}
+
+.suit-diamond {
+    color: red;
+}
+
+.suit-club {
+    color: white;
+}
+
+.suit-spade {
+    color: white;
+}
