@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, ClassVar
+from typing import Any
 
 
 class Suit(Enum):
@@ -13,7 +13,6 @@ class Suit(Enum):
 
     @property
     def ranking(self) -> int:
-        """Suit ranking for tiebreakers: Spades > Hearts > Diamonds > Clubs."""
         _ranking: dict[Suit, int] = {
             Suit.SPADES: 4,
             Suit.HEARTS: 3,
@@ -21,6 +20,16 @@ class Suit(Enum):
             Suit.CLUBS: 1,
         }
         return _ranking[self]
+
+    @property
+    def symbol(self) -> str:
+        _symbols: dict[Suit, str] = {
+            Suit.HEARTS: "❤️",
+            Suit.DIAMONDS: "♦️",
+            Suit.CLUBS: "♣️",
+            Suit.SPADES: "♠️",
+        }
+        return _symbols[self]
 
 
 class Rank(Enum):
@@ -109,19 +118,7 @@ class Card:
             raise ValueError(f"Invalid rank: {self.rank}")
 
     def __str__(self) -> str:
-        rank_str = {
-            Rank.ACE: "A",
-            Rank.KING: "K",
-            Rank.QUEEN: "Q",
-            Rank.JACK: "J",
-        }.get(self.rank, str(self.rank.value))
-        suit_symbol = {
-            Suit.HEARTS: "❤️",
-            Suit.DIAMONDS: "♦️",
-            Suit.CLUBS: "♣️",
-            Suit.SPADES: "♠️",
-        }[self.suit]
-        return f"{rank_str}{suit_symbol}"
+        return f"{self.rank.to_short_string()}{self.suit.symbol}"
 
     def to_dict(self) -> dict[str, Any]:
         """Convert card to dictionary for JSON serialization."""
