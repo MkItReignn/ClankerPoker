@@ -17,7 +17,7 @@ class JsonGameRecordRepository:
         self._build_index()
 
     def _build_index(self) -> None:
-        for file_path in self._base_path.glob("record_*.jsonl"):
+        for file_path in self._base_path.glob("record_*.json"):
             try:
                 json_bytes = file_path.read_bytes().strip()
                 data = orjson.loads(json_bytes)
@@ -29,7 +29,7 @@ class JsonGameRecordRepository:
 
     def _generate_filename(self, record: GameRecord) -> str:
         timestamp = record.created_at.strftime("%Y-%m-%dT%H-%M-%S")
-        return f"record_{timestamp}.jsonl"
+        return f"record_{timestamp}.json"
 
     def save(self, record: GameRecord) -> None:
         if record.game_id in self._game_id_to_file:
@@ -39,8 +39,8 @@ class JsonGameRecordRepository:
             self._game_id_to_file[record.game_id] = file_path
 
         data = record.to_dict()
-        json_bytes = orjson.dumps(data)
-        file_path.write_bytes(json_bytes + b"\n")
+        json_bytes = orjson.dumps(data, option=orjson.OPT_INDENT_2)
+        file_path.write_bytes(json_bytes)
 
         self._logger.debug(f"Saved game record to {file_path}")
 
