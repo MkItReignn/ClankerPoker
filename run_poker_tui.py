@@ -6,6 +6,8 @@ Usage:
     poetry run python run_poker_tui.py --bot --seed 42
     poetry run python run_poker_tui.py --bot --max-hands 10
     poetry run python run_poker_tui.py --bot --delay 0.5
+    poetry run python run_poker_tui.py --bot --web
+    poetry run python run_poker_tui.py --bot --web --port 8080
 """
 
 import argparse
@@ -108,6 +110,49 @@ async def run_tournament_with_tui(
         return 1
 
 
+WEB_ONLY_ARGS: set[str] = {"--web", "--host", "--port"}
+
+
+def build_terminal_command() -> str:
+    """Reconstruct command from sys.argv, filtering out web-specific args."""
+    base: list[str] = ["poetry", "run", "python", "run_poker_tui.py"]
+    filtered: list[str] = []
+    skip_next: bool = False
+
+    for arg in sys.argv[1:]:
+        if skip_next:
+            skip_next = False
+            continue
+
+        if arg in WEB_ONLY_ARGS:
+            if arg != "--web":
+                skip_next = True
+            continue
+
+        if any(arg.startswith(f"{web_arg}=") for web_arg in WEB_ONLY_ARGS):
+            continue
+
+        filtered.append(arg)
+
+    return " ".join(base + filtered)
+
+
+def run_web_server(host: str, port: int) -> None:
+    from textual_serve.server import Server
+
+    command: str = build_terminal_command()
+    server: Server = Server(
+        command,
+        host=host,
+        port=port,
+        title="Poker Tournament Viewer",
+    )
+
+    print(f"Starting Poker Viewer at http://{host}:{port}")
+    print("Press Ctrl+C to stop the server")
+    server.serve()
+
+
 def main() -> None:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description="Run a poker tournament with TUI viewer",
@@ -133,18 +178,45 @@ def main() -> None:
         action="store_true",
         help="Use bot players instead of LLM",
     )
+    parser.add_argument(
+        "--web",
+        action="store_true",
+        help="Serve TUI in web browser instead of terminal",
+    )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="localhost",
+        help="Host for web server (default: localhost)",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        help="Port for web server (default: 8000)",
+    )
 
     args: argparse.Namespace = parser.parse_args()
 
-    exit_code: int = asyncio.run(
-        run_tournament_with_tui(
-            seed=args.seed,
-            max_hands=args.max_hands,
-            event_delay=args.delay,
-            use_bot=args.bot,
-        )
+    web_arg_used: bool = any(
+        arg in ("--host", "--port") or arg.startswith("--host=") or arg.startswith("--port=")
+        for arg in sys.argv[1:]
     )
-    sys.exit(exit_code)
+    if web_arg_used and not args.web:
+        parser.error("--host and --port require --web")
+
+    if args.web:
+        run_web_server(host=args.host, port=args.port)
+    else:
+        exit_code: int = asyncio.run(
+            run_tournament_with_tui(
+                seed=args.seed,
+                max_hands=args.max_hands,
+                event_delay=args.delay,
+                use_bot=args.bot,
+            )
+        )
+        sys.exit(exit_code)
 
 
 if __name__ == "__main__":
