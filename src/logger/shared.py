@@ -8,8 +8,6 @@ import logging
 ALWAYS_SUPPRESSED_THIRD_PARTY_LOGS: list[str] = [
     "httpx",
     "asyncio",
-    "sqlalchemy",
-    "asyncpg",
     "aiohttp",
     "urllib3",
 ]
@@ -17,8 +15,6 @@ ALWAYS_SUPPRESSED_THIRD_PARTY_LOGS: list[str] = [
 # Mapping from logical name to actual logger names used by those libraries.
 THIRD_PARTY_LOGGER_MAP: dict[str, list[str]] = {
     "httpx": ["httpx"],
-    "sqlalchemy": ["sqlalchemy.engine", "sqlalchemy.pool"],
-    "asyncpg": ["asyncpg"],
     "aiohttp": ["aiohttp"],
     "urllib3": ["urllib3"],
     "asyncio": ["asyncio"],
