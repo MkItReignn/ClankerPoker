@@ -7,8 +7,10 @@ from typing import TypeVar
 import structlog
 
 from src.config.base.config_loader import BaseConfigLoader
-from src.config.utils.environment_resolver import (DefaultEnvironmentResolver,
-                                                   EnvironmentResolver)
+from src.config.utils.environment_resolver import (
+    DefaultEnvironmentResolver,
+    EnvironmentResolver,
+)
 from src.config.utils.json_file_loader import JsonFileLoader
 from src.core.enums import ApplicationEnvironment
 
@@ -93,4 +95,6 @@ class BaseEnvironmentConfigLoader(BaseConfigLoader[T]):
             ValueError: If environment section is missing and required=True,
                 or if environment section is not a JSON object.
         """
-        return self._json_loader.get_environment_section(self._environment, required=required)
+        return self._json_loader.get_environment_section(
+            self._environment, required=required
+        )

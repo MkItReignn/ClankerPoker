@@ -1,7 +1,5 @@
 """Utilities for generating deterministic seed sequences from a base seed."""
 
-from __future__ import annotations
-
 from random import Random
 
 
@@ -86,5 +84,7 @@ class SeedSequence:
             ValueError: If hand_number is less than 1.
         """
         if hand_number < 1:
-            raise ValueError(f"Hand number must be at least 1, got {hand_number}")
+            raise ValueError(
+                f"Hand number must be at least 1, got {hand_number}"
+            )
         return self[hand_number]

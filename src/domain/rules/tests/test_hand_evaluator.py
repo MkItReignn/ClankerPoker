@@ -1,13 +1,14 @@
 """Tests for HandEvaluator - edge cases documenting poker rules."""
 
-from __future__ import annotations
-
 import pytest
 
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.hand import Hand
-from src.domain.rules.hand_evaluator import (HandEvaluation, HandEvaluator,
-                                             HandRank)
+from src.domain.rules.hand_evaluator import (
+    HandEvaluation,
+    HandEvaluator,
+    HandRank,
+)
 
 
 class TestInvalidInputs:
@@ -26,7 +27,9 @@ class TestInvalidInputs:
             card_factory(suit=Suit.SPADES, rank=Rank.TEN),
         ]
 
-        with pytest.raises(ValueError, match="Must have exactly 5 community cards"):
+        with pytest.raises(
+            ValueError, match="Must have exactly 5 community cards"
+        ):
             HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
 
     def test_raises_error_when_more_than_five_community_cards(
@@ -45,7 +48,9 @@ class TestInvalidInputs:
             card_factory(suit=Suit.CLUBS, rank=Rank.SEVEN),
         ]
 
-        with pytest.raises(ValueError, match="Must have exactly 5 community cards"):
+        with pytest.raises(
+            ValueError, match="Must have exactly 5 community cards"
+        ):
             HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
 
     def test_raises_error_when_zero_community_cards(
@@ -57,7 +62,9 @@ class TestInvalidInputs:
         )
         community_cards: list[Card] = []
 
-        with pytest.raises(ValueError, match="Must have exactly 5 community cards"):
+        with pytest.raises(
+            ValueError, match="Must have exactly 5 community cards"
+        ):
             HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
 
 
@@ -79,7 +86,9 @@ class TestRoyalFlush:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.THREE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.ROYAL_FLUSH
         assert evaluation.kickers == (Rank.ACE,)
@@ -119,7 +128,9 @@ class TestStraightFlush:
             card_factory(suit=Suit.CLUBS, rank=Rank.THREE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT_FLUSH
         assert evaluation.kickers == (Rank.KING,)
@@ -139,7 +150,9 @@ class TestStraightFlush:
             card_factory(suit=Suit.HEARTS, rank=Rank.QUEEN),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT_FLUSH
         assert evaluation.kickers == (Rank.FIVE,)
@@ -211,7 +224,9 @@ class TestFourOfAKind:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.JACK),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.FOUR_OF_A_KIND
         assert evaluation.kickers[0] == Rank.ACE
@@ -320,7 +335,9 @@ class TestFlush:
             card_factory(suit=Suit.SPADES, rank=Rank.THREE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.FLUSH
         assert evaluation.kickers[0] == Rank.ACE
@@ -348,7 +365,9 @@ class TestStraight:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.QUEEN),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT
         assert evaluation.kickers == (Rank.FIVE,)
@@ -384,7 +403,9 @@ class TestStraight:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.THREE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT
         assert evaluation.kickers == (Rank.ACE,)
@@ -420,7 +441,9 @@ class TestStraight:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.THREE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT
         assert evaluation.kickers == (Rank.TEN,)
@@ -701,7 +724,9 @@ class TestHandRankHierarchy:
 
         assert full_house.compare(flush) > 0
 
-    def test_flush_beats_straight(self, card_factory: type[Card], hand_factory: type[Hand]) -> None:
+    def test_flush_beats_straight(
+        self, card_factory: type[Card], hand_factory: type[Hand]
+    ) -> None:
         flush = HandEvaluation(
             rank=HandRank.FLUSH,
             cards_used=(),
@@ -747,7 +772,9 @@ class TestHandRankHierarchy:
 
         assert three_of_a_kind.compare(two_pair) > 0
 
-    def test_two_pair_beats_pair(self, card_factory: type[Card], hand_factory: type[Hand]) -> None:
+    def test_two_pair_beats_pair(
+        self, card_factory: type[Card], hand_factory: type[Hand]
+    ) -> None:
         two_pair = HandEvaluation(
             rank=HandRank.TWO_PAIR,
             cards_used=(),
@@ -761,7 +788,9 @@ class TestHandRankHierarchy:
 
         assert two_pair.compare(pair) > 0
 
-    def test_pair_beats_high_card(self, card_factory: type[Card], hand_factory: type[Hand]) -> None:
+    def test_pair_beats_high_card(
+        self, card_factory: type[Card], hand_factory: type[Hand]
+    ) -> None:
         pair = HandEvaluation(
             rank=HandRank.PAIR,
             cards_used=(),
@@ -798,7 +827,9 @@ class TestHandRankHierarchy:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.SEVEN),
         ]
 
-        pair_eval = HandEvaluator.evaluate_hand_strength(pair_player_hole, community_cards)
+        pair_eval = HandEvaluator.evaluate_hand_strength(
+            pair_player_hole, community_cards
+        )
         high_card_eval = HandEvaluator.evaluate_hand_strength(
             high_card_player_hole, community_cards
         )
@@ -826,7 +857,9 @@ class TestBestFiveCardSelection:
             card_factory(suit=Suit.HEARTS, rank=Rank.TWO),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT
 
@@ -845,7 +878,9 @@ class TestBestFiveCardSelection:
             card_factory(suit=Suit.SPADES, rank=Rank.NINE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.FLUSH
 
@@ -864,7 +899,9 @@ class TestBestFiveCardSelection:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.THREE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT
         assert evaluation.kickers == (Rank.TEN,)
@@ -884,7 +921,9 @@ class TestBestFiveCardSelection:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.JACK),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.FULL_HOUSE
 
@@ -892,7 +931,9 @@ class TestBestFiveCardSelection:
 class TestTieScenarios:
     """Tests for scenarios where hands tie."""
 
-    def test_identical_hands_tie(self, card_factory: type[Card], hand_factory: type[Hand]) -> None:
+    def test_identical_hands_tie(
+        self, card_factory: type[Card], hand_factory: type[Hand]
+    ) -> None:
         hand1 = HandEvaluation(
             rank=HandRank.PAIR,
             cards_used=(),
@@ -941,7 +982,9 @@ class TestStraightFlushEdgeCases:
             card_factory(suit=Suit.SPADES, rank=Rank.THREE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT_FLUSH
 
@@ -960,7 +1003,9 @@ class TestStraightFlushEdgeCases:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.SEVEN),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT_FLUSH
 
@@ -979,7 +1024,9 @@ class TestStraightFlushEdgeCases:
             card_factory(suit=Suit.HEARTS, rank=Rank.TWO),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.ROYAL_FLUSH
 
@@ -1002,7 +1049,9 @@ class TestMultiplePossibleHands:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.TWO),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT
         assert evaluation.kickers == (Rank.TEN,)
@@ -1022,7 +1071,9 @@ class TestMultiplePossibleHands:
             card_factory(suit=Suit.SPADES, rank=Rank.THREE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.FLUSH
         assert evaluation.kickers[0] == Rank.ACE
@@ -1046,7 +1097,9 @@ class TestMultiplePossibleHands:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.JACK),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.TWO_PAIR
         assert evaluation.kickers[0] == Rank.ACE
@@ -1072,7 +1125,9 @@ class TestFullHouseEdgeCases:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.JACK),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.FULL_HOUSE
         assert evaluation.kickers[0] == Rank.ACE
@@ -1093,7 +1148,9 @@ class TestFullHouseEdgeCases:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.QUEEN),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.FOUR_OF_A_KIND
         assert evaluation.kickers[0] == Rank.ACE
@@ -1181,7 +1238,12 @@ class TestKickerComparisons:
             kickers=(Rank.ACE, Rank.KING, Rank.QUEEN, Rank.JACK, Rank.NINE),
         )
 
-        assert ace_king_queen_jack_ten_flush.compare(ace_king_queen_jack_nine_flush) > 0
+        assert (
+            ace_king_queen_jack_ten_flush.compare(
+                ace_king_queen_jack_nine_flush
+            )
+            > 0
+        )
 
     def test_high_card_compares_third_card_when_first_two_equal(
         self, card_factory: type[Card], hand_factory: type[Hand]
@@ -1234,7 +1296,9 @@ class TestWheelStraightEdgeCases:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.QUEEN),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT
         assert evaluation.kickers == (Rank.FIVE,)
@@ -1254,7 +1318,9 @@ class TestWheelStraightEdgeCases:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.QUEEN),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT
         assert evaluation.kickers == (Rank.FIVE,)
@@ -1274,7 +1340,9 @@ class TestWheelStraightEdgeCases:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.THREE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT
         assert evaluation.kickers == (Rank.ACE,)
@@ -1298,7 +1366,9 @@ class TestInvalidStraightScenarios:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.JACK),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank != HandRank.STRAIGHT
         assert evaluation.rank == HandRank.HIGH_CARD
@@ -1320,12 +1390,15 @@ class TestRoyalFlushEdgeCases:
                 card_factory(suit=suit, rank=Rank.JACK),
                 card_factory(suit=suit, rank=Rank.TEN),
                 card_factory(
-                    suit=Suit.HEARTS if suit != Suit.HEARTS else Suit.DIAMONDS, rank=Rank.TWO
+                    suit=Suit.HEARTS if suit != Suit.HEARTS else Suit.DIAMONDS,
+                    rank=Rank.TWO,
                 ),
                 card_factory(suit=Suit.CLUBS, rank=Rank.THREE),
             ]
 
-            evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+            evaluation = HandEvaluator.evaluate_hand_strength(
+                hole_cards, community_cards
+            )
 
             assert evaluation.rank == HandRank.ROYAL_FLUSH
             assert evaluation.kickers == (Rank.ACE,)
@@ -1401,7 +1474,9 @@ class TestComplexSevenCardScenarios:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.EIGHT),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT_FLUSH
 
@@ -1420,7 +1495,9 @@ class TestComplexSevenCardScenarios:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.QUEEN),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.FULL_HOUSE
         assert evaluation.kickers[0] == Rank.ACE
@@ -1445,7 +1522,9 @@ class TestPlayingTheBoard:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.ACE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT
         assert evaluation.kickers == (Rank.ACE,)
@@ -1465,7 +1544,9 @@ class TestPlayingTheBoard:
             card_factory(suit=Suit.HEARTS, rank=Rank.NINE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.FLUSH
         assert evaluation.kickers[0] == Rank.ACE
@@ -1489,8 +1570,12 @@ class TestPlayingTheBoard:
             card_factory(suit=Suit.HEARTS, rank=Rank.TEN),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.ROYAL_FLUSH
         assert eval2.rank == HandRank.ROYAL_FLUSH
@@ -1515,7 +1600,9 @@ class TestCounterfeitScenarios:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.QUEEN),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.TWO_PAIR
         assert evaluation.kickers[0] == Rank.ACE
@@ -1537,7 +1624,9 @@ class TestCounterfeitScenarios:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.QUEEN),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.FULL_HOUSE
         assert evaluation.kickers[0] == Rank.ACE
@@ -1566,8 +1655,12 @@ class TestSplitPotKickerScenarios:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.THREE),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.PAIR
         assert eval2.rank == HandRank.PAIR
@@ -1594,13 +1687,29 @@ class TestSplitPotKickerScenarios:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.TWO),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.HIGH_CARD
         assert eval2.rank == HandRank.HIGH_CARD
-        assert eval1.kickers == (Rank.ACE, Rank.KING, Rank.QUEEN, Rank.JACK, Rank.EIGHT)
-        assert eval2.kickers == (Rank.ACE, Rank.KING, Rank.QUEEN, Rank.JACK, Rank.SEVEN)
+        assert eval1.kickers == (
+            Rank.ACE,
+            Rank.KING,
+            Rank.QUEEN,
+            Rank.JACK,
+            Rank.EIGHT,
+        )
+        assert eval2.kickers == (
+            Rank.ACE,
+            Rank.KING,
+            Rank.QUEEN,
+            Rank.JACK,
+            Rank.SEVEN,
+        )
         assert eval1.compare(eval2) > 0
 
 
@@ -1628,8 +1737,12 @@ class TestFlushSuitIrrelevance:
             card_factory(suit=Suit.HEARTS, rank=Rank.SEVEN),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.FLUSH
         assert eval2.rank == HandRank.FLUSH
@@ -1659,8 +1772,12 @@ class TestFlushSuitIrrelevance:
             card_factory(suit=Suit.HEARTS, rank=Rank.SEVEN),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.FLUSH
         assert eval2.rank == HandRank.FLUSH
@@ -1692,8 +1809,12 @@ class TestFlushSuitIrrelevance:
             card_factory(suit=Suit.HEARTS, rank=Rank.FOUR),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.FLUSH
         assert eval2.rank == HandRank.FLUSH
@@ -1721,7 +1842,9 @@ class TestAllTwentyOneCombinations:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.NINE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.FLUSH
         assert evaluation.kickers[0] == Rank.NINE
@@ -1746,7 +1869,9 @@ class TestAllTwentyOneCombinations:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.SIX),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT
         assert evaluation.kickers == (Rank.TEN,)
@@ -1767,7 +1892,9 @@ class TestAllTwentyOneCombinations:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.QUEEN),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.FULL_HOUSE
         assert evaluation.kickers[0] == Rank.ACE
@@ -1789,7 +1916,9 @@ class TestAllTwentyOneCombinations:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.NINE),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT_FLUSH
         assert evaluation.kickers == (Rank.KING,)
@@ -1810,7 +1939,9 @@ class TestAllTwentyOneCombinations:
             card_factory(suit=Suit.SPADES, rank=Rank.FOUR),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.FLUSH
         assert evaluation.kickers[0] == Rank.NINE
@@ -1835,7 +1966,9 @@ class TestAllTwentyOneCombinations:
             card_factory(suit=Suit.DIAMONDS, rank=Rank.SEVEN),
         ]
 
-        evaluation = HandEvaluator.evaluate_hand_strength(hole_cards, community_cards)
+        evaluation = HandEvaluator.evaluate_hand_strength(
+            hole_cards, community_cards
+        )
 
         assert evaluation.rank == HandRank.STRAIGHT_FLUSH
         assert evaluation.kickers == (Rank.JACK,)
@@ -1865,8 +1998,12 @@ class TestComprehensiveTieScenarios:
             card_factory(suit=Suit.HEARTS, rank=Rank.TEN),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.ROYAL_FLUSH
         assert eval2.rank == HandRank.ROYAL_FLUSH
@@ -1893,8 +2030,12 @@ class TestComprehensiveTieScenarios:
             card_factory(suit=Suit.HEARTS, rank=Rank.NINE),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.STRAIGHT_FLUSH
         assert eval2.rank == HandRank.STRAIGHT_FLUSH
@@ -1920,8 +2061,12 @@ class TestComprehensiveTieScenarios:
             card_factory(suit=Suit.SPADES, rank=Rank.QUEEN),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.FOUR_OF_A_KIND
         assert eval2.rank == HandRank.FOUR_OF_A_KIND
@@ -1948,8 +2093,12 @@ class TestComprehensiveTieScenarios:
             card_factory(suit=Suit.SPADES, rank=Rank.QUEEN),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.FULL_HOUSE
         assert eval2.rank == HandRank.FULL_HOUSE
@@ -1976,8 +2125,12 @@ class TestComprehensiveTieScenarios:
             card_factory(suit=Suit.SPADES, rank=Rank.THREE),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.STRAIGHT
         assert eval2.rank == HandRank.STRAIGHT
@@ -2004,8 +2157,12 @@ class TestComprehensiveTieScenarios:
             card_factory(suit=Suit.SPADES, rank=Rank.TWO),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.THREE_OF_A_KIND
         assert eval2.rank == HandRank.THREE_OF_A_KIND
@@ -2032,8 +2189,12 @@ class TestComprehensiveTieScenarios:
             card_factory(suit=Suit.SPADES, rank=Rank.JACK),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.TWO_PAIR
         assert eval2.rank == HandRank.TWO_PAIR
@@ -2060,8 +2221,12 @@ class TestComprehensiveTieScenarios:
             card_factory(suit=Suit.SPADES, rank=Rank.THREE),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.PAIR
         assert eval2.rank == HandRank.PAIR
@@ -2088,8 +2253,12 @@ class TestComprehensiveTieScenarios:
             card_factory(suit=Suit.SPADES, rank=Rank.FIVE),
         ]
 
-        eval1 = HandEvaluator.evaluate_hand_strength(hole_cards_player1, community_cards)
-        eval2 = HandEvaluator.evaluate_hand_strength(hole_cards_player2, community_cards)
+        eval1 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player1, community_cards
+        )
+        eval2 = HandEvaluator.evaluate_hand_strength(
+            hole_cards_player2, community_cards
+        )
 
         assert eval1.rank == HandRank.HIGH_CARD
         assert eval2.rank == HandRank.HIGH_CARD

@@ -1,10 +1,12 @@
-from __future__ import annotations
-
 from datetime import datetime, timezone
 
 import pytest
 
-from src.application.poker.events import EventType, PublishedEvent, PublishedEventMetadata
+from src.application.poker.events import (
+    EventType,
+    PublishedEvent,
+    PublishedEventMetadata,
+)
 
 
 class TestPublishedEventMetadata:

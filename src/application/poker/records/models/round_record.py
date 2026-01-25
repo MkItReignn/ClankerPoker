@@ -1,10 +1,8 @@
 """Round record model - betting phase within a hand."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Self
 
 from src.domain.models.card import Card
 from src.domain.models.game import HandPhase
@@ -57,7 +55,7 @@ class RoundRecord:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> RoundRecord:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         """Deserialize a dictionary to RoundRecord."""
         # Deserialize player records
         player_records: dict[str, RoundLevelPlayerRecord] = {}

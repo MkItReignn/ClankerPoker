@@ -8,8 +8,6 @@ Tests verify output matches the notation defined in config/poker/prompts.yaml:
 - Previous hands format: H<n>: Winner=<name>, Pot=<amount>, Showdown=<yes|no>
 """
 
-from __future__ import annotations
-
 from src.application.poker.records.context_serializer import (
     RecordToLlmContextSerializer,
 )

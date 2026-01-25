@@ -1,7 +1,5 @@
 """Bot player configuration data structures."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 
 from src.config.poker.bot_personality import BotPersonality
@@ -40,4 +38,6 @@ class BotPokerGameConfig:
         player_configs: Configuration for each player, keyed by player_id.
     """
 
-    player_configs: dict[str, BotPokerPlayerConfig] = field(default_factory=dict)
+    player_configs: dict[str, BotPokerPlayerConfig] = field(
+        default_factory=dict
+    )

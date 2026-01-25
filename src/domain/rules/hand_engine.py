@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from src.domain.models.deck import Deck
 from src.domain.models.game import Game
 from src.domain.rules.hand_completer import HandCompleter

@@ -6,16 +6,26 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import httpx
 
-from src.application.protocols.llm import (LlmApiError, LlmRequest,
-                                           LlmResponse, LlmTimeoutError)
+from src.application.protocols.llm import (
+    LlmApiError,
+    LlmRequest,
+    LlmResponse,
+    LlmTimeoutError,
+)
 from src.config.llm.config import OpenRouterConfig
-from src.infrastructure.llm.open_router.model_mapper import \
-    OpenRouterModelMapper
+from src.infrastructure.llm.open_router.model_mapper import (
+    OpenRouterModelMapper,
+)
 from src.infrastructure.llm.open_router.requests import (
-    MessageRole, OpenRouterApiRequest, OpenRouterRequestHeaders,
-    OpenRouterRequestMessage, ResponseFormat)
-from src.infrastructure.llm.open_router.response_parser import \
-    OpenRouterResponseParser
+    MessageRole,
+    OpenRouterApiRequest,
+    OpenRouterRequestHeaders,
+    OpenRouterRequestMessage,
+    ResponseFormat,
+)
+from src.infrastructure.llm.open_router.response_parser import (
+    OpenRouterResponseParser,
+)
 from src.logger.factories import get_generic_logger
 
 
@@ -117,11 +127,15 @@ class OpenRouterClient:
             return True
         if isinstance(error, LlmApiError):
             if error.status_code is not None:
-                return 500 <= error.status_code < 600 or error.status_code == 429
+                return (
+                    500 <= error.status_code < 600 or error.status_code == 429
+                )
             return False
         return self._is_transient_error(error)
 
-    def _parse_response(self, data: dict[str, object], request: LlmRequest) -> LlmResponse:
+    def _parse_response(
+        self, data: dict[str, object], request: LlmRequest
+    ) -> LlmResponse:
         api_response = OpenRouterResponseParser.parse(data)
         return OpenRouterResponseParser.to_llm_response(api_response, request)
 
@@ -130,7 +144,9 @@ class OpenRouterClient:
     ) -> tuple[httpx.AsyncClient, Exception]:
         timeout_error = LlmTimeoutError(f"Request timed out: {error}")
         if attempt < self._max_reconnect_attempts:
-            self._logger.warning(f"Timeout on attempt {attempt + 1}, retrying...")
+            self._logger.warning(
+                f"Timeout on attempt {attempt + 1}, retrying..."
+            )
             await asyncio.sleep(self._reconnect_delay_seconds * (attempt + 1))
             return await self._reconnect(), timeout_error
         raise timeout_error from error
@@ -138,7 +154,10 @@ class OpenRouterClient:
     async def _handle_http_error(
         self, error: httpx.HTTPStatusError, attempt: int
     ) -> tuple[httpx.AsyncClient, Exception]:
-        if self._is_retryable_error(error) and attempt < self._max_reconnect_attempts:
+        if (
+            self._is_retryable_error(error)
+            and attempt < self._max_reconnect_attempts
+        ):
             self._logger.warning(
                 f"HTTP error {error.response.status_code} on attempt {attempt + 1}, retrying..."
             )
@@ -150,7 +169,9 @@ class OpenRouterClient:
         self, error: httpx.NetworkError, attempt: int
     ) -> tuple[httpx.AsyncClient, Exception]:
         if attempt < self._max_reconnect_attempts:
-            self._logger.warning(f"Network error on attempt {attempt + 1}, reconnecting...")
+            self._logger.warning(
+                f"Network error on attempt {attempt + 1}, reconnecting..."
+            )
             await asyncio.sleep(self._reconnect_delay_seconds * (attempt + 1))
             return await self._reconnect(), error
         raise LlmApiError(
@@ -162,13 +183,19 @@ class OpenRouterClient:
 
         client = await self._ensure_connected()
 
-        openrouter_model = OpenRouterModelMapper.to_openrouter_model(request.model_id)
+        openrouter_model = OpenRouterModelMapper.to_openrouter_model(
+            request.model_id
+        )
 
         headers = OpenRouterRequestHeaders(api_key=self._config.api_key)
 
         messages = [
-            OpenRouterRequestMessage(role=MessageRole.SYSTEM, content=request.system_prompt),
-            OpenRouterRequestMessage(role=MessageRole.USER, content=request.user_prompt),
+            OpenRouterRequestMessage(
+                role=MessageRole.SYSTEM, content=request.system_prompt
+            ),
+            OpenRouterRequestMessage(
+                role=MessageRole.USER, content=request.user_prompt
+            ),
         ]
 
         payload = OpenRouterApiRequest(
@@ -194,7 +221,9 @@ class OpenRouterClient:
                     error_message = error_data.get("error", {}).get(
                         "message", f"HTTP {response.status_code}"
                     )
-                    api_error = LlmApiError(error_message, response.status_code)
+                    api_error = LlmApiError(
+                        error_message, response.status_code
+                    )
 
                     if (
                         self._is_retryable_error(api_error)
@@ -203,7 +232,9 @@ class OpenRouterClient:
                         self._logger.warning(
                             f"Transient error {response.status_code} on attempt {attempt + 1}, retrying..."
                         )
-                        await asyncio.sleep(self._reconnect_delay_seconds * (attempt + 1))
+                        await asyncio.sleep(
+                            self._reconnect_delay_seconds * (attempt + 1)
+                        )
                         client = await self._reconnect()
                         last_error = api_error
                         continue
@@ -214,7 +245,9 @@ class OpenRouterClient:
                 return self._parse_response(data, request)
 
             except httpx.TimeoutException as e:
-                client, last_error = await self._handle_timeout_error(e, attempt)
+                client, last_error = await self._handle_timeout_error(
+                    e, attempt
+                )
                 continue
 
             except httpx.HTTPStatusError as e:
@@ -222,7 +255,9 @@ class OpenRouterClient:
                 continue
 
             except httpx.NetworkError as e:
-                client, last_error = await self._handle_network_error(e, attempt)
+                client, last_error = await self._handle_network_error(
+                    e, attempt
+                )
                 continue
 
             except Exception as e:
@@ -243,5 +278,7 @@ class OpenRouterClient:
         await self.connect()
         return self
 
-    async def __aexit__(self, exc_type: object, exc_val: object, exc_tb: object) -> None:
+    async def __aexit__(
+        self, exc_type: object, exc_val: object, exc_tb: object
+    ) -> None:
         await self.close()

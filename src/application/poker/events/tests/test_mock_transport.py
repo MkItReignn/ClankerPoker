@@ -1,13 +1,18 @@
-from __future__ import annotations
-
 import json
 from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
 
-from src.application.poker.events import EventType, PublishedEvent, PublishedEventMetadata
-from src.infrastructure.realtime.mock_transport import InMemoryTransport, MockTransport
+from src.application.poker.events import (
+    EventType,
+    PublishedEvent,
+    PublishedEventMetadata,
+)
+from src.infrastructure.realtime.mock_transport import (
+    InMemoryTransport,
+    MockTransport,
+)
 
 
 class TestInMemoryTransport:
@@ -60,7 +65,10 @@ class TestInMemoryTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=1
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=1,
             ),
         )
         event2 = PublishedEvent(
@@ -68,7 +76,10 @@ class TestInMemoryTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=2
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=2,
             ),
         )
 
@@ -88,7 +99,10 @@ class TestInMemoryTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=1
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=1,
             ),
         )
         event2 = PublishedEvent(
@@ -96,7 +110,10 @@ class TestInMemoryTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=2
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=2,
             ),
         )
         event3 = PublishedEvent(
@@ -104,7 +121,10 @@ class TestInMemoryTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=3
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=3,
             ),
         )
 
@@ -126,7 +146,10 @@ class TestInMemoryTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=1
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=1,
             ),
         )
         await transport.publish(event)
@@ -143,7 +166,10 @@ class TestInMemoryTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=1
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=1,
             ),
         )
         event2 = PublishedEvent(
@@ -151,7 +177,10 @@ class TestInMemoryTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=2
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=2,
             ),
         )
         await transport.publish(event1)
@@ -179,7 +208,10 @@ class TestInMemoryTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=1
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=1,
             ),
         )
         event2 = PublishedEvent(
@@ -187,7 +219,10 @@ class TestInMemoryTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=2
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=2,
             ),
         )
 
@@ -220,7 +255,9 @@ class TestMockTransport:
         assert transport.events[0] == event
 
     @pytest.mark.asyncio
-    async def test_does_not_store_events_when_store_events_is_false(self) -> None:
+    async def test_does_not_store_events_when_store_events_is_false(
+        self,
+    ) -> None:
         transport = MockTransport(store_events=False)
         event = PublishedEvent(
             event_type=EventType.GAME_STARTED,
@@ -239,7 +276,9 @@ class TestMockTransport:
         assert len(transport.events) == 0
 
     @pytest.mark.asyncio
-    async def test_writes_event_to_file_when_output_file_specified(self, tmp_path: Path) -> None:
+    async def test_writes_event_to_file_when_output_file_specified(
+        self, tmp_path: Path
+    ) -> None:
         output_file = tmp_path / "events.jsonl"
         transport = MockTransport(output_file=output_file, store_events=True)
         timestamp = datetime(2025, 1, 15, 10, 30, 45, tzinfo=timezone.utc)
@@ -267,7 +306,9 @@ class TestMockTransport:
         assert parsed["details"]["player_count"] == 3
 
     @pytest.mark.asyncio
-    async def test_writes_multiple_events_as_jsonl(self, tmp_path: Path) -> None:
+    async def test_writes_multiple_events_as_jsonl(
+        self, tmp_path: Path
+    ) -> None:
         output_file = tmp_path / "events.jsonl"
         transport = MockTransport(output_file=output_file)
         event1 = PublishedEvent(
@@ -275,7 +316,10 @@ class TestMockTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=1
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=1,
             ),
         )
         event2 = PublishedEvent(
@@ -283,7 +327,10 @@ class TestMockTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=2
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=2,
             ),
         )
 
@@ -296,7 +343,9 @@ class TestMockTransport:
         assert len(lines) == 2
 
     @pytest.mark.asyncio
-    async def test_creates_parent_directories_for_output_file(self, tmp_path: Path) -> None:
+    async def test_creates_parent_directories_for_output_file(
+        self, tmp_path: Path
+    ) -> None:
         output_file = tmp_path / "nested" / "directory" / "events.jsonl"
         transport = MockTransport(output_file=output_file)
         event = PublishedEvent(
@@ -304,7 +353,10 @@ class TestMockTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=1
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=1,
             ),
         )
 
@@ -322,7 +374,10 @@ class TestMockTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=1
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=1,
             ),
         )
         event2 = PublishedEvent(
@@ -330,7 +385,10 @@ class TestMockTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=2
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=2,
             ),
         )
         await transport.publish(event1)
@@ -349,7 +407,10 @@ class TestMockTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=1
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=1,
             ),
         )
         await transport.publish(event)
@@ -366,7 +427,10 @@ class TestMockTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=1
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=1,
             ),
         )
 
@@ -385,7 +449,10 @@ class TestMockTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=1
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=1,
             ),
         )
         event2 = PublishedEvent(
@@ -393,7 +460,10 @@ class TestMockTransport:
             details={},
             game_state={},
             metadata=PublishedEventMetadata(
-                game_id="game-1", hand_number=1, timestamp=datetime.now(timezone.utc), sequence=2
+                game_id="game-1",
+                hand_number=1,
+                timestamp=datetime.now(timezone.utc),
+                sequence=2,
             ),
         )
 

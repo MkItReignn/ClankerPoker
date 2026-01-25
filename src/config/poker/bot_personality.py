@@ -1,7 +1,5 @@
 """Bot personality enum for bot player configuration."""
 
-from __future__ import annotations
-
 from enum import StrEnum
 
 

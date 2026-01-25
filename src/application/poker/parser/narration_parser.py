@@ -1,7 +1,5 @@
 """Narration parsing strategy for poker responses."""
 
-from __future__ import annotations
-
 import re
 from typing import ClassVar, Protocol
 
@@ -95,7 +93,9 @@ class ThoughtProcessNarrationParser:
                 "THOUGHT_PROCESS field not found in response",
                 context={
                     "response_snippet": (
-                        response_text[:200] if len(response_text) > 200 else response_text
+                        response_text[:200]
+                        if len(response_text) > 200
+                        else response_text
                     ),
                 },
             )
@@ -108,7 +108,9 @@ class ThoughtProcessNarrationParser:
                 "THOUGHT_PROCESS field is empty",
                 context={
                     "response_snippet": (
-                        response_text[:200] if len(response_text) > 200 else response_text
+                        response_text[:200]
+                        if len(response_text) > 200
+                        else response_text
                     ),
                 },
             )

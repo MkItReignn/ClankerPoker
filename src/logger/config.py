@@ -10,18 +10,14 @@ Features:
 - Development-friendly console output or JSON for production
 """
 
-from __future__ import annotations
-
 import logging
 import logging.handlers
-import os
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 import structlog
-from structlog.types import EventDict, Processor
+from structlog.types import EventDict
 
 from src.logger.shared import suppress_third_party_libraries
 
@@ -29,7 +25,9 @@ _logging_configured = False
 _file_handler: logging.Handler | None = None
 
 
-def _ensure_dict(logger: logging.Logger, method_name: str, event_dict: EventDict) -> EventDict:
+def _ensure_dict(
+    logger: logging.Logger, method_name: str, event_dict: EventDict
+) -> EventDict:
     """Ensure event_dict is a dict (for foreign pre_chain)."""
     if not isinstance(event_dict, dict):
         return {"event": str(event_dict)}
@@ -44,7 +42,9 @@ def _configure_root_logger() -> logging.Logger:
     return root_logger
 
 
-def _create_formatter(dev_mode: bool = True) -> structlog.stdlib.ProcessorFormatter:
+def _create_formatter(
+    dev_mode: bool = True,
+) -> structlog.stdlib.ProcessorFormatter:
     """Create ProcessorFormatter for console or file handler.
 
     Args:
@@ -209,7 +209,9 @@ def _create_file_handler(
 
         return log_file
     except Exception as e:
-        raise RuntimeError(f"Failed to create log file with prefix={prefix}: {e}") from e
+        raise RuntimeError(
+            f"Failed to create log file with prefix={prefix}: {e}"
+        ) from e
 
 
 def shutdown_logging() -> None:

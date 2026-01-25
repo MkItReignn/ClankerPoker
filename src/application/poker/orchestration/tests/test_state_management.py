@@ -8,8 +8,6 @@ These are behavioral tests that treat the state manager as a black box.
 The only mock is the action provider (LLM boundary).
 """
 
-from __future__ import annotations
-
 import pytest
 
 from src.application.poker.orchestration.poker_orchestrator import (

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from src.domain.models.chips import ChipAmount
 from src.domain.models.player import Player
 
@@ -39,11 +37,15 @@ class BettingCalculator:
         if player_invested_this_hand >= max_invested_this_hand:
             return ChipAmount(0)
 
-        call_amount: ChipAmount = max_invested_this_hand - player_invested_this_hand
+        call_amount: ChipAmount = (
+            max_invested_this_hand - player_invested_this_hand
+        )
         return call_amount
 
     @staticmethod
-    def get_max_invested_this_hand(players_in_hand: list[Player]) -> ChipAmount:
+    def get_max_invested_this_hand(
+        players_in_hand: list[Player],
+    ) -> ChipAmount:
         """
         Get the maximum amount invested by any player in this hand.
         All other players must match this to stay in the hand.
@@ -51,5 +53,7 @@ class BettingCalculator:
         if not players_in_hand:
             return ChipAmount(0)
 
-        max_invested = max(p.total_invested_this_hand.value for p in players_in_hand)
+        max_invested = max(
+            p.total_invested_this_hand.value for p in players_in_hand
+        )
         return ChipAmount(max_invested)

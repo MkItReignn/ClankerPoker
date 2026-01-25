@@ -11,8 +11,6 @@ Follows Texas Hold'em No-Limit Tournament Rules (RULE_BOOK.md):
 - Section 12.6: Uncalled Bet Returns
 """
 
-from __future__ import annotations
-
 from collections import defaultdict
 
 from src.domain.models.chips import ChipAmount
@@ -79,7 +77,9 @@ class ChipDistributor:
 
         # Find all players with highest investment
         highest_investors = [
-            p for p in players_in_hand if p.total_invested_this_hand == highest_investment
+            p
+            for p in players_in_hand
+            if p.total_invested_this_hand == highest_investment
         ]
 
         # If multiple players share highest investment, no uncalled bet
@@ -88,7 +88,9 @@ class ChipDistributor:
             return {}
 
         # Single highest investor - return the uncalled portion
-        uncalled_amount = ChipAmount(highest_investment.value - second_highest_investment.value)
+        uncalled_amount = ChipAmount(
+            highest_investment.value - second_highest_investment.value
+        )
         return {highest_investors[0].id: uncalled_amount}
 
     @staticmethod
@@ -172,10 +174,12 @@ class ChipDistributor:
         if len(winners) == 1:
             return {winners[0].id: pot.amount}
 
-        sorted_winners = ChipDistributor.sort_winners_by_position_left_of_button(
-            winners=winners,
-            button_seat=button_seat,
-            all_players=all_players,
+        sorted_winners = (
+            ChipDistributor.sort_winners_by_position_left_of_button(
+                winners=winners,
+                button_seat=button_seat,
+                all_players=all_players,
+            )
         )
 
         num_winners = len(sorted_winners)
@@ -187,7 +191,9 @@ class ChipDistributor:
         for i, player in enumerate(sorted_winners):
             payout = base_payout
             if i < remainder:
-                payout += 1  # Odd chip goes to players closest to button's left
+                payout += (
+                    1  # Odd chip goes to players closest to button's left
+                )
             payouts[player.id] = ChipAmount(payout)
 
         return payouts
@@ -221,13 +227,17 @@ class ChipDistributor:
 
             Processing order: Side pot 2 -> Side pot 1 -> Main pot
         """
-        total_payouts: dict[PlayerId, ChipAmount] = defaultdict(lambda: ChipAmount(0))
+        total_payouts: dict[PlayerId, ChipAmount] = defaultdict(
+            lambda: ChipAmount(0)
+        )
 
         # Collect all pots with their eligibility count
         all_pots: list[tuple[Pot, int]] = []
 
         # Add main pot
-        all_pots.append((pot_state.main_pot, len(pot_state.main_pot.eligible_player_ids)))
+        all_pots.append(
+            (pot_state.main_pot, len(pot_state.main_pot.eligible_player_ids))
+        )
 
         # Add side pots
         for side_pot in pot_state.side_pots:
@@ -244,11 +254,13 @@ class ChipDistributor:
                 # Shouldn't happen in valid game state, but defensive
                 continue
 
-            payouts: dict[PlayerId, ChipAmount] = ChipDistributor.distribute_pot_to_winners(
-                pot=pot,
-                winners=winners,
-                button_seat=button_seat,
-                all_players=all_players,
+            payouts: dict[PlayerId, ChipAmount] = (
+                ChipDistributor.distribute_pot_to_winners(
+                    pot=pot,
+                    winners=winners,
+                    button_seat=button_seat,
+                    all_players=all_players,
+                )
             )
 
             # Aggregate payouts

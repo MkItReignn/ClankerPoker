@@ -1,7 +1,5 @@
 """Behavioral tests for Game hand and round completion logic."""
 
-from __future__ import annotations
-
 from collections.abc import Callable
 
 from src.domain.models.chips import ChipAmount

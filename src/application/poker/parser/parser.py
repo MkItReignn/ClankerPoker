@@ -1,8 +1,9 @@
 """Main poker response parser using strategy pattern."""
 
-from __future__ import annotations
-
-from src.application.poker.parser.action_parser import ActionParser, PokerActionParser
+from src.application.poker.parser.action_parser import (
+    ActionParser,
+    PokerActionParser,
+)
 from src.application.poker.parser.narration_parser import (
     NarrationParser,
     ThoughtProcessNarrationParser,
@@ -36,7 +37,9 @@ class PokerResponseParser:
         action_parser: ActionParser | None = None,
         narration_parser: NarrationParser | None = None,
     ) -> None:
-        self._action_parser: ActionParser = action_parser or PokerActionParser()
+        self._action_parser: ActionParser = (
+            action_parser or PokerActionParser()
+        )
         self._narration_parser: NarrationParser = (
             narration_parser or ThoughtProcessNarrationParser()
         )
@@ -57,7 +60,9 @@ class PokerResponseParser:
         action: Action = action_result
 
         # Parse narration (non-critical - return error object as-is)
-        narration_result: Narration | ParseError = self._narration_parser.parse(response_text)
+        narration_result: Narration | ParseError = (
+            self._narration_parser.parse(response_text)
+        )
 
         return ParseSuccess(
             action=action,

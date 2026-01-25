@@ -1,19 +1,19 @@
 """Poker-specific random action selection for mock providers."""
 
-from __future__ import annotations
-
 import random
 from collections.abc import Sequence
-from typing import ClassVar
+from typing import ClassVar, Self
 
 from src.domain.models.actions import Action, ActionType
-from src.domain.models.available_action import (AvailableActions,
-                                                AvailableAllInAction,
-                                                AvailableBetAction,
-                                                AvailableCallAction,
-                                                AvailableCheckAction,
-                                                AvailableFoldAction,
-                                                AvailableRaiseAction)
+from src.domain.models.available_action import (
+    AvailableActions,
+    AvailableAllInAction,
+    AvailableBetAction,
+    AvailableCallAction,
+    AvailableCheckAction,
+    AvailableFoldAction,
+    AvailableRaiseAction,
+)
 from src.domain.models.chips import ChipAmount
 
 
@@ -153,7 +153,7 @@ class BotRandomActionSelector:
         return int(amount)
 
     @classmethod
-    def aggressive(cls, seed: int | None = None) -> BotRandomActionSelector:
+    def aggressive(cls, seed: int | None = None) -> Self:
         """Create an aggressive action selector.
 
         Prefers betting, raising, and going all-in.
@@ -169,7 +169,7 @@ class BotRandomActionSelector:
         return cls(weights=weights, seed=seed)
 
     @classmethod
-    def passive(cls, seed: int | None = None) -> BotRandomActionSelector:
+    def passive(cls, seed: int | None = None) -> Self:
         """Create a passive action selector.
 
         Prefers checking, calling, and folding.
@@ -185,7 +185,7 @@ class BotRandomActionSelector:
         return cls(weights=weights, seed=seed)
 
     @classmethod
-    def tight(cls, seed: int | None = None) -> BotRandomActionSelector:
+    def tight(cls, seed: int | None = None) -> Self:
         """Create a tight action selector.
 
         Folds frequently, but plays strong when not folding.
@@ -201,7 +201,7 @@ class BotRandomActionSelector:
         return cls(weights=weights, seed=seed)
 
     @classmethod
-    def loose(cls, seed: int | None = None) -> BotRandomActionSelector:
+    def loose(cls, seed: int | None = None) -> Self:
         """Create a loose action selector.
 
         Rarely folds, stays in most hands.

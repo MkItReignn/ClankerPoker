@@ -1,7 +1,5 @@
 """Shared logging helpers and configuration constants."""
 
-from __future__ import annotations
-
 import logging
 
 # Libraries we always dial down to WARNING to reduce noise.

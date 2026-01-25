@@ -1,7 +1,5 @@
 """Core generic protocols for action providers."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Protocol, Self, TypeVar
 
@@ -38,7 +36,9 @@ class PlayerConfig:
             raise ValueError("name cannot be empty")
 
 
-class AsyncActionProvider(Protocol[TContext, TAvailableActions, TAction, TNarration]):
+class AsyncActionProvider(
+    Protocol[TContext, TAvailableActions, TAction, TNarration]
+):
     """Protocol for providers that generate actions based on game context.
 
     This is a game-agnostic protocol that can be implemented for any turn-based

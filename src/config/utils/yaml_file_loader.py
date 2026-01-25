@@ -56,10 +56,14 @@ class YamlFileLoader:
                 "config_file_not_found",
                 config_path=str(self._config_path),
             )
-            raise FileNotFoundError(f"Configuration file not found: {self._config_path}")
+            raise FileNotFoundError(
+                f"Configuration file not found: {self._config_path}"
+            )
 
         try:
-            raw_text = self._file_reader.read_text(self._config_path, encoding="utf-8")
+            raw_text = self._file_reader.read_text(
+                self._config_path, encoding="utf-8"
+            )
             loaded_config = yaml.safe_load(raw_text)
         except yaml.YAMLError as e:
             self._logger.error(
@@ -81,7 +85,9 @@ class YamlFileLoader:
             loaded_config = {}
 
         if not isinstance(loaded_config, dict):
-            raise ValueError("Config file must contain a YAML mapping (dictionary)")
+            raise ValueError(
+                "Config file must contain a YAML mapping (dictionary)"
+            )
 
         self._cached = loaded_config
         self._logger.info(
@@ -117,7 +123,9 @@ class YamlFileLoader:
                 template_name=template_name,
                 config_path=str(self._config_path),
             )
-            raise ValueError(f"Template '{template_name}' not found in {self._config_path}")
+            raise ValueError(
+                f"Template '{template_name}' not found in {self._config_path}"
+            )
 
         template_value = config[template_name]
 
@@ -178,6 +186,8 @@ class YamlFileLoader:
             return None
 
         if not isinstance(env_section_raw, dict):
-            raise ValueError(f"Environment '{env_key}' config must be a YAML mapping")
+            raise ValueError(
+                f"Environment '{env_key}' config must be a YAML mapping"
+            )
 
         return env_section_raw

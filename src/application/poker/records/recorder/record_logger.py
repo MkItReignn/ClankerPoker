@@ -1,12 +1,13 @@
-from __future__ import annotations
-
 from src.application.poker.records.models import (
     GameRecord,
     HandRecord,
     RoundRecord,
     TurnRecord,
 )
-from src.application.poker.state_observers.details import EliminatedInfo, HandOutcomeDetails
+from src.application.poker.state_observers.details import (
+    EliminatedInfo,
+    HandOutcomeDetails,
+)
 from src.domain.models.player import HandParticipationStatus
 from src.logger.factories import get_generic_logger
 
@@ -37,13 +38,19 @@ class RecordLogger:
         )
 
     def log_hand_started(self, hand: HandRecord) -> None:
-        sorted_records = sorted(hand.player_records.values(), key=lambda s: s.seat.value)
+        sorted_records = sorted(
+            hand.player_records.values(), key=lambda s: s.seat.value
+        )
         players_info = [
             {
                 "name": player_record.player_name,
                 "model": player_record.model_id.value,
                 "seat": player_record.seat.value,
-                "position": player_record.position.value if player_record.position else None,
+                "position": (
+                    player_record.position.value
+                    if player_record.position
+                    else None
+                ),
                 "hole_cards": (
                     f"{player_record.hole_cards.card1} {player_record.hole_cards.card2}"
                     if player_record.hole_cards
@@ -63,7 +70,9 @@ class RecordLogger:
             players=players_info,
         )
 
-    def log_round_advanced(self, hand: HandRecord, round_record: RoundRecord) -> None:
+    def log_round_advanced(
+        self, hand: HandRecord, round_record: RoundRecord
+    ) -> None:
         phase = round_record.phase.value.upper()
         board = " ".join(str(card) for card in round_record.community_cards)
 
@@ -73,7 +82,9 @@ class RecordLogger:
             board=board,
         )
 
-    def log_betting_round_ended(self, hand: HandRecord, round_record: RoundRecord) -> None:
+    def log_betting_round_ended(
+        self, hand: HandRecord, round_record: RoundRecord
+    ) -> None:
         action_counts: dict[str, int] = {}
         for turn in round_record.turns:
             action_type = turn.action.action_type.value
@@ -84,7 +95,11 @@ class RecordLogger:
             for ps in round_record.player_records.values()
             if ps.participation_status == HandParticipationStatus.FOLDED
         ]
-        all_in = [ps.player_name for ps in round_record.player_records.values() if ps.is_all_in]
+        all_in = [
+            ps.player_name
+            for ps in round_record.player_records.values()
+            if ps.is_all_in
+        ]
 
         self._logger.info(
             "Betting round ended",
@@ -106,7 +121,9 @@ class RecordLogger:
             amount=amount,
         )
 
-    def log_hand_completed(self, hand: HandRecord, outcome: HandOutcomeDetails) -> None:
+    def log_hand_completed(
+        self, hand: HandRecord, outcome: HandOutcomeDetails
+    ) -> None:
         winners_info: list[str] = []
         player_map = {po.player_id: po for po in outcome.player_outcomes}
         for winner in outcome.winners:
@@ -116,7 +133,9 @@ class RecordLogger:
 
         eliminated_ids = {e.player_id for e in outcome.eliminated}
         players_remaining = sum(
-            1 for po in outcome.player_outcomes if po.player_id not in eliminated_ids
+            1
+            for po in outcome.player_outcomes
+            if po.player_id not in eliminated_ids
         )
 
         showdown_info: list[dict[str, str]] = []
@@ -141,13 +160,17 @@ class RecordLogger:
             players_remaining=players_remaining,
         )
 
-    def log_player_standings(self, hand: HandRecord, outcome: HandOutcomeDetails) -> None:
+    def log_player_standings(
+        self, hand: HandRecord, outcome: HandOutcomeDetails
+    ) -> None:
         eliminated_ids = {e.player_id for e in outcome.eliminated}
         standings_info = [
             f"{po.player_name}: {po.final_stack.value} "
             f"({'eliminated' if po.player_id in eliminated_ids else 'active'})"
             for po in sorted(
-                outcome.player_outcomes, key=lambda p: p.final_stack.value, reverse=True
+                outcome.player_outcomes,
+                key=lambda p: p.final_stack.value,
+                reverse=True,
             )
         ]
 
@@ -173,7 +196,9 @@ class RecordLogger:
             position=position,
         )
 
-    def _get_eliminated_by_name(self, outcome: HandOutcomeDetails, game_record: GameRecord) -> str | None:
+    def _get_eliminated_by_name(
+        self, outcome: HandOutcomeDetails, game_record: GameRecord
+    ) -> str | None:
         if len(outcome.winners) != 1:
             return None
 
@@ -239,12 +264,16 @@ class RecordLogger:
 
         eliminated_ids = {e.player_id for e in outcome.eliminated}
         active_count: int = sum(
-            1 for p in outcome.player_outcomes if p.player_id not in eliminated_ids
+            1
+            for p in outcome.player_outcomes
+            if p.player_id not in eliminated_ids
         )
 
-        eliminated_by_name: str | None = self._get_eliminated_by_name(outcome, game_record)
-        sorted_eliminated: list[EliminatedInfo] = self._sort_eliminated_by_starting_chips(
-            eliminated_players, hand
+        eliminated_by_name: str | None = self._get_eliminated_by_name(
+            outcome, game_record
+        )
+        sorted_eliminated: list[EliminatedInfo] = (
+            self._sort_eliminated_by_starting_chips(eliminated_players, hand)
         )
         positions: list[int] = self._assign_elimination_positions(
             sorted_eliminated, active_count, hand
@@ -259,7 +288,9 @@ class RecordLogger:
                 position,
             )
 
-    def log_game_ended(self, record: GameRecord, total_hands: int, total_actions: int) -> None:
+    def log_game_ended(
+        self, record: GameRecord, total_hands: int, total_actions: int
+    ) -> None:
         winner_name = None
         if record.player_records:
             active_players = [

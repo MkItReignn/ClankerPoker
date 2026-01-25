@@ -4,18 +4,18 @@ Modular configuration system for poker prompts with separate methods
 for extracting each component (system_prompt, user_prompt, retry_prompt).
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import final
 
 import structlog
 
-from src.config.poker.prompt.config import (PokerPromptConfig,
-                                            ResponseGuidelines,
-                                            RetryPromptComponents,
-                                            SystemPromptComponents,
-                                            UserPromptComponents)
+from src.config.poker.prompt.config import (
+    PokerPromptConfig,
+    ResponseGuidelines,
+    RetryPromptComponents,
+    SystemPromptComponents,
+    UserPromptComponents,
+)
 from src.config.utils.type_extractors import ConfigTypeExtractor
 from src.config.utils.yaml_file_loader import YamlFileLoader
 from src.constants.config import POKER_PROMPTS_CONFIG_PATH
@@ -45,7 +45,9 @@ class PokerPromptConfigLoader:
             yaml_loader: Optional YAML loader (for testing).
         """
         resolved_path = config_path or POKER_PROMPTS_CONFIG_PATH
-        resolved_logger = logger or get_generic_logger(__name__.removeprefix("src."))
+        resolved_logger = logger or get_generic_logger(
+            __name__.removeprefix("src.")
+        )
         self._yaml_loader = yaml_loader or YamlFileLoader(
             config_path=resolved_path, logger=resolved_logger
         )
@@ -69,7 +71,9 @@ class PokerPromptConfigLoader:
         """
         extractor = ConfigTypeExtractor(logger=self._logger)
 
-        system_prompt_raw = extractor.get_required_dict(payload, "system_prompt", context="root")
+        system_prompt_raw = extractor.get_required_dict(
+            payload, "system_prompt", context="root"
+        )
 
         identity = extractor.get_required_string(
             system_prompt_raw, "identity", context="system_prompt"
@@ -116,7 +120,9 @@ class PokerPromptConfigLoader:
         """
         extractor = ConfigTypeExtractor(logger=self._logger)
 
-        user_prompt_raw = extractor.get_required_dict(payload, "user_prompt", context="root")
+        user_prompt_raw = extractor.get_required_dict(
+            payload, "user_prompt", context="root"
+        )
 
         response_format = extractor.get_required_string(
             user_prompt_raw, "response_format", context="user_prompt"
@@ -128,10 +134,14 @@ class PokerPromptConfigLoader:
         )
 
         thought_process_guidelines = extractor.get_required_string(
-            response_guidelines_raw, "thought_process_guidelines", context="response_guidelines"
+            response_guidelines_raw,
+            "thought_process_guidelines",
+            context="response_guidelines",
         )
         action_guidelines = extractor.get_required_string(
-            response_guidelines_raw, "action_guidelines", context="response_guidelines"
+            response_guidelines_raw,
+            "action_guidelines",
+            context="response_guidelines",
         )
 
         response_guidelines = ResponseGuidelines(
@@ -161,16 +171,22 @@ class PokerPromptConfigLoader:
         """
         extractor = ConfigTypeExtractor(logger=self._logger)
 
-        retry_prompt_raw = extractor.get_required_dict(payload, "retry_prompt", context="root")
+        retry_prompt_raw = extractor.get_required_dict(
+            payload, "retry_prompt", context="root"
+        )
 
-        header = extractor.get_required_string(retry_prompt_raw, "header", context="retry_prompt")
+        header = extractor.get_required_string(
+            retry_prompt_raw, "header", context="retry_prompt"
+        )
         error_section = extractor.get_required_string(
             retry_prompt_raw, "error_section", context="retry_prompt"
         )
         response_section = extractor.get_required_string(
             retry_prompt_raw, "response_section", context="retry_prompt"
         )
-        footer = extractor.get_required_string(retry_prompt_raw, "footer", context="retry_prompt")
+        footer = extractor.get_required_string(
+            retry_prompt_raw, "footer", context="retry_prompt"
+        )
 
         return RetryPromptComponents(
             header=header,

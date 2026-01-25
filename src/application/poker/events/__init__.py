@@ -3,7 +3,10 @@ from src.application.poker.events.published_event import (
     PublishedEvent,
     PublishedEventMetadata,
 )
-from src.application.poker.events.publisher import EventPublisher, EventTransport
+from src.application.poker.events.publisher import (
+    EventPublisher,
+    EventTransport,
+)
 
 __all__ = [
     "EventPublisher",

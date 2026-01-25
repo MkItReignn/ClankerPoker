@@ -185,7 +185,9 @@ class TestDefaultAmounts:
 class TestActionNotAvailable:
     """Tests for unavailable action handling."""
 
-    def test_check_not_available_when_facing_bet(self, parser, preflop_actions):
+    def test_check_not_available_when_facing_bet(
+        self, parser, preflop_actions
+    ):
         response = "ACTION: check"
         result = parser.parse(response, preflop_actions)
 
@@ -279,7 +281,9 @@ class TestErrorContext:
         assert result.context["min_raise_amount"] == 200
         assert result.context["max_raise_amount"] == 1000
 
-    def test_unavailable_action_includes_available_types(self, parser, preflop_actions):
+    def test_unavailable_action_includes_available_types(
+        self, parser, preflop_actions
+    ):
         response = "ACTION: check"
         result = parser.parse(response, preflop_actions)
 
@@ -288,7 +292,9 @@ class TestErrorContext:
         assert "available_action_types" in result.context
         assert "fold" in result.context["available_action_types"]
 
-    def test_no_action_includes_response_snippet(self, parser, preflop_actions):
+    def test_no_action_includes_response_snippet(
+        self, parser, preflop_actions
+    ):
         long_response = "x" * 300
         result = parser.parse(long_response, preflop_actions)
 

@@ -1,6 +1,10 @@
 """Tournament configuration management."""
 
-from src.config.tournament.config import PayoutStructure, TournamentConfig, calculate_prize_pool
+from src.config.tournament.config import (
+    PayoutStructure,
+    TournamentConfig,
+    calculate_prize_pool,
+)
 from src.config.tournament.config_loader import TournamentConfigLoader
 from src.constants.config import TOURNAMENT_CONFIG_PATH
 

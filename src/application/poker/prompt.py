@@ -1,18 +1,20 @@
 """Poker-specific prompt formatting for LLM consumption."""
 
-from __future__ import annotations
-
-from src.application.poker.context import (OpponentCurrentState,
-                                           PokerDecisionContext)
+from src.application.poker.context import (
+    OpponentCurrentState,
+    PokerDecisionContext,
+)
 from src.application.protocols.player import PlayerConfig
 from src.config.poker.prompt import PokerPromptConfig
-from src.domain.models.available_action import (AvailableActions,
-                                                AvailableAllInAction,
-                                                AvailableBetAction,
-                                                AvailableCallAction,
-                                                AvailableCheckAction,
-                                                AvailableFoldAction,
-                                                AvailableRaiseAction)
+from src.domain.models.available_action import (
+    AvailableActions,
+    AvailableAllInAction,
+    AvailableBetAction,
+    AvailableCallAction,
+    AvailableCheckAction,
+    AvailableFoldAction,
+    AvailableRaiseAction,
+)
 
 
 class PokerPromptFormatter:
@@ -83,7 +85,10 @@ class PokerPromptFormatter:
 
         # Your state
         hole_cards = self._format_cards(
-            (context.acting_player.hole_cards.card1, context.acting_player.hole_cards.card2)
+            (
+                context.acting_player.hole_cards.card1,
+                context.acting_player.hole_cards.card2,
+            )
         )
         position = (
             context.acting_player.position.to_short_string()
@@ -120,7 +125,11 @@ class PokerPromptFormatter:
         if context.opponents:
             lines.append("OPPONENTS:")
             for opp in context.opponents:
-                pos = opp.position.to_short_string() if opp.position is not None else "?"
+                pos = (
+                    opp.position.to_short_string()
+                    if opp.position is not None
+                    else "?"
+                )
                 status = self._format_opponent_status(opp)
                 invested = (
                     f"invested:{opp.invested_this_hand.value}"
@@ -143,13 +152,17 @@ class PokerPromptFormatter:
             lines.append("")
 
         # Available actions
-        actions_str = " | ".join(self._format_available_action(a) for a in available_actions)
+        actions_str = " | ".join(
+            self._format_available_action(a) for a in available_actions
+        )
         lines.append(f"AVAILABLE: {actions_str}")
         lines.append("")
 
         # Add response guidelines and format from config
         user_components = self._prompt_config.user_prompt
-        lines.append(user_components.response_guidelines.thought_process_guidelines)
+        lines.append(
+            user_components.response_guidelines.thought_process_guidelines
+        )
         lines.append("")
         lines.append(user_components.response_guidelines.action_guidelines)
         lines.append("")
@@ -158,7 +171,10 @@ class PokerPromptFormatter:
         return "\n".join(lines)
 
     def _format_system_prompt(
-        self, player_name: str, personality: str | None = None, addon_prompt: str | None = None
+        self,
+        player_name: str,
+        personality: str | None = None,
+        addon_prompt: str | None = None,
     ) -> str:
         """Format a system prompt for the poker player.
 
@@ -190,11 +206,15 @@ class PokerPromptFormatter:
 
         # Add personality if provided
         if personality:
-            parts.append(components.personality_section.format(personality=personality))
+            parts.append(
+                components.personality_section.format(personality=personality)
+            )
 
         # Add addon prompt if provided
         if addon_prompt:
-            parts.append(components.addon_section.format(addon_prompt=addon_prompt))
+            parts.append(
+                components.addon_section.format(addon_prompt=addon_prompt)
+            )
 
         return "\n\n".join(parts)
 

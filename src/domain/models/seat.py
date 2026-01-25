@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 from enum import IntEnum
+from typing import Self
 
 
 class Seat(IntEnum):
@@ -12,7 +11,7 @@ class Seat(IntEnum):
     SEAT_5 = 5
 
     @classmethod
-    def from_int(cls, value: int) -> Seat:
+    def from_int(cls, value: int) -> Self:
         if not (0 <= value <= 5):
             raise ValueError(f"Seat must be between 0 and 5, got {value}")
         return cls(value)

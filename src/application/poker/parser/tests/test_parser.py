@@ -3,9 +3,16 @@
 import pytest
 
 from src.application.poker.parser.action_parser import PokerActionParser
-from src.application.poker.parser.narration_parser import ThoughtProcessNarrationParser
+from src.application.poker.parser.narration_parser import (
+    ThoughtProcessNarrationParser,
+)
 from src.application.poker.parser.parser import PokerResponseParser
-from src.application.protocols.response import ParseError, ParseErrorType, ParseFailure, ParseSuccess
+from src.application.protocols.response import (
+    ParseError,
+    ParseErrorType,
+    ParseFailure,
+    ParseSuccess,
+)
 from src.domain.models.actions import ActionType
 from src.domain.models.available_action import (
     AvailableCallAction,
@@ -24,7 +31,9 @@ def parser():
 class TestParseResponseSuccess:
     """Tests for successful response parsing."""
 
-    def test_parses_full_response_with_narration(self, parser, preflop_actions):
+    def test_parses_full_response_with_narration(
+        self, parser, preflop_actions
+    ):
         response = """
 THOUGHT_PROCESS:
 I'm on the button with Ace-King suited and I've just flopped top pair
@@ -74,7 +83,9 @@ class TestActionOnly:
 class TestNarrationOptional:
     """Tests demonstrating narration is optional for success."""
 
-    def test_missing_thought_process_still_succeeds(self, parser, preflop_actions):
+    def test_missing_thought_process_still_succeeds(
+        self, parser, preflop_actions
+    ):
         response = """
 ACTION: raise 300
 """
@@ -83,7 +94,9 @@ ACTION: raise 300
         assert isinstance(result, ParseSuccess)
         assert isinstance(result.narration, ParseError)
 
-    def test_empty_thought_process_still_succeeds(self, parser, preflop_actions):
+    def test_empty_thought_process_still_succeeds(
+        self, parser, preflop_actions
+    ):
         response = """
 THOUGHT_PROCESS:
 
@@ -116,7 +129,10 @@ class TestActionParseFailure:
         result = parser.parse_response(response, preflop_actions)
 
         assert isinstance(result, ParseFailure)
-        assert result.error.error_type == ParseErrorType.ACTION_NOT_AVAILABLE.value
+        assert (
+            result.error.error_type
+            == ParseErrorType.ACTION_NOT_AVAILABLE.value
+        )
 
 
 class TestFallbackAction:
@@ -180,11 +196,15 @@ class TestDependencyInjection:
 class TestNarrationTrimming:
     """Tests for narration word limit trimming behavior."""
 
-    def test_narration_exceeding_limit_gets_trimmed(self, parser, preflop_actions):
+    def test_narration_exceeding_limit_gets_trimmed(
+        self, parser, preflop_actions
+    ):
         # THOUGHT_PROCESS has 600 word limit
         sentence1 = " ".join(["word"] * 200) + "."
         sentence2 = " ".join(["word"] * 200) + "."
-        sentence3 = " ".join(["word"] * 300) + "."  # Total ~700, should get trimmed
+        sentence3 = (
+            " ".join(["word"] * 300) + "."
+        )  # Total ~700, should get trimmed
         over_limit = f"{sentence1} {sentence2} {sentence3}"
 
         response = f"""
@@ -217,7 +237,9 @@ ACTION: raise 300
 class TestWhitespaceHandling:
     """Tests for whitespace handling in parsed content."""
 
-    def test_extra_whitespace_cleaned_in_narration(self, parser, preflop_actions):
+    def test_extra_whitespace_cleaned_in_narration(
+        self, parser, preflop_actions
+    ):
         response = """
 THOUGHT_PROCESS:
 Mid-tournament,    37BB    stack.   This is  an excellent spot.

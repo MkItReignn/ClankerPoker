@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Any
 
 from textual.app import ComposeResult
@@ -74,7 +72,9 @@ class NarrationPanel(Static):
         super().__init__(**kwargs)
         self._last_phase: str = ""
 
-    def _format_player_name(self, player_name: str, player_id: str | None = None) -> str:
+    def _format_player_name(
+        self, player_name: str, player_id: str | None = None
+    ) -> str:
         if player_id is None:
             return player_name
         seat = PlayerRegistry.get_seat(player_id)
@@ -96,7 +96,9 @@ class NarrationPanel(Static):
         was_at_bottom = self._is_scrolled_to_bottom(scroll)
 
         text = f"HAND #{hand_number} START"
-        formatted = SeparatorFormatter.format_separator(text, self.HAND_SEPARATOR_WIDTH)
+        formatted = SeparatorFormatter.format_separator(
+            text, self.HAND_SEPARATOR_WIDTH
+        )
         header = Static(formatted, classes="hand-header")
         scroll.mount(header)
 
@@ -110,14 +112,18 @@ class NarrationPanel(Static):
         was_at_bottom = self._is_scrolled_to_bottom(scroll)
 
         text = f"HAND #{hand_number} COMPLETE"
-        formatted = SeparatorFormatter.format_separator(text, self.HAND_SEPARATOR_WIDTH)
+        formatted = SeparatorFormatter.format_separator(
+            text, self.HAND_SEPARATOR_WIDTH
+        )
         header = Static(formatted, classes="hand-header")
         scroll.mount(header)
 
         if was_at_bottom:
             scroll.scroll_end(animate=False)
 
-    def add_phase_header(self, phase: str, community_cards: list[dict] | None = None) -> None:
+    def add_phase_header(
+        self, phase: str, community_cards: list[dict] | None = None
+    ) -> None:
         if not self.is_mounted:
             return
         if phase == self._last_phase:
@@ -128,8 +134,12 @@ class NarrationPanel(Static):
         was_at_bottom = self._is_scrolled_to_bottom(scroll)
 
         phase_display = phase.upper().replace("_", "-")
-        formatted = SeparatorFormatter.format_separator(phase_display, self.PHASE_SEPARATOR_WIDTH)
-        css_class = "showdown-header" if phase == "showdown" else "phase-header"
+        formatted = SeparatorFormatter.format_separator(
+            phase_display, self.PHASE_SEPARATOR_WIDTH
+        )
+        css_class = (
+            "showdown-header" if phase == "showdown" else "phase-header"
+        )
         header = Static(formatted, classes=css_class)
         scroll.mount(header)
 
@@ -141,19 +151,26 @@ class NarrationPanel(Static):
         if was_at_bottom:
             scroll.scroll_end(animate=False)
 
-    def add_thinking(self, player_name: str, player_id: str | None = None) -> None:
+    def add_thinking(
+        self, player_name: str, player_id: str | None = None
+    ) -> None:
         if not self.is_mounted:
             return
         scroll = self.query_one("#narration-scroll", VerticalScroll)
         was_at_bottom = self._is_scrolled_to_bottom(scroll)
         name_display = self._format_player_name(player_name, player_id)
-        thinking = Static(f"{name_display} is analyzing...", classes="player-thinking")
+        thinking = Static(
+            f"{name_display} is analyzing...", classes="player-thinking"
+        )
         scroll.mount(thinking)
         if was_at_bottom:
             scroll.scroll_end(animate=False)
 
     def add_thought_process(
-        self, player_name: str, thought_process: str, player_id: str | None = None
+        self,
+        player_name: str,
+        thought_process: str,
+        player_id: str | None = None,
     ) -> None:
         if not self.is_mounted:
             return
@@ -161,7 +178,9 @@ class NarrationPanel(Static):
         was_at_bottom = self._is_scrolled_to_bottom(scroll)
 
         for child in scroll.children:
-            if isinstance(child, Static) and "is analyzing..." in str(child.renderable):
+            if isinstance(child, Static) and "is analyzing..." in str(
+                child.renderable
+            ):
                 child.remove()
                 break
 

@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
-from typing import Any, NewType
+from typing import Any, NewType, Self
 
 NarrationText = NewType("NarrationText", str)
 
@@ -27,7 +25,7 @@ class Narration:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Narration:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         """Reconstruct narration from dictionary."""
         return cls(
             thought_process=NarrationText(data["thought_process"]),

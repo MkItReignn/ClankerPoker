@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Any
 
@@ -15,7 +13,9 @@ class Pot:
 
     def __post_init__(self) -> None:
         if self.amount.value < 0:
-            raise ValueError(f"Pot amount cannot be negative: {self.amount.value}")
+            raise ValueError(
+                f"Pot amount cannot be negative: {self.amount.value}"
+            )
         if not self.eligible_player_ids:
             raise ValueError("Pot must have at least one eligible player")
 
@@ -36,12 +36,18 @@ class PotState:
 
     def __post_init__(self) -> None:
         if self.main_pot.amount.value < 0:
-            raise ValueError(f"Main pot cannot be negative: {self.main_pot.amount.value}")
+            raise ValueError(
+                f"Main pot cannot be negative: {self.main_pot.amount.value}"
+            )
         for side_pot in self.side_pots:
             if side_pot.amount.value < 0:
-                raise ValueError(f"Side pot cannot be negative: {side_pot.amount.value}")
+                raise ValueError(
+                    f"Side pot cannot be negative: {side_pot.amount.value}"
+                )
             if not side_pot.eligible_player_ids:
-                raise ValueError("Side pot must have at least one eligible player")
+                raise ValueError(
+                    "Side pot must have at least one eligible player"
+                )
 
     def total_amount(self) -> ChipAmount:
         total = self.main_pot.amount

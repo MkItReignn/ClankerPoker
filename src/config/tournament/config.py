@@ -1,7 +1,5 @@
 """Tournament configuration data structures."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import Enum
 
@@ -33,14 +31,18 @@ class TournamentConfig:
 
     def __post_init__(self) -> None:
         if self.buy_in_amount.value <= 0:
-            raise ValueError(f"Buy-in must be positive: {self.buy_in_amount.value}")
+            raise ValueError(
+                f"Buy-in must be positive: {self.buy_in_amount.value}"
+            )
         if self.starting_chip_stack.value <= 0:
             raise ValueError(
                 f"Starting chip stack must be positive: {self.starting_chip_stack.value}"
             )
 
 
-def calculate_prize_pool(buy_in_amount: ChipAmount, number_of_players: int) -> ChipAmount:
+def calculate_prize_pool(
+    buy_in_amount: ChipAmount, number_of_players: int
+) -> ChipAmount:
     """Calculate tournament prize pool from buy-in and player count.
 
     Prize pool is the sum of all buy-ins (platform fee handled separately).
@@ -56,5 +58,7 @@ def calculate_prize_pool(buy_in_amount: ChipAmount, number_of_players: int) -> C
         ValueError: If number_of_players is less than 1.
     """
     if number_of_players < 1:
-        raise ValueError(f"Number of players must be at least 1: {number_of_players}")
+        raise ValueError(
+            f"Number of players must be at least 1: {number_of_players}"
+        )
     return ChipAmount(buy_in_amount.value * number_of_players)

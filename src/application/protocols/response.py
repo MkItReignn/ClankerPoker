@@ -1,10 +1,8 @@
 """Protocols for parsing LLM responses into actions."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Generic, Protocol, TypeVar
+from typing import Any, Generic, Protocol, Self, TypeVar
 
 # Generic type variables
 TAction = TypeVar("TAction")
@@ -48,9 +46,11 @@ class ParseError:
         error_type: ParseErrorType | str,
         message: str,
         context: dict[str, Any] | None = None,
-    ) -> ParseError:
+    ) -> Self:
         """Factory method for creating ParseError."""
-        error_type_str = error_type.value if isinstance(error_type, Enum) else error_type
+        error_type_str = (
+            error_type.value if isinstance(error_type, Enum) else error_type
+        )
         return cls(message=message, error_type=error_type_str, context=context)
 
 
@@ -86,7 +86,9 @@ class ParseFailure:
 
 # Type alias for parse results: discriminated union
 # Use isinstance() to discriminate between success and failure
-type ParseResult[TAction, TNarration] = ParseSuccess[TAction, TNarration] | ParseFailure
+type ParseResult[TAction, TNarration] = ParseSuccess[
+    TAction, TNarration
+] | ParseFailure
 
 
 @dataclass(frozen=True, slots=True)

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from src.domain.models.card import Card
 from src.domain.models.deck import Deck
 from src.domain.models.game import Game
@@ -27,14 +25,21 @@ class ButtonAssigner:
         return card1.suit.ranking - card2.suit.ranking
 
     @staticmethod
-    def _find_high_card_winner(player_cards: list[tuple[Player, Card]]) -> Player:
+    def _find_high_card_winner(
+        player_cards: list[tuple[Player, Card]]
+    ) -> Player:
         """Find the player with the highest card."""
         if not player_cards:
             raise ValueError("Cannot find winner: no players")
 
         winner, best_card = player_cards[0]
         for player, card in player_cards[1:]:
-            if ButtonAssigner._compare_cards_for_high_card_draw(card, best_card) > 0:
+            if (
+                ButtonAssigner._compare_cards_for_high_card_draw(
+                    card, best_card
+                )
+                > 0
+            ):
                 winner = player
                 best_card = card
 

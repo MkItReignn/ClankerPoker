@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Any
 
 from textual.app import ComposeResult
@@ -63,7 +61,9 @@ class ActionLog(Static):
         super().__init__(**kwargs)
         self._entries: list[str] = []
 
-    def _format_player_name(self, player_name: str, player_id: str | None = None) -> str:
+    def _format_player_name(
+        self, player_name: str, player_id: str | None = None
+    ) -> str:
         if player_id is None:
             return player_name
         seat = PlayerRegistry.get_seat(player_id)
@@ -89,7 +89,9 @@ class ActionLog(Static):
         if was_at_bottom:
             scroll.scroll_end(animate=False)
 
-    def add_phase_separator(self, phase: str, cards: list[dict] | None = None) -> None:
+    def add_phase_separator(
+        self, phase: str, cards: list[dict] | None = None
+    ) -> None:
         if not self.is_mounted:
             return
 
@@ -97,8 +99,12 @@ class ActionLog(Static):
         was_at_bottom = self._is_scrolled_to_bottom(scroll)
 
         phase_display = phase.upper().replace("_", "-")
-        formatted = SeparatorFormatter.format_separator(phase_display, self.PHASE_SEPARATOR_WIDTH)
-        css_class = "showdown-separator" if phase == "showdown" else "phase-separator"
+        formatted = SeparatorFormatter.format_separator(
+            phase_display, self.PHASE_SEPARATOR_WIDTH
+        )
+        css_class = (
+            "showdown-separator" if phase == "showdown" else "phase-separator"
+        )
         separator = Static(formatted, classes=css_class)
         scroll.mount(separator)
 
@@ -112,7 +118,9 @@ class ActionLog(Static):
 
     def add_hand_started(self, hand_number: int, button_seat: int) -> None:
         text = f"HAND #{hand_number} START"
-        formatted = SeparatorFormatter.format_separator(text, self.HAND_SEPARATOR_WIDTH)
+        formatted = SeparatorFormatter.format_separator(
+            text, self.HAND_SEPARATOR_WIDTH
+        )
         self.add_entry(formatted, "hand-separator")
         self.add_entry(f"Button: Seat {button_seat}")
 
@@ -148,7 +156,12 @@ class ActionLog(Static):
         action_text = action_display.get(action_type, action_type)
         name_display = self._format_player_name(player_name, player_id)
 
-        if amount is not None and action_type in ("bet", "raise", "all_in", "call"):
+        if amount is not None and action_type in (
+            "bet",
+            "raise",
+            "all_in",
+            "call",
+        ):
             if action_type == "call":
                 self.add_entry(f"{name_display} calls {amount}")
             else:
@@ -156,9 +169,14 @@ class ActionLog(Static):
         else:
             self.add_entry(f"{name_display} {action_text}")
 
-    def add_thinking(self, player_name: str, player_id: str | None = None) -> None:
+    def add_thinking(
+        self, player_name: str, player_id: str | None = None
+    ) -> None:
         name_display = self._format_player_name(player_name, player_id)
-        self.add_entry(f"> [italic]{name_display} is thinking...[/italic]", "thinking-entry")
+        self.add_entry(
+            f"> [italic]{name_display} is thinking...[/italic]",
+            "thinking-entry",
+        )
 
     def add_winner(
         self,
@@ -189,14 +207,20 @@ class ActionLog(Static):
     ) -> None:
         name_display = self._format_player_name(player_name, player_id)
         cards_str = CardRenderer.format_cards_rich(hole_cards)
-        winner_badge = " [bold yellow]★ WINNER[/bold yellow]" if is_winner else ""
-        self.add_entry(f"{name_display}: {cards_str} - {hand_description}{winner_badge}")
+        winner_badge = (
+            " [bold yellow]★ WINNER[/bold yellow]" if is_winner else ""
+        )
+        self.add_entry(
+            f"{name_display}: {cards_str} - {hand_description}{winner_badge}"
+        )
 
     def add_elimination(
         self, player_name: str, position: int, player_id: str | None = None
     ) -> None:
         name_display = self._format_player_name(player_name, player_id)
-        self.add_entry(f"[bold red]{name_display} eliminated (#{position})[/bold red]")
+        self.add_entry(
+            f"[bold red]{name_display} eliminated (#{position})[/bold red]"
+        )
 
     def add_hand_complete(
         self,
@@ -207,11 +231,15 @@ class ActionLog(Static):
         winner_id: str | None = None,
     ) -> None:
         text = f"HAND #{hand_number} COMPLETE"
-        formatted = SeparatorFormatter.format_separator(text, self.HAND_SEPARATOR_WIDTH)
+        formatted = SeparatorFormatter.format_separator(
+            text, self.HAND_SEPARATOR_WIDTH
+        )
         self.add_entry(formatted, "hand-separator")
         name_display = self._format_player_name(winner_name, winner_id)
         if hand_description:
-            self.add_entry(f"Winner: {name_display} (+{amount:,}) with {hand_description}")
+            self.add_entry(
+                f"Winner: {name_display} (+{amount:,}) with {hand_description}"
+            )
         else:
             self.add_entry(f"Winner: {name_display} (+{amount:,})")
 
@@ -238,13 +266,17 @@ class ActionLog(Static):
                 name_display = self._format_player_name(name, player_id)
 
                 if position == 1:
-                    self.add_entry(f"  [bold green]1st: {name_display} 🏆[/bold green]")
+                    self.add_entry(
+                        f"  [bold green]1st: {name_display} 🏆[/bold green]"
+                    )
                 elif elim_hand:
                     self.add_entry(
                         f"  {position}{self._ordinal_suffix(position)}: {name_display} (out Hand #{elim_hand})"
                     )
                 else:
-                    self.add_entry(f"  {position}{self._ordinal_suffix(position)}: {name_display}")
+                    self.add_entry(
+                        f"  {position}{self._ordinal_suffix(position)}: {name_display}"
+                    )
 
     @staticmethod
     def _ordinal_suffix(n: int) -> str:

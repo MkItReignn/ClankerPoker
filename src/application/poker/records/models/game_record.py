@@ -1,24 +1,25 @@
 """Game record model - complete tournament/session."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Self
 
+from src.application.poker.state_observers.details import HandOutcomeDetails
 from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.config.tournament.config import PayoutStructure
-from src.domain.models.game import Game
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.chips import ChipAmount
+from src.domain.models.game import Game
 from src.domain.models.llm_model import LlmModel
 from src.domain.models.seat import Seat
 
-from src.application.poker.state_observers.details import HandOutcomeDetails
-
 from .hand_outcome_record import HandOutcomeRecord
 from .hand_record import HandRecord
-from .player_records import GameLevelPlayerRecord, HandLevelPlayerRecord, PlayerConfig
+from .player_records import (
+    GameLevelPlayerRecord,
+    HandLevelPlayerRecord,
+    PlayerConfig,
+)
 
 DEFAULT_HAND_HISTORY_COUNT = 5
 
@@ -50,12 +51,16 @@ class GameMetadata:
                 for entry in self.blind_schedule.entries
             ],
             "payout_structure": self.payout_structure.value,
-            "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "started_at": (
+                self.started_at.isoformat() if self.started_at else None
+            ),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> GameMetadata:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         """Deserialize a dictionary to GameMetadata."""
         from src.domain.models.blinds import BlindLevel
 
@@ -94,7 +99,7 @@ class GameMetadata:
         )
 
     @classmethod
-    def from_game(cls, game: Game) -> GameMetadata:
+    def from_game(cls, game: Game) -> Self:
         return cls(
             seed=game.identity.seed,
             buy_in_amount=game.tournament_config.buy_in_amount,
@@ -110,7 +115,9 @@ class GameMetadata:
 class GameRecord:
     game_id: str
     metadata: GameMetadata
-    player_records: dict[str, GameLevelPlayerRecord] = field(default_factory=dict)
+    player_records: dict[str, GameLevelPlayerRecord] = field(
+        default_factory=dict
+    )
     completed_hands: list[HandRecord] = field(default_factory=list)
     current_hand: HandRecord | None = None
     created_at: datetime = field(default_factory=datetime.now)
@@ -148,7 +155,9 @@ class GameRecord:
         player_records: dict[str, HandLevelPlayerRecord],
     ) -> HandRecord:
         if self.current_hand is not None and not self.current_hand.is_complete:
-            raise ValueError("Cannot start new hand while previous hand is incomplete")
+            raise ValueError(
+                "Cannot start new hand while previous hand is incomplete"
+            )
 
         self.current_hand = HandRecord(
             hand_number=hand_number,
@@ -173,22 +182,26 @@ class GameRecord:
         for player_outcome in outcome.player_outcomes:
             if player_outcome.player_id in self.player_records:
                 old_record = self.player_records[player_outcome.player_id]
-                was_eliminated = player_outcome.player_id in eliminated_player_ids
-                self.player_records[player_outcome.player_id] = GameLevelPlayerRecord(
-                    player_id=old_record.player_id,
-                    player_name=old_record.player_name,
-                    seat=old_record.seat,
-                    chips=player_outcome.final_stack,
-                    model_id=old_record.model_id,
-                    player_config=old_record.player_config,
-                    hands_played=old_record.hands_played + 1,
-                    is_eliminated=was_eliminated,
-                    elimination_hand_number=(
-                        self.current_hand.hand_number
-                        if was_eliminated
-                        else old_record.elimination_hand_number
-                    ),
-                    table_finish_position=old_record.table_finish_position,
+                was_eliminated = (
+                    player_outcome.player_id in eliminated_player_ids
+                )
+                self.player_records[player_outcome.player_id] = (
+                    GameLevelPlayerRecord(
+                        player_id=old_record.player_id,
+                        player_name=old_record.player_name,
+                        seat=old_record.seat,
+                        chips=player_outcome.final_stack,
+                        model_id=old_record.model_id,
+                        player_config=old_record.player_config,
+                        hands_played=old_record.hands_played + 1,
+                        is_eliminated=was_eliminated,
+                        elimination_hand_number=(
+                            self.current_hand.hand_number
+                            if was_eliminated
+                            else old_record.elimination_hand_number
+                        ),
+                        table_finish_position=old_record.table_finish_position,
+                    )
                 )
 
         self.current_hand = None
@@ -217,21 +230,30 @@ class GameRecord:
             ],
             "payout_structure": self.metadata.payout_structure.value,
             "started_at": (
-                self.metadata.started_at.isoformat() if self.metadata.started_at else None
+                self.metadata.started_at.isoformat()
+                if self.metadata.started_at
+                else None
             ),
             "completed_at": (
-                self.metadata.completed_at.isoformat() if self.metadata.completed_at else None
+                self.metadata.completed_at.isoformat()
+                if self.metadata.completed_at
+                else None
             ),
             "player_records": {
-                player_id: record.to_dict() for player_id, record in self.player_records.items()
+                player_id: record.to_dict()
+                for player_id, record in self.player_records.items()
             },
-            "completed_hands": [hand.to_dict() for hand in self.completed_hands],
-            "current_hand": (self.current_hand.to_dict() if self.current_hand else None),
+            "completed_hands": [
+                hand.to_dict() for hand in self.completed_hands
+            ],
+            "current_hand": (
+                self.current_hand.to_dict() if self.current_hand else None
+            ),
             "created_at": self.created_at.isoformat(),
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> GameRecord:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         """Deserialize a dictionary to GameRecord."""
         # Reconstruct metadata dict for from_dict
         metadata_dict = {
@@ -254,7 +276,9 @@ class GameRecord:
         # Deserialize player records
         player_records_data = data.get("player_records", {})
         for player_id, record_data in player_records_data.items():
-            record.player_records[player_id] = GameLevelPlayerRecord.from_dict(record_data)
+            record.player_records[player_id] = GameLevelPlayerRecord.from_dict(
+                record_data
+            )
 
         # Deserialize completed hands
         for hand_data in data.get("completed_hands", []):

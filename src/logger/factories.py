@@ -1,8 +1,7 @@
 """Logger factory functions."""
 
-from __future__ import annotations
-
 from typing import Any
+
 import structlog
 
 from src.logger.config import configure_logging
@@ -34,6 +33,7 @@ def get_logger(name: str | None = None) -> structlog.BoundLogger:
     """
     _ensure_logging_configured()
     return structlog.get_logger(name)
+
 
 def get_generic_logger(
     component: str, **context: Any

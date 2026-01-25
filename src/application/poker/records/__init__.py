@@ -1,6 +1,8 @@
 """Game record models and serializers."""
 
-from src.application.poker.records.context_serializer import RecordToLlmContextSerializer
+from src.application.poker.records.context_serializer import (
+    RecordToLlmContextSerializer,
+)
 from src.application.poker.records.models import (
     ActionRecord,
     GameLevelPlayerRecord,

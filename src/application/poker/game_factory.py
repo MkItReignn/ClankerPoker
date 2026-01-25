@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 from src.application.poker.orchestration.poker_orchestrator import (
@@ -24,11 +22,15 @@ class GameDependencies:
 
 
 def create_bot_dependencies(seed: int | None = None) -> GameDependencies:
-    from src.application.poker.providers.bot_action_provider import BotActionProvider
+    from src.application.poker.providers.bot_action_provider import (
+        BotActionProvider,
+    )
     from src.config.poker.bot_config_loader import BotPokerGameConfigLoader
 
     bot_config: BotPokerGameConfig = BotPokerGameConfigLoader().load()
-    action_provider: BotActionProvider = BotActionProvider.from_bot_config(bot_config, seed=seed)
+    action_provider: BotActionProvider = BotActionProvider.from_bot_config(
+        bot_config, seed=seed
+    )
 
     poker_player_configs: dict[str, PokerPlayerConfig] = {
         player_id: PokerPlayerConfig(
@@ -38,7 +40,9 @@ def create_bot_dependencies(seed: int | None = None) -> GameDependencies:
         )
         for player_id, bot_cfg in bot_config.player_configs.items()
     }
-    poker_config: PokerGameConfig = PokerGameConfig(player_configs=poker_player_configs)
+    poker_config: PokerGameConfig = PokerGameConfig(
+        player_configs=poker_player_configs
+    )
 
     return GameDependencies(
         action_provider=action_provider,

@@ -10,8 +10,6 @@ Tests verify hand initialization behavior according to poker rules:
 - Excluding eliminated players from new hands
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from dataclasses import replace
 

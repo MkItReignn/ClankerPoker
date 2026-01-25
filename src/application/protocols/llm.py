@@ -1,7 +1,5 @@
 """Protocols for LLM client communication."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from typing import Protocol, Self
 
@@ -39,7 +37,9 @@ class LlmRequest:
         if self.max_tokens <= 0:
             raise ValueError(f"max_tokens must be positive: {self.max_tokens}")
         if not 0.0 <= self.temperature <= 2.0:
-            raise ValueError(f"temperature must be between 0.0 and 2.0: {self.temperature}")
+            raise ValueError(
+                f"temperature must be between 0.0 and 2.0: {self.temperature}"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -64,9 +64,13 @@ class LlmResponse:
 
     def __post_init__(self) -> None:
         if self.prompt_tokens < 0:
-            raise ValueError(f"prompt_tokens cannot be negative: {self.prompt_tokens}")
+            raise ValueError(
+                f"prompt_tokens cannot be negative: {self.prompt_tokens}"
+            )
         if self.completion_tokens < 0:
-            raise ValueError(f"completion_tokens cannot be negative: {self.completion_tokens}")
+            raise ValueError(
+                f"completion_tokens cannot be negative: {self.completion_tokens}"
+            )
 
     @property
     def total_tokens(self) -> int:

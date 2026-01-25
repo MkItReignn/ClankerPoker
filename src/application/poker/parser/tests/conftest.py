@@ -2,12 +2,14 @@
 
 import pytest
 
-from src.domain.models.available_action import (AvailableAllInAction,
-                                                AvailableBetAction,
-                                                AvailableCallAction,
-                                                AvailableCheckAction,
-                                                AvailableFoldAction,
-                                                AvailableRaiseAction)
+from src.domain.models.available_action import (
+    AvailableAllInAction,
+    AvailableBetAction,
+    AvailableCallAction,
+    AvailableCheckAction,
+    AvailableFoldAction,
+    AvailableRaiseAction,
+)
 from src.domain.models.chips import ChipAmount
 
 

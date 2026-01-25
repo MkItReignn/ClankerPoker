@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from typing import Any, Self
 
 from src.domain.models.chips import ChipAmount
 
@@ -44,18 +42,26 @@ class Action:
             ActionType.POST_SMALL_BLIND,
             ActionType.POST_BIG_BLIND,
         )
-        actions_without_amount = (ActionType.FOLD, ActionType.CHECK, ActionType.CALL)
+        actions_without_amount = (
+            ActionType.FOLD,
+            ActionType.CHECK,
+            ActionType.CALL,
+        )
 
         if self.action_type in actions_requiring_amount:
             if self.amount is None:
-                raise ValueError(f"{self.action_type.value} requires an amount")
+                raise ValueError(
+                    f"{self.action_type.value} requires an amount"
+                )
             if self.amount.value <= 0:
                 raise ValueError(
                     f"Amount must be positive for {self.action_type.value}: {self.amount.value}"
                 )
         elif self.action_type in actions_without_amount:
             if self.amount is not None and self.amount.value > 0:
-                raise ValueError(f"{self.action_type.value} cannot have an amount")
+                raise ValueError(
+                    f"{self.action_type.value} cannot have an amount"
+                )
 
     def to_dict(self) -> dict[str, Any]:
         """Convert action to dictionary for JSON serialization."""
@@ -65,9 +71,13 @@ class Action:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Action:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         """Reconstruct action from dictionary."""
         return cls(
             action_type=ActionType(data["action_type"]),
-            amount=ChipAmount(data["amount"]) if data["amount"] is not None else None,
+            amount=(
+                ChipAmount(data["amount"])
+                if data["amount"] is not None
+                else None
+            ),
         )

@@ -1,16 +1,17 @@
-from __future__ import annotations
+from dataclasses import replace
 
 from src.domain.models.chips import ChipAmount
 from src.domain.models.player import HandParticipationStatus, Player, PlayerId
 from src.domain.models.pot import Pot, PotState
-from dataclasses import replace
 
 
 class PotCalculator:
     """Calculates pots and side pots."""
 
     @staticmethod
-    def calculate_pot_state(all_players_that_invested: list[Player]) -> PotState:
+    def calculate_pot_state(
+        all_players_that_invested: list[Player],
+    ) -> PotState:
         """
         Calculate main pot and side pots based on player investments.
 
@@ -57,35 +58,44 @@ class PotCalculator:
         previous_level = 0
 
         # Sort levels in ascending order so main pot (lowest level) is first
-        unique_levels: list[int] = sorted(set(investment for _, investment in investments))
+        unique_levels: list[int] = sorted(
+            set(investment for _, investment in investments)
+        )
 
         for level in unique_levels:
             # Contributors: all players who invested >= level (for pot size calculation)
             contributors_at_level: set[PlayerId] = {
-                player_id for player_id, investment in investments if investment >= level
+                player_id
+                for player_id, investment in investments
+                if investment >= level
             }
 
             # Eligible: only IN_HAND players who invested >= level (for winning)
             eligible_player_ids: set[PlayerId] = {
-                player_id for player_id in contributors_at_level if player_id in in_hand_player_ids
+                player_id
+                for player_id in contributors_at_level
+                if player_id in in_hand_player_ids
             }
 
             chips_per_player: int = level - previous_level
             # Pot size based on ALL contributors (including folded)
-            pot_size: ChipAmount = ChipAmount(chips_per_player * len(contributors_at_level))
-            
+            pot_size: ChipAmount = ChipAmount(
+                chips_per_player * len(contributors_at_level)
+            )
+
             if len(eligible_player_ids) > 0:
                 pots.append(
                     Pot(
                         amount=pot_size,
-                        eligible_player_ids=frozenset(eligible_player_ids),  # Only IN_HAND
+                        eligible_player_ids=frozenset(
+                            eligible_player_ids
+                        ),  # Only IN_HAND
                     )
                 )
             else:
                 last_pot = pots[-1]
                 new_pot_size = last_pot.amount + pot_size
                 pots[-1] = replace(last_pot, amount=new_pot_size)
-
 
             previous_level: int = level
 
@@ -95,7 +105,9 @@ class PotCalculator:
         side_pots: list[Pot] = pots[1:] if len(pots) > 1 else []
 
         # Verify main pot contains all non-folded players (invariant check)
-        if in_hand_player_ids and not in_hand_player_ids.issubset(main_pot.eligible_player_ids):
+        if in_hand_player_ids and not in_hand_player_ids.issubset(
+            main_pot.eligible_player_ids
+        ):
             raise ValueError(
                 f"Invalid pot calculation: main pot does not contain all non-folded players. "
                 f"Non-folded players: {in_hand_player_ids}, "

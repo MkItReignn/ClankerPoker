@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import TypeAlias
 
 from src.domain.models.game import NO_POSITION_TO_ACT, HandPhase

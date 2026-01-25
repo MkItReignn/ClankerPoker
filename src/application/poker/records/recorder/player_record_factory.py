@@ -1,9 +1,9 @@
 """Factory for creating player record snapshots at different game levels."""
 
-from __future__ import annotations
-
-from src.application.poker.records.models import (HandLevelPlayerRecord,
-                                                  RoundLevelPlayerRecord)
+from src.application.poker.records.models import (
+    HandLevelPlayerRecord,
+    RoundLevelPlayerRecord,
+)
 from src.config.poker.config import PokerPlayerConfig
 from src.domain.models.game import Game
 from src.domain.models.llm_model import LlmModel
@@ -20,27 +20,38 @@ class PlayerRecordFactory:
 
     def _get_player_name(self, player_id: str) -> str:
         if player_id not in self._player_configs:
-            raise KeyError(f"Player ID '{player_id}' not found in player_configs")
+            raise KeyError(
+                f"Player ID '{player_id}' not found in player_configs"
+            )
         return self._player_configs[player_id].name
 
     def _get_player_model_id(self, player_id: str) -> LlmModel:
         if player_id not in self._player_configs:
-            raise KeyError(f"Player ID '{player_id}' not found in player_configs")
+            raise KeyError(
+                f"Player ID '{player_id}' not found in player_configs"
+            )
         return self._player_configs[player_id].model_id
 
-    def create_hand_level_player_records(self, state: Game) -> dict[str, HandLevelPlayerRecord]:
+    def create_hand_level_player_records(
+        self, state: Game
+    ) -> dict[str, HandLevelPlayerRecord]:
         """Create hand-level player records for all active players."""
-        position_mapping: TablePositionMapping = PositionManager.resolve_positions_for_hand(
-            all_players=list(state.players),
-            previous_button_seat=state.button_seat,
-            advance_button=False,
+        position_mapping: TablePositionMapping = (
+            PositionManager.resolve_positions_for_hand(
+                all_players=list(state.players),
+                previous_button_seat=state.button_seat,
+                advance_button=False,
+            )
         )
 
         records: dict[str, HandLevelPlayerRecord] = {}
         for player in state.players:
-            if player.participation_status != HandParticipationStatus.ELIMINATED:
-                position_name: PositionName | None = position_mapping.get_position_for_seat(
-                    player.seat
+            if (
+                player.participation_status
+                != HandParticipationStatus.ELIMINATED
+            ):
+                position_name: PositionName | None = (
+                    position_mapping.get_position_for_seat(player.seat)
                 )
                 records[player.id] = HandLevelPlayerRecord(
                     player_id=player.id,
@@ -54,7 +65,9 @@ class PlayerRecordFactory:
                 )
         return records
 
-    def create_round_level_player_records(self, state: Game) -> dict[str, RoundLevelPlayerRecord]:
+    def create_round_level_player_records(
+        self, state: Game
+    ) -> dict[str, RoundLevelPlayerRecord]:
         """Create round-level player records for all players."""
         records: dict[str, RoundLevelPlayerRecord] = {}
 

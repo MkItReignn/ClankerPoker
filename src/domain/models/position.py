@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import Enum
 
@@ -60,11 +58,17 @@ class TablePositionMapping:
 
     def __post_init__(self) -> None:
         if self.button_seat < 0:
-            raise ValueError(f"Button seat must be non-negative: {self.button_seat}")
+            raise ValueError(
+                f"Button seat must be non-negative: {self.button_seat}"
+            )
         if self.small_blind_seat < 0:
-            raise ValueError(f"Small blind seat must be non-negative: {self.small_blind_seat}")
+            raise ValueError(
+                f"Small blind seat must be non-negative: {self.small_blind_seat}"
+            )
         if self.big_blind_seat < 0:
-            raise ValueError(f"Big blind seat must be non-negative: {self.big_blind_seat}")
+            raise ValueError(
+                f"Big blind seat must be non-negative: {self.big_blind_seat}"
+            )
         if self.active_players_count < 2:
             raise ValueError(
                 f"Active players count must be at least 2: {self.active_players_count}"
@@ -74,11 +78,17 @@ class TablePositionMapping:
                 f"Total seats at table must be at least 2: {self.total_seats_at_table}"
             )
         if self.is_heads_up and self.button_seat != self.small_blind_seat:
-            raise ValueError("In heads-up, button_seat must equal small_blind_seat")
+            raise ValueError(
+                "In heads-up, button_seat must equal small_blind_seat"
+            )
         if self.is_heads_up and self.active_players_count != 2:
-            raise ValueError(f"Heads-up requires 2 active players, got {self.active_players_count}")
+            raise ValueError(
+                f"Heads-up requires 2 active players, got {self.active_players_count}"
+            )
 
-    def get_seat_for_position(self, position_name: PositionName) -> Seat | None:
+    def get_seat_for_position(
+        self, position_name: PositionName
+    ) -> Seat | None:
         """Get seat for a given position name.
 
         Returns None if position doesn't exist for current player count.

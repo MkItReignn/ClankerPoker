@@ -8,8 +8,6 @@ Tests verify round progression and community card dealing according to RULE_BOOK
 - Position and action order recalculation
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from dataclasses import replace
 

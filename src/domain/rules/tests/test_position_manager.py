@@ -8,8 +8,6 @@ Tests verify position system behavior according to RULE_BOOK.md:
 - Correctly skipping eliminated players
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from dataclasses import replace
 

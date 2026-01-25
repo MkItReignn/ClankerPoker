@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import IntEnum
 from itertools import combinations
-from typing import ClassVar
+from typing import Any, override
 
 from src.domain.models.card import Card, Rank
 from src.domain.models.hand import Hand
@@ -78,6 +78,7 @@ class HandEvaluation:
     cards_used: tuple[Card, ...]
     kickers: tuple[Rank, ...]
 
+    @override
     def __str__(self) -> str:
         """Human-readable hand evaluation string."""
         cards_str = " ".join(str(card) for card in self.cards_used)
@@ -106,7 +107,7 @@ class HandEvaluation:
 
         return 0
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Convert HandEvaluation to dictionary for serialization."""
         return {
             "rank": self.rank.value,
@@ -115,7 +116,7 @@ class HandEvaluation:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> HandEvaluation:
+    def from_dict(cls, data: dict[str, Any]) -> HandEvaluation:
         """Reconstruct HandEvaluation from dictionary."""
         return cls(
             rank=HandRank(data["rank"]),
@@ -128,7 +129,9 @@ class HandEvaluator:
     """Evaluates poker hands and finds best 5-card combination."""
 
     @staticmethod
-    def evaluate_hand_strength(hole_cards: Hand, community_cards: list[Card]) -> HandEvaluation:
+    def evaluate_hand_strength(
+        hole_cards: Hand, community_cards: list[Card]
+    ) -> HandEvaluation:
         """
         Evaluate the best 5-card hand from hole cards and community cards.
 
@@ -154,7 +157,10 @@ class HandEvaluator:
         for five_cards in combinations(all_7_cards, 5):
             evaluation = HandEvaluator._evaluate_five_cards(list(five_cards))
 
-            if best_evaluation is None or evaluation.compare(best_evaluation) > 0:
+            if (
+                best_evaluation is None
+                or evaluation.compare(best_evaluation) > 0
+            ):
                 best_evaluation = evaluation
 
         if best_evaluation is None:
@@ -186,10 +192,12 @@ class HandEvaluator:
         )
 
         if is_straight and is_flush:
-            straight_high_rank = HandEvaluator._get_straight_high_card_rank(rank_values)
-            if straight_high_rank == Rank.ACE and sorted(set(rank_values)) == sorted(
-                ROYAL_FLUSH_RANK_VALUES
-            ):
+            straight_high_rank = HandEvaluator._get_straight_high_card_rank(
+                rank_values
+            )
+            if straight_high_rank == Rank.ACE and sorted(
+                set(rank_values)
+            ) == sorted(ROYAL_FLUSH_RANK_VALUES):
                 return HandEvaluation(
                     rank=HandRank.ROYAL_FLUSH,
                     cards_used=tuple(sorted_cards),
@@ -204,7 +212,9 @@ class HandEvaluator:
         if sorted_rank_frequencies[0].frequency == 4:
             four_of_a_kind_rank = sorted_rank_frequencies[0].card_rank
             if len(sorted_rank_frequencies) < 2:
-                raise ValueError("Four of a kind requires at least two unique ranks")
+                raise ValueError(
+                    "Four of a kind requires at least two unique ranks"
+                )
             kicker_rank = sorted_rank_frequencies[1].card_rank
             return HandEvaluation(
                 rank=HandRank.FOUR_OF_A_KIND,
@@ -233,7 +243,9 @@ class HandEvaluator:
             )
 
         if is_straight:
-            straight_high_rank = HandEvaluator._get_straight_high_card_rank(rank_values)
+            straight_high_rank = HandEvaluator._get_straight_high_card_rank(
+                rank_values
+            )
             return HandEvaluation(
                 rank=HandRank.STRAIGHT,
                 cards_used=tuple(sorted_cards),
@@ -244,7 +256,10 @@ class HandEvaluator:
             three_of_a_kind_rank = sorted_rank_frequencies[0].card_rank
             kicker_ranks = [three_of_a_kind_rank]
             kicker_ranks.extend(
-                [rank_frequency.card_rank for rank_frequency in sorted_rank_frequencies[1:]]
+                [
+                    rank_frequency.card_rank
+                    for rank_frequency in sorted_rank_frequencies[1:]
+                ]
             )
             return HandEvaluation(
                 rank=HandRank.THREE_OF_A_KIND,
@@ -260,10 +275,13 @@ class HandEvaluator:
             first_pair_rank = sorted_rank_frequencies[0].card_rank
             second_pair_rank = sorted_rank_frequencies[1].card_rank
             pair_ranks_sorted = sorted(
-                [first_pair_rank, second_pair_rank], key=lambda r: r.value, reverse=True
+                [first_pair_rank, second_pair_rank],
+                key=lambda r: r.value,
+                reverse=True,
             )
             kicker_ranks = pair_ranks_sorted + [
-                rank_frequency.card_rank for rank_frequency in sorted_rank_frequencies[2:]
+                rank_frequency.card_rank
+                for rank_frequency in sorted_rank_frequencies[2:]
             ]
             return HandEvaluation(
                 rank=HandRank.TWO_PAIR,
@@ -275,7 +293,10 @@ class HandEvaluator:
             pair_rank = sorted_rank_frequencies[0].card_rank
             kicker_ranks = [pair_rank]
             kicker_ranks.extend(
-                [rank_frequency.card_rank for rank_frequency in sorted_rank_frequencies[1:]]
+                [
+                    rank_frequency.card_rank
+                    for rank_frequency in sorted_rank_frequencies[1:]
+                ]
             )
             return HandEvaluation(
                 rank=HandRank.PAIR,
@@ -297,7 +318,9 @@ class HandEvaluator:
         if len(sorted_rank_values) != 5:
             return False
 
-        if sorted_rank_values == list(range(sorted_rank_values[0], sorted_rank_values[0] + 5)):
+        if sorted_rank_values == list(
+            range(sorted_rank_values[0], sorted_rank_values[0] + 5)
+        ):
             return True
 
         sorted_wheel_rank_values = sorted(WHEEL_STRAIGHT_RANKS)

@@ -18,8 +18,6 @@ Pytest's logging plugin and caplog manage stdlib logging. We only configure
 structlog to emit JSON strings via stdlib logging.
 """
 
-from __future__ import annotations
-
 import structlog
 
 from src.logger.shared import suppress_third_party_libraries

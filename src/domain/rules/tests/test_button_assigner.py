@@ -4,8 +4,6 @@ Behavioral tests for ButtonAssigner.
 Tests document RULE_BOOK Section 14.1 (Initial Button Assignment via High Card Draw).
 """
 
-from __future__ import annotations
-
 from unittest.mock import patch
 
 import pytest
@@ -25,7 +23,9 @@ def create_deck_with_top_cards(top_cards: list[Card]) -> Deck:
     Fills remaining slots with cards from standard deck not in top_cards.
     """
     used_cards = set(top_cards)
-    remaining_cards = [card for card in STANDARD_DECK if card not in used_cards]
+    remaining_cards = [
+        card for card in STANDARD_DECK if card not in used_cards
+    ]
 
     # Ensure we have exactly 52 unique cards
     all_cards = top_cards + remaining_cards[: 52 - len(top_cards)]
@@ -55,9 +55,15 @@ class TestAssignButton:
         """Button goes to player with highest card rank."""
         # Arrange: Create game with 3 players
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),  # Will get 5♠
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),  # Will get K♥
-            sample_player_factory(PlayerId("p3"), Seat.SEAT_2, ChipAmount(1000)),  # Will get 7♣
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),  # Will get 5♠
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),  # Will get K♥
+            sample_player_factory(
+                PlayerId("p3"), Seat.SEAT_2, ChipAmount(1000)
+            ),  # Will get 7♣
         ]
         game = minimal_game_factory(players)
 
@@ -72,7 +78,8 @@ class TestAssignButton:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled",
+            return_value=test_deck,
         ):
             # Act
             updated_game = ButtonAssigner.assign_button(game)
@@ -92,9 +99,15 @@ class TestAssignButton:
         """
         # Arrange: All players draw Aces with different suits
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),  # Will get A♦
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),  # Will get A♠
-            sample_player_factory(PlayerId("p3"), Seat.SEAT_2, ChipAmount(1000)),  # Will get A♣
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),  # Will get A♦
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),  # Will get A♠
+            sample_player_factory(
+                PlayerId("p3"), Seat.SEAT_2, ChipAmount(1000)
+            ),  # Will get A♣
         ]
         game = minimal_game_factory(players)
 
@@ -109,7 +122,8 @@ class TestAssignButton:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled",
+            return_value=test_deck,
         ):
             # Act
             updated_game = ButtonAssigner.assign_button(game)
@@ -125,21 +139,28 @@ class TestAssignButton:
         """Hearts > Diamonds per RULE_BOOK 14.1 suit ranking."""
         # Arrange
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),  # Will get K♦
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),  # Will get K♥
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),  # Will get K♦
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),  # Will get K♥
         ]
         game = minimal_game_factory(players)
 
         test_deck = create_deck_with_top_cards(
             [
                 Card(suit=Suit.DIAMONDS, rank=Rank.KING),
-                Card(suit=Suit.HEARTS, rank=Rank.KING),  # Hearts beats Diamonds
+                Card(
+                    suit=Suit.HEARTS, rank=Rank.KING
+                ),  # Hearts beats Diamonds
             ]
         )
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled",
+            return_value=test_deck,
         ):
             # Act
             updated_game = ButtonAssigner.assign_button(game)
@@ -155,21 +176,28 @@ class TestAssignButton:
         """Diamonds > Clubs per RULE_BOOK 14.1 suit ranking."""
         # Arrange
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),  # Will get Q♣
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),  # Will get Q♦
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),  # Will get Q♣
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),  # Will get Q♦
         ]
         game = minimal_game_factory(players)
 
         test_deck = create_deck_with_top_cards(
             [
                 Card(suit=Suit.CLUBS, rank=Rank.QUEEN),
-                Card(suit=Suit.DIAMONDS, rank=Rank.QUEEN),  # Diamonds beats Clubs
+                Card(
+                    suit=Suit.DIAMONDS, rank=Rank.QUEEN
+                ),  # Diamonds beats Clubs
             ]
         )
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled",
+            return_value=test_deck,
         ):
             # Act
             updated_game = ButtonAssigner.assign_button(game)
@@ -185,8 +213,12 @@ class TestAssignButton:
         """Heads-up (2 players) is valid for initial button assignment."""
         # Arrange
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = minimal_game_factory(players)
 
@@ -199,7 +231,8 @@ class TestAssignButton:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled",
+            return_value=test_deck,
         ):
             # Act
             updated_game = ButtonAssigner.assign_button(game)
@@ -300,7 +333,8 @@ class TestAssignButton:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled",
+            return_value=test_deck,
         ):
             # Act
             updated_game = ButtonAssigner.assign_button(game)
@@ -316,9 +350,15 @@ class TestAssignButton:
         """Deck index advances by exactly the number of active players."""
         # Arrange
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p3"), Seat.SEAT_2, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p3"), Seat.SEAT_2, ChipAmount(1000)
+            ),
         ]
         game = minimal_game_factory(players)
         test_deck = create_deck_with_top_cards(
@@ -332,7 +372,8 @@ class TestAssignButton:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled",
+            return_value=test_deck,
         ):
             # Act
             updated_game = ButtonAssigner.assign_button(game)
@@ -341,7 +382,11 @@ class TestAssignButton:
         # The deck is used inside the function, so we can verify it was mutated
         assert test_deck.cards_remaining() == initial_cards_remaining - 3
         # Also verify button was assigned (confirms cards were dealt)
-        assert updated_game.button_seat in (Seat.SEAT_0, Seat.SEAT_1, Seat.SEAT_2)
+        assert updated_game.button_seat in (
+            Seat.SEAT_0,
+            Seat.SEAT_1,
+            Seat.SEAT_2,
+        )
 
     def test_returns_updated_game_with_button_assigned(
         self,
@@ -351,8 +396,12 @@ class TestAssignButton:
         """assign_button returns new Game instance with button_seat set."""
         # Arrange
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = minimal_game_factory(players)
         original_button = game.button_seat
@@ -366,7 +415,8 @@ class TestAssignButton:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled",
+            return_value=test_deck,
         ):
             # Act
             updated_game = ButtonAssigner.assign_button(game)
@@ -384,8 +434,12 @@ class TestAssignButton:
         """assign_button only modifies button_seat, preserving all other state."""
         # Arrange
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = minimal_game_factory(players)
         test_deck = create_deck_with_top_cards(
@@ -397,7 +451,8 @@ class TestAssignButton:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled",
+            return_value=test_deck,
         ):
             # Act
             updated_game = ButtonAssigner.assign_button(game)
@@ -420,9 +475,15 @@ class TestAssignButton:
         """Ace beats all other ranks including King."""
         # Arrange
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),  # Will get K♠
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),  # Will get A♣
-            sample_player_factory(PlayerId("p3"), Seat.SEAT_2, ChipAmount(1000)),  # Will get Q♠
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),  # Will get K♠
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),  # Will get A♣
+            sample_player_factory(
+                PlayerId("p3"), Seat.SEAT_2, ChipAmount(1000)
+            ),  # Will get Q♠
         ]
         game = minimal_game_factory(players)
 
@@ -436,7 +497,8 @@ class TestAssignButton:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled",
+            return_value=test_deck,
         ):
             # Act
             updated_game = ButtonAssigner.assign_button(game)
@@ -452,8 +514,12 @@ class TestAssignButton:
         """Two loses to all other ranks."""
         # Arrange
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),  # Will get 2♠
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),  # Will get 3♣
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),  # Will get 2♠
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),  # Will get 3♣
         ]
         game = minimal_game_factory(players)
 
@@ -466,7 +532,8 @@ class TestAssignButton:
 
         # Mock Deck.create_shuffled to return our test deck
         with patch(
-            "src.domain.rules.button_assigner.Deck.create_shuffled", return_value=test_deck
+            "src.domain.rules.button_assigner.Deck.create_shuffled",
+            return_value=test_deck,
         ):
             # Act
             updated_game = ButtonAssigner.assign_button(game)

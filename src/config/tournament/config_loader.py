@@ -4,18 +4,21 @@ Loads tournament configuration from JSON files.
 Configuration files are located at the project root in config/tournament/.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any, final, override
 
 import structlog
 
 from src.config.base.config_loader import BaseConfigLoader
-from src.config.blind_schedule.registry_loader import BlindScheduleRegistryLoader
+from src.config.blind_schedule.registry_loader import (
+    BlindScheduleRegistryLoader,
+)
 from src.config.tournament.config import PayoutStructure, TournamentConfig
 from src.config.utils.type_extractors import ConfigTypeExtractor
-from src.constants.config import BLIND_SCHEDULE_CONFIG_PATH, TOURNAMENT_CONFIG_PATH
+from src.constants.config import (
+    BLIND_SCHEDULE_CONFIG_PATH,
+    TOURNAMENT_CONFIG_PATH,
+)
 from src.domain.models.chips import ChipAmount
 from src.logger.factories import get_generic_logger
 
@@ -41,7 +44,9 @@ class TournamentConfigLoader(BaseConfigLoader[TournamentConfig]):
             blind_schedule_loader: Optional blind schedule registry loader (for testing).
         """
         resolved_path = config_path or TOURNAMENT_CONFIG_PATH
-        resolved_logger = logger or get_generic_logger(__name__.removeprefix("src."))
+        resolved_logger = logger or get_generic_logger(
+            __name__.removeprefix("src.")
+        )
         super().__init__(
             config_path=resolved_path,
             logger=resolved_logger,
@@ -64,9 +69,15 @@ class TournamentConfigLoader(BaseConfigLoader[TournamentConfig]):
         payload = self._json_loader.load()
         extractor = ConfigTypeExtractor(logger=self._logger)
 
-        buy_in_amount = ChipAmount(extractor.get_required_int(payload, "buy_in_amount"))
-        starting_chip_stack = ChipAmount(extractor.get_required_int(payload, "starting_chip_stack"))
-        payout_structure_str = extractor.get_required_string(payload, "payout_structure")
+        buy_in_amount = ChipAmount(
+            extractor.get_required_int(payload, "buy_in_amount")
+        )
+        starting_chip_stack = ChipAmount(
+            extractor.get_required_int(payload, "starting_chip_stack")
+        )
+        payout_structure_str = extractor.get_required_string(
+            payload, "payout_structure"
+        )
 
         try:
             payout_structure = PayoutStructure(payout_structure_str)

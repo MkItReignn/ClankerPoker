@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 
 from src.application.poker.events import PublishedEvent

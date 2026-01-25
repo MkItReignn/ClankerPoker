@@ -1,10 +1,13 @@
-from __future__ import annotations
-
 from src.application.protocols.llm import LlmApiError, LlmRequest, LlmResponse
-from src.infrastructure.llm.open_router.model_mapper import OpenRouterModelMapper
+from src.infrastructure.llm.open_router.model_mapper import (
+    OpenRouterModelMapper,
+)
 from src.infrastructure.llm.open_router.response import (
-    OpenRouterApiResponse, OpenRouterResponseChoice, OpenRouterResponseMessage,
-    OpenRouterResponseUsage)
+    OpenRouterApiResponse,
+    OpenRouterResponseChoice,
+    OpenRouterResponseMessage,
+    OpenRouterResponseUsage,
+)
 
 
 class OpenRouterResponseParser:
@@ -43,18 +46,23 @@ class OpenRouterResponseParser:
         if usage_raw is not None and isinstance(usage_raw, dict):
             prompt_tokens_raw = usage_raw.get("prompt_tokens", 0)
             prompt_tokens = (
-                int(prompt_tokens_raw) if isinstance(prompt_tokens_raw, int | str) else 0
+                int(prompt_tokens_raw)
+                if isinstance(prompt_tokens_raw, int | str)
+                else 0
             )
 
             completion_tokens_raw = usage_raw.get("completion_tokens", 0)
             completion_tokens = (
-                int(completion_tokens_raw) if isinstance(completion_tokens_raw, int | str) else 0
+                int(completion_tokens_raw)
+                if isinstance(completion_tokens_raw, int | str)
+                else 0
             )
 
             total_tokens_raw = usage_raw.get("total_tokens")
             total_tokens = (
                 int(total_tokens_raw)
-                if total_tokens_raw is not None and isinstance(total_tokens_raw, int | str)
+                if total_tokens_raw is not None
+                and isinstance(total_tokens_raw, int | str)
                 else None
             )
 
@@ -78,7 +86,9 @@ class OpenRouterResponseParser:
         )
 
     @staticmethod
-    def to_llm_response(api_response: OpenRouterApiResponse, request: LlmRequest) -> LlmResponse:
+    def to_llm_response(
+        api_response: OpenRouterApiResponse, request: LlmRequest
+    ) -> LlmResponse:
         if not api_response.choices:
             raise LlmApiError("No choices in response")
 
@@ -86,10 +96,15 @@ class OpenRouterResponseParser:
         content = first_choice.message.content
         finish_reason = first_choice.finish_reason
 
-        prompt_tokens = api_response.usage.prompt_tokens if api_response.usage else 0
-        completion_tokens = api_response.usage.completion_tokens if api_response.usage else 0
-        model_id = OpenRouterModelMapper.from_openrouter_model(api_response.model)
-
+        prompt_tokens = (
+            api_response.usage.prompt_tokens if api_response.usage else 0
+        )
+        completion_tokens = (
+            api_response.usage.completion_tokens if api_response.usage else 0
+        )
+        model_id = OpenRouterModelMapper.from_openrouter_model(
+            api_response.model
+        )
 
         return LlmResponse(
             content=content,

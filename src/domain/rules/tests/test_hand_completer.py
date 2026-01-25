@@ -9,8 +9,6 @@ Tests document hand completion rules from RULE_BOOK.md:
 - Split pots and odd chip rule (Section 12.2, 12.3)
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from dataclasses import replace
 

@@ -1,19 +1,19 @@
 """Action parsing strategy for poker responses."""
 
-from __future__ import annotations
-
 import re
 from typing import Protocol
 
 from src.application.protocols.response import ParseError, ParseErrorType
 from src.domain.models.actions import Action, ActionType
-from src.domain.models.available_action import (AvailableActions,
-                                                AvailableAllInAction,
-                                                AvailableBetAction,
-                                                AvailableCallAction,
-                                                AvailableCheckAction,
-                                                AvailableFoldAction,
-                                                AvailableRaiseAction)
+from src.domain.models.available_action import (
+    AvailableActions,
+    AvailableAllInAction,
+    AvailableBetAction,
+    AvailableCallAction,
+    AvailableCheckAction,
+    AvailableFoldAction,
+    AvailableRaiseAction,
+)
 from src.domain.models.chips import ChipAmount
 
 
@@ -191,12 +191,16 @@ class PokerActionParser:
                     return action
                 case AvailableBetAction():
                     if amount is not None:
-                        return self._validate_bet_amount(amount, action, action_type)
+                        return self._validate_bet_amount(
+                            amount, action, action_type
+                        )
                     # Default to min bet when amount not specified
                     return action
                 case AvailableRaiseAction():
                     if amount is not None:
-                        return self._validate_raise_amount(amount, action, action_type)
+                        return self._validate_raise_amount(
+                            amount, action, action_type
+                        )
                     # Default to min raise when amount not specified
                     return action
 
@@ -259,7 +263,9 @@ class PokerActionParser:
                 if requested_amount is not None:
                     amount = max(
                         available.min_raise_amount.value,
-                        min(requested_amount, available.max_raise_amount.value),
+                        min(
+                            requested_amount, available.max_raise_amount.value
+                        ),
                     )
                 else:
                     amount = available.min_raise_amount.value
@@ -295,7 +301,9 @@ class PokerActionParser:
                 "Expected format: ACTION: <fold|check|call|bet|raise|all_in> [amount]",
                 context={
                     "response_snippet": (
-                        response_text[:200] if len(response_text) > 200 else response_text
+                        response_text[:200]
+                        if len(response_text) > 200
+                        else response_text
                     ),
                 },
             )

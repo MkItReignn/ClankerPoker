@@ -1,12 +1,15 @@
 """Generic LLM-based action provider with retry logic."""
 
-from __future__ import annotations
-
 from typing import Callable, Generic, Self, TypeVar, cast
 
 from src.application.protocols.llm import LlmClient, LlmError, LlmRequest
 from src.application.protocols.player import ActionResponse, PlayerConfig
-from src.application.protocols.response import ParseError, ParseFailure, ParseResult, ParseSuccess
+from src.application.protocols.response import (
+    ParseError,
+    ParseFailure,
+    ParseResult,
+    ParseSuccess,
+)
 from src.config.poker.action_provider import ActionProviderConfig
 from src.config.poker.prompt import PokerPromptConfig
 from src.domain.models.llm_model import LlmModel
@@ -20,7 +23,9 @@ TNarration = TypeVar("TNarration")
 TPlayerInfo = TypeVar("TPlayerInfo", bound=PlayerConfig, default=PlayerConfig)
 
 
-class LlmActionProvider(Generic[TContext, TAvailableActions, TAction, TNarration, TPlayerInfo]):
+class LlmActionProvider(
+    Generic[TContext, TAvailableActions, TAction, TNarration, TPlayerInfo]
+):
     """Generic LLM-based action provider.
 
     Composes a prompt formatter, LLM client, and response parser to
@@ -40,9 +45,15 @@ class LlmActionProvider(Generic[TContext, TAvailableActions, TAction, TNarration
     def __init__(
         self,
         llm_client: LlmClient,
-        prompt_formatter: Callable[[TContext, TAvailableActions, TPlayerInfo], tuple[str, str]],
-        response_parser: Callable[[str, TAvailableActions], ParseResult[TAction, TNarration]],
-        fallback_selector: Callable[[TAvailableActions], TAction | None] | None = None,
+        prompt_formatter: Callable[
+            [TContext, TAvailableActions, TPlayerInfo], tuple[str, str]
+        ],
+        response_parser: Callable[
+            [str, TAvailableActions], ParseResult[TAction, TNarration]
+        ],
+        fallback_selector: (
+            Callable[[TAvailableActions], TAction | None] | None
+        ) = None,
         *,
         config: ActionProviderConfig,
         prompt_config: PokerPromptConfig | None = None,
@@ -143,7 +154,9 @@ class LlmActionProvider(Generic[TContext, TAvailableActions, TAction, TNarration
                 last_response = response.content
 
                 # Parse the response
-                result = self._response_parser(response.content, available_actions)
+                result = self._response_parser(
+                    response.content, available_actions
+                )
 
                 # Check if action parsing succeeded
                 if isinstance(result, ParseFailure):
@@ -168,7 +181,7 @@ class LlmActionProvider(Generic[TContext, TAvailableActions, TAction, TNarration
                     self._logger.warning(
                         f"Narration parse failed for player {config.player_id}: "
                         f"[{result.narration.error_type}] {result.narration.message}",
-                        context=result.narration.context
+                        context=result.narration.context,
                     )
                 else:
                     narration = result.narration
@@ -193,7 +206,9 @@ class LlmActionProvider(Generic[TContext, TAvailableActions, TAction, TNarration
         if self._fallback_selector is not None:
             fallback = self._fallback_selector(available_actions)
             if fallback is not None:
-                self._logger.warning(f"Using fallback action for player {config.player_id}")
+                self._logger.warning(
+                    f"Using fallback action for player {config.player_id}"
+                )
                 return ActionResponse(action=fallback)
 
         raise LlmError(
@@ -222,37 +237,52 @@ class LlmActionProvider(Generic[TContext, TAvailableActions, TAction, TNarration
         """
         if not self._prompt_config:
             # Fallback to original hardcoded behavior for backward compatibility
-            retry_context = [original_prompt, "", "---", "RETRY: Your previous response was invalid."]
+            retry_context = [
+                original_prompt,
+                "",
+                "---",
+                "RETRY: Your previous response was invalid.",
+            ]
 
             if error:
                 retry_context.append(f"Error: {error}")
 
             if last_response:
-                snippet = last_response[:200] + "..." if len(last_response) > 200 else last_response
+                snippet = (
+                    last_response[:200] + "..."
+                    if len(last_response) > 200
+                    else last_response
+                )
                 retry_context.append(f"Your response was: {snippet}")
 
             retry_context.append("")
-            retry_context.append("Please provide a valid action in the correct format.")
+            retry_context.append(
+                "Please provide a valid action in the correct format."
+            )
 
             return "\n".join(retry_context)
-        
+
         # Use structured components from config
         components = self._prompt_config.retry_prompt
-        
+
         # Compose retry prompt from components
         parts = [original_prompt, "", components.header]
-        
+
         if error:
             parts.append(components.error_section.format(error_message=error))
-        
+
         if last_response:
             snippet = (
-                last_response[:200] + "..." 
-                if len(last_response) > 200 
+                last_response[:200] + "..."
+                if len(last_response) > 200
                 else last_response
             )
-            parts.append(components.response_section.format(last_response_snippet=snippet))
-        
+            parts.append(
+                components.response_section.format(
+                    last_response_snippet=snippet
+                )
+            )
+
         parts.append(components.footer)
-        
+
         return "\n".join(parts)

@@ -1,9 +1,7 @@
 """Player record snapshot models for tracking player state at each hierarchy level."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Self
 
 from src.domain.models.chips import ChipAmount
 from src.domain.models.hand import Hand
@@ -29,7 +27,9 @@ class PlayerRecordSnapshot:
         if self.chips.value < 0:
             raise ValueError(f"chips cannot be negative: {self.chips.value}")
         if not isinstance(self.model_id, LlmModel):
-            raise ValueError(f"model_id must be an LlmModel enum, got {type(self.model_id)}")
+            raise ValueError(
+                f"model_id must be an LlmModel enum, got {type(self.model_id)}"
+            )
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize PlayerRecordSnapshot to a dictionary."""
@@ -42,7 +42,7 @@ class PlayerRecordSnapshot:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> PlayerRecordSnapshot:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         """Deserialize a dictionary to PlayerRecordSnapshot."""
         return cls(
             player_id=data["player_id"],
@@ -68,7 +68,7 @@ class PlayerConfig:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> PlayerConfig:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         """Deserialize from dictionary."""
         return cls(
             personality=data.get("personality"),
@@ -87,7 +87,9 @@ class GameLevelPlayerRecord(PlayerRecordSnapshot):
     def __post_init__(self) -> None:
         super(type(self), self).__post_init__()
         if self.hands_played < 0:
-            raise ValueError(f"hands_played cannot be negative: {self.hands_played}")
+            raise ValueError(
+                f"hands_played cannot be negative: {self.hands_played}"
+            )
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize GameLevelPlayerRecord to a dictionary."""
@@ -105,7 +107,7 @@ class GameLevelPlayerRecord(PlayerRecordSnapshot):
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> GameLevelPlayerRecord:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         """Deserialize a dictionary to GameLevelPlayerRecord."""
         return cls(
             player_id=data["player_id"],
@@ -139,7 +141,10 @@ class HandLevelPlayerRecord(PlayerRecordSnapshot):
             "chips": self.chips.value,
             "model_id": self.model_id.value,
             "hole_cards": (
-                [self.hole_cards.card1.to_dict(), self.hole_cards.card2.to_dict()]
+                [
+                    self.hole_cards.card1.to_dict(),
+                    self.hole_cards.card2.to_dict(),
+                ]
                 if self.hole_cards
                 else None
             ),
@@ -148,7 +153,7 @@ class HandLevelPlayerRecord(PlayerRecordSnapshot):
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> HandLevelPlayerRecord:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         """Deserialize a dictionary to HandLevelPlayerRecord."""
         hole_cards = None
         if data.get("hole_cards"):
@@ -208,9 +213,11 @@ class RoundLevelPlayerRecord(PlayerRecordSnapshot):
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> RoundLevelPlayerRecord:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         """Deserialize a dictionary to RoundLevelPlayerRecord."""
-        participation_status = HandParticipationStatus[data["participation_status"]]
+        participation_status = HandParticipationStatus[
+            data["participation_status"]
+        ]
 
         return cls(
             player_id=data["player_id"],
@@ -219,9 +226,9 @@ class RoundLevelPlayerRecord(PlayerRecordSnapshot):
             chips=ChipAmount(data["chips"]),
             model_id=LlmModel(data["model_id"]),
             chips_at_round_start=ChipAmount(data["chips_at_round_start"]),
-            total_invested_in_hand_at_round_start=ChipAmount(data["total_invested_in_hand_at_round_start"]),
+            total_invested_in_hand_at_round_start=ChipAmount(
+                data["total_invested_in_hand_at_round_start"]
+            ),
             participation_status=participation_status,
             is_all_in=data["is_all_in"],
         )
-
-

@@ -1,7 +1,5 @@
 """Tests for PotCalculator - pot calculation logic."""
 
-from __future__ import annotations
-
 from collections.abc import Callable
 
 import pytest
@@ -35,7 +33,9 @@ class TestSimpleCaseAllPlayersInvestSameAmount:
         result = PotCalculator.calculate_pot_state([player1, player2])
 
         assert result.main_pot.amount == ChipAmount(200)
-        assert result.main_pot.eligible_player_ids == frozenset({"player-1", "player-2"})
+        assert result.main_pot.eligible_player_ids == frozenset(
+            {"player-1", "player-2"}
+        )
         assert len(result.side_pots) == 0
 
     def test_three_players_same_investment_creates_single_main_pot(
@@ -114,7 +114,9 @@ class TestSidePotWithOnePlayerAllIn:
             total_invested_this_hand=ChipAmount(200),
         )
 
-        result = PotCalculator.calculate_pot_state([all_in_player, player2, player3])
+        result = PotCalculator.calculate_pot_state(
+            [all_in_player, player2, player3]
+        )
 
         assert result.main_pot.amount == ChipAmount(300)
         assert result.main_pot.eligible_player_ids == frozenset(
@@ -124,7 +126,9 @@ class TestSidePotWithOnePlayerAllIn:
         assert len(result.side_pots) == 1
         side_pot = result.side_pots[0]
         assert side_pot.amount == ChipAmount(200)
-        assert side_pot.eligible_player_ids == frozenset({"player-2", "player-3"})
+        assert side_pot.eligible_player_ids == frozenset(
+            {"player-2", "player-3"}
+        )
 
     def test_main_pot_contains_all_players_contribution_up_to_all_in_level(
         self, sample_player_factory: Callable[..., Player]
@@ -146,7 +150,9 @@ class TestSidePotWithOnePlayerAllIn:
         result = PotCalculator.calculate_pot_state([all_in_player, player2])
 
         assert result.main_pot.amount == ChipAmount(100)
-        assert result.main_pot.eligible_player_ids == frozenset({"all-in-player", "player-2"})
+        assert result.main_pot.eligible_player_ids == frozenset(
+            {"all-in-player", "player-2"}
+        )
 
         assert len(result.side_pots) == 1
         side_pot = result.side_pots[0]
@@ -192,7 +198,9 @@ class TestMultipleAllInLevels:
 
         first_side_pot = result.side_pots[0]
         assert first_side_pot.amount == ChipAmount(200)
-        assert first_side_pot.eligible_player_ids == frozenset({"player-2", "player-3"})
+        assert first_side_pot.eligible_player_ids == frozenset(
+            {"player-2", "player-3"}
+        )
 
         second_side_pot = result.side_pots[1]
         assert second_side_pot.amount == ChipAmount(100)
@@ -229,7 +237,9 @@ class TestMultipleAllInLevels:
             total_invested_this_hand=ChipAmount(200),
         )
 
-        result = PotCalculator.calculate_pot_state([player1, player2, player3, player4])
+        result = PotCalculator.calculate_pot_state(
+            [player1, player2, player3, player4]
+        )
 
         assert result.main_pot.amount == ChipAmount(200)
         assert result.main_pot.eligible_player_ids == frozenset(
@@ -240,11 +250,15 @@ class TestMultipleAllInLevels:
 
         first_side_pot = result.side_pots[0]
         assert first_side_pot.amount == ChipAmount(150)
-        assert first_side_pot.eligible_player_ids == frozenset({"player-2", "player-3", "player-4"})
+        assert first_side_pot.eligible_player_ids == frozenset(
+            {"player-2", "player-3", "player-4"}
+        )
 
         second_side_pot = result.side_pots[1]
         assert second_side_pot.amount == ChipAmount(100)
-        assert second_side_pot.eligible_player_ids == frozenset({"player-3", "player-4"})
+        assert second_side_pot.eligible_player_ids == frozenset(
+            {"player-3", "player-4"}
+        )
 
         third_side_pot = result.side_pots[2]
         assert third_side_pot.amount == ChipAmount(50)
@@ -366,7 +380,9 @@ class TestFoldedPlayerContributions:
         result = PotCalculator.calculate_pot_state([small_blind, big_blind])
 
         assert result.main_pot.amount == ChipAmount(75)
-        assert result.main_pot.eligible_player_ids == frozenset({"small-blind"})
+        assert result.main_pot.eligible_player_ids == frozenset(
+            {"small-blind"}
+        )
         assert len(result.side_pots) == 0
 
     def test_folded_player_invested_less_than_all_in_hand_players(
@@ -397,14 +413,18 @@ class TestFoldedPlayerContributions:
             participation_status=HandParticipationStatus.FOLDED,
         )
 
-        result = PotCalculator.calculate_pot_state([player_a, player_b, folded_player])
+        result = PotCalculator.calculate_pot_state(
+            [player_a, player_b, folded_player]
+        )
 
         total = result.main_pot.amount
         for side_pot in result.side_pots:
             total = total + side_pot.amount
         assert total == ChipAmount(250)
 
-        assert result.main_pot.eligible_player_ids == frozenset({"player-a", "player-b"})
+        assert result.main_pot.eligible_player_ids == frozenset(
+            {"player-a", "player-b"}
+        )
 
     def test_folded_player_invested_between_two_in_hand_levels(
         self, sample_player_factory: Callable[..., Player]
@@ -434,7 +454,9 @@ class TestFoldedPlayerContributions:
             participation_status=HandParticipationStatus.FOLDED,
         )
 
-        result = PotCalculator.calculate_pot_state([player_a, player_b, folded_player])
+        result = PotCalculator.calculate_pot_state(
+            [player_a, player_b, folded_player]
+        )
 
         total = result.main_pot.amount
         for side_pot in result.side_pots:
@@ -442,13 +464,19 @@ class TestFoldedPlayerContributions:
         assert total == ChipAmount(450)
 
         assert result.main_pot.amount == ChipAmount(300)
-        assert result.main_pot.eligible_player_ids == frozenset({"player-a", "player-b"})
+        assert result.main_pot.eligible_player_ids == frozenset(
+            {"player-a", "player-b"}
+        )
 
         assert len(result.side_pots) == 2
         assert result.side_pots[0].amount == ChipAmount(100)
-        assert result.side_pots[0].eligible_player_ids == frozenset({"player-b"})
+        assert result.side_pots[0].eligible_player_ids == frozenset(
+            {"player-b"}
+        )
         assert result.side_pots[1].amount == ChipAmount(50)
-        assert result.side_pots[1].eligible_player_ids == frozenset({"player-b"})
+        assert result.side_pots[1].eligible_player_ids == frozenset(
+            {"player-b"}
+        )
 
 
 class TestEdgeCases:
@@ -503,7 +531,9 @@ class TestEdgeCases:
         assert len(result.side_pots) == 0
 
     def test_empty_player_list_raises_value_error(self) -> None:
-        with pytest.raises(ValueError, match="Cannot calculate pot state: no players provided"):
+        with pytest.raises(
+            ValueError, match="Cannot calculate pot state: no players provided"
+        ):
             PotCalculator.calculate_pot_state([])
 
     def test_player_order_does_not_affect_pot_calculation(
@@ -527,12 +557,16 @@ class TestEdgeCases:
         result2 = PotCalculator.calculate_pot_state([player2, player1])
 
         assert result1.main_pot.amount == result2.main_pot.amount
-        assert result1.main_pot.eligible_player_ids == result2.main_pot.eligible_player_ids
+        assert (
+            result1.main_pot.eligible_player_ids
+            == result2.main_pot.eligible_player_ids
+        )
         assert len(result1.side_pots) == len(result2.side_pots)
         if result1.side_pots:
             assert result1.side_pots[0].amount == result2.side_pots[0].amount
             assert (
-                result1.side_pots[0].eligible_player_ids == result2.side_pots[0].eligible_player_ids
+                result1.side_pots[0].eligible_player_ids
+                == result2.side_pots[0].eligible_player_ids
             )
 
     def test_players_with_identical_investments_share_same_pot(
@@ -568,7 +602,9 @@ class TestEdgeCases:
 
         assert len(result.side_pots) == 1
         assert result.side_pots[0].amount == ChipAmount(100)
-        assert result.side_pots[0].eligible_player_ids == frozenset({"player-3"})
+        assert result.side_pots[0].eligible_player_ids == frozenset(
+            {"player-3"}
+        )
 
     def test_two_players_all_in_at_same_level_creates_single_main_pot(
         self, sample_player_factory: Callable[..., Player]
@@ -590,7 +626,9 @@ class TestEdgeCases:
         result = PotCalculator.calculate_pot_state([player1, player2])
 
         assert result.main_pot.amount == ChipAmount(200)
-        assert result.main_pot.eligible_player_ids == frozenset({"player-1", "player-2"})
+        assert result.main_pot.eligible_player_ids == frozenset(
+            {"player-1", "player-2"}
+        )
         assert len(result.side_pots) == 0
 
     def test_three_players_all_in_at_same_level_with_fourth_higher(
@@ -624,7 +662,9 @@ class TestEdgeCases:
             total_invested_this_hand=ChipAmount(300),
         )
 
-        result = PotCalculator.calculate_pot_state([player1, player2, player3, player4])
+        result = PotCalculator.calculate_pot_state(
+            [player1, player2, player3, player4]
+        )
 
         assert result.main_pot.amount == ChipAmount(400)
         assert result.main_pot.eligible_player_ids == frozenset(
@@ -633,7 +673,9 @@ class TestEdgeCases:
 
         assert len(result.side_pots) == 1
         assert result.side_pots[0].amount == ChipAmount(200)
-        assert result.side_pots[0].eligible_player_ids == frozenset({"player-4"})
+        assert result.side_pots[0].eligible_player_ids == frozenset(
+            {"player-4"}
+        )
 
 
 class TestPotCalculationCorrectness:

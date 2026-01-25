@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from typing import Any, Self
 
 
 class Suit(Enum):
@@ -66,7 +64,7 @@ class Rank(Enum):
         }[self]
 
     @classmethod
-    def from_short_string(cls, s: str) -> Rank:
+    def from_short_string(cls, s: str) -> Self:
         """Parse rank from short string representation."""
         mapping = {
             "A": Rank.ACE,
@@ -132,7 +130,7 @@ class Card:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Card:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         """Reconstruct card from dictionary."""
         return cls(
             suit=Suit(data["suit"]),

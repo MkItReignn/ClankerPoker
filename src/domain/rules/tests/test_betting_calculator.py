@@ -1,13 +1,14 @@
 """Tests for BettingCalculator - pure calculation logic."""
 
-from __future__ import annotations
-
 from collections.abc import Callable
 
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player)
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    Player,
+)
 from src.domain.models.seat import Seat
 from src.domain.rules.betting_calculator import BettingCalculator
 
@@ -27,7 +28,9 @@ class TestCalculateMinimumRaiseIncrement:
 
         assert result == big_blind
 
-    def test_re_raise_uses_last_increment_when_greater_than_big_blind(self) -> None:
+    def test_re_raise_uses_last_increment_when_greater_than_big_blind(
+        self,
+    ) -> None:
         last_raise_increment = MEDIUM_CHIPS
         big_blind = BIG_BLIND_STANDARD
 
@@ -37,7 +40,9 @@ class TestCalculateMinimumRaiseIncrement:
 
         assert result == last_raise_increment
 
-    def test_re_raise_uses_big_blind_when_last_increment_less_than_big_blind(self) -> None:
+    def test_re_raise_uses_big_blind_when_last_increment_less_than_big_blind(
+        self,
+    ) -> None:
         last_raise_increment = ChipAmount(15)
         big_blind = BIG_BLIND_STANDARD
 
@@ -47,7 +52,9 @@ class TestCalculateMinimumRaiseIncrement:
 
         assert result == big_blind
 
-    def test_re_raise_uses_last_increment_when_equal_to_big_blind(self) -> None:
+    def test_re_raise_uses_last_increment_when_equal_to_big_blind(
+        self,
+    ) -> None:
         last_raise_increment = BIG_BLIND_STANDARD
         big_blind = BIG_BLIND_STANDARD
 
@@ -135,7 +142,9 @@ class TestGetMaxInvestedThisHand:
         )
         game = minimal_game_factory([player1, player2])
 
-        result = BettingCalculator.get_max_invested_this_hand(game.players_in_hand())
+        result = BettingCalculator.get_max_invested_this_hand(
+            game.players_in_hand()
+        )
 
         assert result == ChipAmount(50)
 
@@ -164,7 +173,9 @@ class TestGetMaxInvestedThisHand:
         )
         game = minimal_game_factory([player1, player2, player3])
 
-        result = BettingCalculator.get_max_invested_this_hand(game.players_in_hand())
+        result = BettingCalculator.get_max_invested_this_hand(
+            game.players_in_hand()
+        )
 
         assert result == ChipAmount(100)
 
@@ -188,7 +199,9 @@ class TestGetMaxInvestedThisHand:
         )
         game = minimal_game_factory([player1, player2])
 
-        result = BettingCalculator.get_max_invested_this_hand(game.players_in_hand())
+        result = BettingCalculator.get_max_invested_this_hand(
+            game.players_in_hand()
+        )
 
         assert result == ChipAmount(50)
 
@@ -212,7 +225,9 @@ class TestGetMaxInvestedThisHand:
         )
         game = minimal_game_factory([player1, player2])
 
-        result = BettingCalculator.get_max_invested_this_hand(game.players_in_hand())
+        result = BettingCalculator.get_max_invested_this_hand(
+            game.players_in_hand()
+        )
 
         assert result == ChipAmount(75)
 
@@ -236,7 +251,9 @@ class TestGetMaxInvestedThisHand:
         )
         game = minimal_game_factory([player1, player2])
 
-        result = BettingCalculator.get_max_invested_this_hand(game.players_in_hand())
+        result = BettingCalculator.get_max_invested_this_hand(
+            game.players_in_hand()
+        )
 
         assert result == ChipAmount(500)
 
@@ -261,7 +278,9 @@ class TestGetMaxInvestedThisHand:
         )
         game = minimal_game_factory([player1, player2])
 
-        result = BettingCalculator.get_max_invested_this_hand(game.players_in_hand())
+        result = BettingCalculator.get_max_invested_this_hand(
+            game.players_in_hand()
+        )
 
         assert result == ChipAmount(0)
 
@@ -284,6 +303,8 @@ class TestGetMaxInvestedThisHand:
         )
         game = minimal_game_factory([player1, player2])
 
-        result = BettingCalculator.get_max_invested_this_hand(game.players_in_hand())
+        result = BettingCalculator.get_max_invested_this_hand(
+            game.players_in_hand()
+        )
 
         assert result == ChipAmount(0)

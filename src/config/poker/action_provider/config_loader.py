@@ -3,8 +3,6 @@
 Loads action provider configuration from JSON files.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any, final, override
 
@@ -36,7 +34,9 @@ class ActionProviderConfigLoader(BaseConfigLoader[ActionProviderConfig]):
             json_loader: Optional JSON loader (for testing).
         """
         resolved_path = config_path or ACTION_PROVIDER_CONFIG_PATH
-        resolved_logger = logger or get_generic_logger(__name__.removeprefix("src."))
+        resolved_logger = logger or get_generic_logger(
+            __name__.removeprefix("src.")
+        )
         super().__init__(
             config_path=resolved_path,
             logger=resolved_logger,
@@ -57,9 +57,15 @@ class ActionProviderConfigLoader(BaseConfigLoader[ActionProviderConfig]):
         payload = self._json_loader.load()
         extractor = ConfigTypeExtractor(logger=self._logger)
 
-        max_retries = extractor.get_required_int(payload, "max_retries", context="root")
-        temperature = extractor.get_required_float(payload, "temperature", context="root")
-        max_output_tokens = extractor.get_required_int(payload, "max_output_tokens", context="root")
+        max_retries = extractor.get_required_int(
+            payload, "max_retries", context="root"
+        )
+        temperature = extractor.get_required_float(
+            payload, "temperature", context="root"
+        )
+        max_output_tokens = extractor.get_required_int(
+            payload, "max_output_tokens", context="root"
+        )
 
         config = ActionProviderConfig(
             max_retries=max_retries,

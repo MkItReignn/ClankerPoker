@@ -8,8 +8,6 @@ API key can be provided via:
 2. api_key field in the JSON config file (fallback)
 """
 
-from __future__ import annotations
-
 import os
 from pathlib import Path
 from typing import Any, final, override
@@ -42,7 +40,9 @@ class OpenRouterConfigLoader(BaseConfigLoader[OpenRouterConfig]):
             json_loader: Optional JSON loader (for testing).
         """
         resolved_path = config_path or LLM_CONFIG_PATH
-        resolved_logger = logger or get_generic_logger(__name__.removeprefix("src."))
+        resolved_logger = logger or get_generic_logger(
+            __name__.removeprefix("src.")
+        )
         super().__init__(
             config_path=resolved_path,
             logger=resolved_logger,
@@ -67,7 +67,9 @@ class OpenRouterConfigLoader(BaseConfigLoader[OpenRouterConfig]):
         api_key = os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
             # Fall back to JSON config (optional)
-            api_key = extractor.get_str_or_none(payload, "api_key", context="root")
+            api_key = extractor.get_str_or_none(
+                payload, "api_key", context="root"
+            )
         if not api_key:
             raise ValueError(
                 "API key must be set via OPENROUTER_API_KEY environment variable "

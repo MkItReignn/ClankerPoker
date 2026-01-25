@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, Self
 
 from src.domain.models.actions import ActionType
 from src.domain.models.chips import ChipAmount
@@ -47,7 +45,7 @@ class ActionRecord:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> ActionRecord:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         return cls(
             player_id=data["player_id"],
             player_name=data["player_name"],

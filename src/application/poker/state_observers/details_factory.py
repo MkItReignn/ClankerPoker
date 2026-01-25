@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Protocol
 
 from src.application.poker.state_observers.details import (

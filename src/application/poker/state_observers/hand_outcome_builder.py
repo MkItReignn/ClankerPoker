@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from src.application.poker.state_observers.details import (
     EliminatedInfo,
     HandOutcomeDetails,

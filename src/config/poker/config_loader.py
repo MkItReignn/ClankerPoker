@@ -4,8 +4,6 @@ Loads poker game configuration from YAML files.
 Configuration files are located at the project root in config/poker/.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any, final, override
 
@@ -39,7 +37,9 @@ class PokerGameConfigLoader(BaseConfigLoader[PokerGameConfig]):
             yaml_loader: Optional YAML loader (for testing).
         """
         resolved_path = config_path or POKER_CONFIG_PATH
-        resolved_logger = logger or get_generic_logger(__name__.removeprefix("src."))
+        resolved_logger = logger or get_generic_logger(
+            __name__.removeprefix("src.")
+        )
         self._yaml_loader = yaml_loader or YamlFileLoader(
             config_path=resolved_path,
             logger=resolved_logger,
@@ -80,7 +80,9 @@ class PokerGameConfigLoader(BaseConfigLoader[PokerGameConfig]):
                 player_data, "name", context=f"player_configs['{player_id}']"
             )
             model_id_str = extractor.get_required_string(
-                player_data, "model_id", context=f"player_configs['{player_id}']"
+                player_data,
+                "model_id",
+                context=f"player_configs['{player_id}']",
             )
 
             try:
@@ -93,10 +95,14 @@ class PokerGameConfigLoader(BaseConfigLoader[PokerGameConfig]):
                 ) from None
 
             personality = extractor.get_str_or_none(
-                player_data, "personality", context=f"player_configs['{player_id}']"
+                player_data,
+                "personality",
+                context=f"player_configs['{player_id}']",
             )
             addon_prompt = extractor.get_str_or_none(
-                player_data, "addon_prompt", context=f"player_configs['{player_id}']"
+                player_data,
+                "addon_prompt",
+                context=f"player_configs['{player_id}']",
             )
 
             player_config = PokerPlayerConfig(

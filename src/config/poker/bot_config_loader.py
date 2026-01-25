@@ -4,15 +4,16 @@ Loads bot player configuration from JSON files.
 Configuration files are located at the project root in config/poker/.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any, final, override
 
 import structlog
 
 from src.config.base.config_loader import BaseConfigLoader
-from src.config.poker.bot_config import BotPokerGameConfig, BotPokerPlayerConfig
+from src.config.poker.bot_config import (
+    BotPokerGameConfig,
+    BotPokerPlayerConfig,
+)
 from src.config.poker.bot_personality import BotPersonality
 from src.config.utils.type_extractors import ConfigTypeExtractor
 from src.constants.config import BOT_PLAYERS_CONFIG_PATH
@@ -38,7 +39,9 @@ class BotPokerGameConfigLoader(BaseConfigLoader[BotPokerGameConfig]):
             json_loader: Optional JSON loader (for testing).
         """
         resolved_path = config_path or BOT_PLAYERS_CONFIG_PATH
-        resolved_logger = logger or get_generic_logger(__name__.removeprefix("src."))
+        resolved_logger = logger or get_generic_logger(
+            __name__.removeprefix("src.")
+        )
         super().__init__(
             config_path=resolved_path,
             logger=resolved_logger,
@@ -75,7 +78,9 @@ class BotPokerGameConfigLoader(BaseConfigLoader[BotPokerGameConfig]):
                 player_data, "name", context=f"player_configs['{player_id}']"
             )
             personality_str = extractor.get_required_string(
-                player_data, "personality", context=f"player_configs['{player_id}']"
+                player_data,
+                "personality",
+                context=f"player_configs['{player_id}']",
             )
 
             try:

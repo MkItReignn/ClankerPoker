@@ -62,7 +62,9 @@ class PokerViewerApp(App[None]):
         yield KeyHintsBar(id="key-hints")
         with Horizontal(id="main-container"):
             with Vertical(id="left-column"):
-                yield HeaderBar(show_seed=self._show_seed, seed=self._seed, id="header")
+                yield HeaderBar(
+                    show_seed=self._show_seed, seed=self._seed, id="header"
+                )
                 yield PokerTableArea(id="poker-table")
                 yield NarrationPanel(id="narration-panel")
             with Vertical(id="right-column"):
@@ -74,7 +76,9 @@ class PokerViewerApp(App[None]):
         action_log = self.query_one("#action-log", ActionLog)
         narration = self.query_one("#narration-panel", NarrationPanel)
 
-        self._event_handler = EventHandler(header, table, action_log, narration)
+        self._event_handler = EventHandler(
+            header, table, action_log, narration
+        )
         self.run_worker(self._consume_events(), exclusive=True)
         self._apply_column_layout(self.size.width)
 

@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Self
 
 from src.domain.models.actions import ActionType
 from src.domain.models.available_action import AvailableActions
@@ -152,7 +150,7 @@ class WinnerInfo:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> WinnerInfo:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         return cls(
             player_id=data["player_id"],
             player_name=data["player_name"],
@@ -174,7 +172,7 @@ class EliminatedInfo:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> EliminatedInfo:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         return cls(
             player_id=data["player_id"],
             player_name=data["player_name"],
@@ -201,7 +199,7 @@ class ShowdownResult:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> ShowdownResult:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         if "hole_cards" in data and isinstance(data["hole_cards"], str):
             raise ValueError(
                 "Legacy showdown result format detected. Cannot deserialize string-based hole_cards."
@@ -244,7 +242,7 @@ class PlayerOutcome:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> PlayerOutcome:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         return cls(
             player_id=data["player_id"],
             player_name=data["player_name"],
@@ -281,7 +279,7 @@ class HandOutcomeDetails:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> HandOutcomeDetails:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         return cls(
             winners=tuple(WinnerInfo.from_dict(w) for w in data["winners"]),
             eliminated=tuple(

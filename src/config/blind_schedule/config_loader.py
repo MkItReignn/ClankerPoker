@@ -3,8 +3,6 @@
 Loads a single blind schedule configuration from a schedule file (e.g., schedules/standard.json).
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any, final, override
 
@@ -40,7 +38,9 @@ class BlindScheduleLoader(BaseConfigLoader[BlindSchedule]):
             logger: Optional logger. Defaults to creating one.
             json_loader: Optional JSON loader (for testing).
         """
-        resolved_logger = logger or get_generic_logger(__name__.removeprefix("src."))
+        resolved_logger = logger or get_generic_logger(
+            __name__.removeprefix("src.")
+        )
         super().__init__(
             config_path=config_path,
             logger=resolved_logger,

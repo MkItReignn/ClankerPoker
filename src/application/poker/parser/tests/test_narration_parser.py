@@ -2,7 +2,9 @@
 
 import pytest
 
-from src.application.poker.parser.narration_parser import ThoughtProcessNarrationParser
+from src.application.poker.parser.narration_parser import (
+    ThoughtProcessNarrationParser,
+)
 from src.application.protocols.response import ParseError
 from src.domain.models.narration import Narration
 
@@ -15,7 +17,9 @@ def parser():
 class TestThoughtProcessExtraction:
     """Tests for extracting THOUGHT_PROCESS from response."""
 
-    def test_extracts_thought_process(self, parser, full_thought_process_response):
+    def test_extracts_thought_process(
+        self, parser, full_thought_process_response
+    ):
         result = parser.parse(full_thought_process_response)
 
         assert isinstance(result, Narration)
@@ -23,7 +27,9 @@ class TestThoughtProcessExtraction:
         assert "button" in result.thought_process
         assert "70-75%" in result.thought_process
 
-    def test_returns_narration_object_type(self, parser, full_thought_process_response):
+    def test_returns_narration_object_type(
+        self, parser, full_thought_process_response
+    ):
         result = parser.parse(full_thought_process_response)
 
         assert isinstance(result, Narration)
@@ -104,7 +110,7 @@ ACTION: fold
 
         # Should be an error, not a Narration with "ACTION: fold" as content
         assert isinstance(result, ParseError)
-        if hasattr(result, 'context') and result.context:
+        if hasattr(result, "context") and result.context:
             # If there's context, it should not show ACTION as the captured content
             pass  # The error itself proves ACTION wasn't treated as content
 
@@ -141,7 +147,9 @@ class TestWordLimitTrimming:
     """Tests for word limit enforcement and trimming."""
 
     def test_content_within_limit_passes(self, parser):
-        short_content = "This is a short thought process. It should pass without trimming."
+        short_content = (
+            "This is a short thought process. It should pass without trimming."
+        )
         response = f"""
 THOUGHT_PROCESS:
 {short_content}
@@ -226,7 +234,9 @@ ACTION: fold
 class TestMinimalValidResponse:
     """Tests for responses without THOUGHT_PROCESS."""
 
-    def test_action_only_response_returns_error(self, parser, minimal_response):
+    def test_action_only_response_returns_error(
+        self, parser, minimal_response
+    ):
         result = parser.parse(minimal_response)
 
         assert isinstance(result, ParseError)

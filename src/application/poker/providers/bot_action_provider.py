@@ -5,8 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, ClassVar, Self
 
-from src.application.poker.providers.bot_random_action_selector import \
-    BotRandomActionSelector
+from src.application.poker.providers.bot_random_action_selector import (
+    BotRandomActionSelector,
+)
 from src.application.protocols.player import ActionResponse, PlayerConfig
 from src.config.poker.bot_config import BotPokerGameConfig
 from src.config.poker.bot_personality import BotPersonality
@@ -74,7 +75,9 @@ class BotActionProvider:
             default_config: Default bot config for all players.
             player_configs: Optional per-player configs.
         """
-        self._default_config = default_config or BotPlayerConfig(selector=BotRandomActionSelector())
+        self._default_config = default_config or BotPlayerConfig(
+            selector=BotRandomActionSelector()
+        )
         self._player_configs = player_configs or {}
 
     async def get_action(
@@ -94,7 +97,9 @@ class BotActionProvider:
             ActionResponse with chosen action.
         """
         # Get config for this player (or default)
-        bot_config = self._player_configs.get(config.player_id, self._default_config)
+        bot_config = self._player_configs.get(
+            config.player_id, self._default_config
+        )
 
         # Select action
         action = bot_config.selector.select_action(available_actions)
@@ -176,7 +181,9 @@ class BotActionProvider:
         )
 
     @classmethod
-    def with_seed(cls, seed: int, narration_template: str | None = None) -> BotActionProvider:
+    def with_seed(
+        cls, seed: int, narration_template: str | None = None
+    ) -> BotActionProvider:
         """Create a provider with a fixed random seed.
 
         Useful for reproducible games/testing.

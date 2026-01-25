@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Any
 
 from textual.reactive import reactive
@@ -76,8 +74,12 @@ class HeaderBar(Static):
         self._update_display()
 
     def update_from_game_state(self, game_state: dict[str, Any]) -> None:
-        self.hand_number = game_state.get("hand_state", {}).get("hand_number", 1)
-        self.phase = game_state.get("hand_state", {}).get("current_phase", "pre_flop")
+        self.hand_number = game_state.get("hand_state", {}).get(
+            "hand_number", 1
+        )
+        self.phase = game_state.get("hand_state", {}).get(
+            "current_phase", "pre_flop"
+        )
 
         blind_level = game_state.get("blind_level", {})
         self.small_blind = blind_level.get("small_blind", 0)

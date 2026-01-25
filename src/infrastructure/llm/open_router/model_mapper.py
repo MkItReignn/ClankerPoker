@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import ClassVar
 
 from src.domain.models.llm_model import LlmModel
@@ -37,7 +35,9 @@ class OpenRouterModelMapper:
     @classmethod
     def from_openrouter_model(cls, openrouter_model: str) -> LlmModel:
         # Create reverse mapping
-        reverse_map: dict[str, LlmModel] = {v: k for k, v in cls._MODEL_MAP.items()}
+        reverse_map: dict[str, LlmModel] = {
+            v: k for k, v in cls._MODEL_MAP.items()
+        }
 
         if openrouter_model not in reverse_map:
             valid_models = [model.value for model in LlmModel]

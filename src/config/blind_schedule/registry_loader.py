@@ -4,15 +4,16 @@ Loads the blind schedule mode registry from the main config file,
 which references individual schedule files for each mode.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any, final, override
 
 import structlog
 
 from src.config.base.config_loader import BaseConfigLoader
-from src.config.blind_schedule.config import BlindSchedule, BlindScheduleRegistry
+from src.config.blind_schedule.config import (
+    BlindSchedule,
+    BlindScheduleRegistry,
+)
 from src.config.blind_schedule.config_loader import BlindScheduleLoader
 from src.config.utils.type_extractors import ConfigTypeExtractor
 from src.logger.factories import get_generic_logger
@@ -45,7 +46,9 @@ class BlindScheduleRegistryLoader(BaseConfigLoader[BlindScheduleRegistry]):
         from src.constants.config import BLIND_SCHEDULE_CONFIG_PATH
 
         resolved_path = config_path or BLIND_SCHEDULE_CONFIG_PATH
-        resolved_logger = logger or get_generic_logger(__name__.removeprefix("src."))
+        resolved_logger = logger or get_generic_logger(
+            __name__.removeprefix("src.")
+        )
         super().__init__(
             config_path=resolved_path,
             logger=resolved_logger,
@@ -53,7 +56,9 @@ class BlindScheduleRegistryLoader(BaseConfigLoader[BlindScheduleRegistry]):
         )
         # Store schedules directory path
         self._schedules_dir = resolved_path.parent / "schedules"
-        self._schedule_config_loader_class = schedule_config_loader or BlindScheduleLoader
+        self._schedule_config_loader_class = (
+            schedule_config_loader or BlindScheduleLoader
+        )
 
     @override
     def _load_config(self) -> BlindScheduleRegistry:

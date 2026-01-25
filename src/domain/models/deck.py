@@ -1,11 +1,12 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from random import Random
+from typing import Self
 
 from src.domain.models.card import Card, Rank, Suit
 
-STANDARD_DECK: list[Card] = [Card(suit=suit, rank=rank) for suit in Suit for rank in Rank]
+STANDARD_DECK: list[Card] = [
+    Card(suit=suit, rank=rank) for suit in Suit for rank in Rank
+]
 
 
 @dataclass(slots=True)
@@ -17,12 +18,14 @@ class Deck:
 
     def __post_init__(self) -> None:
         if len(self.cards) != 52:
-            raise ValueError(f"Deck must have exactly 52 cards, got {len(self.cards)}")
+            raise ValueError(
+                f"Deck must have exactly 52 cards, got {len(self.cards)}"
+            )
         if len(set(self.cards)) != 52:
             raise ValueError("Deck contains duplicate cards")
 
     @classmethod
-    def create_shuffled(cls, seed: int | None = None) -> Deck:
+    def create_shuffled(cls, seed: int | None = None) -> Self:
         """Create a new shuffled deck. If seed is provided, deck is deterministic."""
         rng = Random(seed) if seed is not None else Random()
         shuffled = STANDARD_DECK.copy()

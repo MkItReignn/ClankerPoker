@@ -1,10 +1,8 @@
 """Hand record model - complete hand from deal to showdown."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Self
 
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.card import Card
@@ -83,7 +81,7 @@ class HandRecord:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> HandRecord:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         """Deserialize a dictionary to HandRecord."""
         from src.domain.models.chips import ChipAmount
 

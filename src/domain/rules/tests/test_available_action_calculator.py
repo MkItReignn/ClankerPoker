@@ -1,7 +1,5 @@
 """Tests for AvailableActionCalculator - calculates available actions for players."""
 
-from __future__ import annotations
-
 from collections.abc import Callable
 
 from src.domain.models.available_action import (

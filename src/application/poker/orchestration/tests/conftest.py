@@ -6,8 +6,6 @@ These fixtures support behavioral testing of the state manager by providing:
 - Player and configuration factories
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from typing import Any
 
@@ -174,8 +172,12 @@ class ScriptedActionProvider:
         actions: list[Action] | dict[str, list[Action]],
     ) -> None:
         if isinstance(actions, dict):
-            self._per_player_actions = {pid: list(acts) for pid, acts in actions.items()}
-            self._per_player_indices: dict[str, int] = {pid: 0 for pid in actions.keys()}
+            self._per_player_actions = {
+                pid: list(acts) for pid, acts in actions.items()
+            }
+            self._per_player_indices: dict[str, int] = {
+                pid: 0 for pid in actions.keys()
+            }
             self._actions: list[Action] | None = None
             self._index = 0
         else:
@@ -195,7 +197,9 @@ class ScriptedActionProvider:
     def actions_remaining(self) -> int:
         """Number of actions left in the script."""
         if self._per_player_actions is not None:
-            total = sum(len(acts) for acts in self._per_player_actions.values())
+            total = sum(
+                len(acts) for acts in self._per_player_actions.values()
+            )
             return total - self.actions_taken
         return len(self._actions) - self._index
 
@@ -244,7 +248,9 @@ class ScriptedActionProvider:
 
             # If the requested action is not available, try to find a compatible one
             # (e.g., if CALL requested but only CHECK available, use CHECK)
-            action = self._find_compatible_action(requested_action, available_actions)
+            action = self._find_compatible_action(
+                requested_action, available_actions
+            )
 
             self._per_player_indices[config.player_id] = player_index + 1
             return ActionResponse(action=action, narration=None)
@@ -256,7 +262,9 @@ class ScriptedActionProvider:
             )
 
         requested_action = self._actions[self._index]
-        action = self._find_compatible_action(requested_action, available_actions)
+        action = self._find_compatible_action(
+            requested_action, available_actions
+        )
         self._index += 1
         return ActionResponse(action=action, narration=None)
 
@@ -269,8 +277,10 @@ class ScriptedActionProvider:
 
         Handles cases like CALL vs CHECK (both mean "match the current bet").
         """
-        from src.domain.models.available_action import (AvailableCallAction,
-                                                        AvailableCheckAction)
+        from src.domain.models.available_action import (
+            AvailableCallAction,
+            AvailableCheckAction,
+        )
 
         # Check if requested action is available
         for available in available_actions:
@@ -285,7 +295,10 @@ class ScriptedActionProvider:
         elif requested.action_type == ActionType.CHECK:
             for available in available_actions:
                 if isinstance(available, AvailableCallAction):
-                    return Action(action_type=ActionType.CALL, amount=available.call_amount)
+                    return Action(
+                        action_type=ActionType.CALL,
+                        amount=available.call_amount,
+                    )
 
         # No compatible action found, return requested (will fail validation with clear error)
         return requested
@@ -302,7 +315,9 @@ def scripted_provider_factory() -> (
     - dict[str, list[Action]]: Per-player actions, keyed by player_id
     """
 
-    def create_provider(actions: list[Action] | dict[str, list[Action]]) -> ScriptedActionProvider:
+    def create_provider(
+        actions: list[Action] | dict[str, list[Action]]
+    ) -> ScriptedActionProvider:
         return ScriptedActionProvider(actions)
 
     return create_provider
@@ -354,7 +369,9 @@ async def run_turn(
     context = state.build_context(player_id)
     available_actions = state.get_available_actions(player_id)
 
-    response = await action_provider.get_action(context, available_actions, config)
+    response = await action_provider.get_action(
+        context, available_actions, config
+    )
 
     await state.apply_action(player_id, response)
     return True

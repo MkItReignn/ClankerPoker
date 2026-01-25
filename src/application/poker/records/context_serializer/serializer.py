@@ -1,7 +1,7 @@
-from __future__ import annotations
-
 from src.application.poker.records.context_serializer.dtos import (
-    CurrentHandActionsDto, PreviousHandsDto)
+    CurrentHandActionsDto,
+    PreviousHandsDto,
+)
 from src.application.poker.records.models import GameRecord, HandRecord
 
 

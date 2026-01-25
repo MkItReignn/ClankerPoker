@@ -1,9 +1,9 @@
 from src.application.poker.state_observers.details import (
-    HandOutcomeDetails,
     ActionAppliedDetails,
     BlindsPostedDetails,
     GameCompletedDetails,
     GameStartedDetails,
+    HandOutcomeDetails,
     HandStartedDetails,
     HoleCardsDealtDetails,
     RoundCompletedDetails,
@@ -70,6 +70,8 @@ class GameStateNotifier:
     async def on_action_applied(
         self, game: Game, player_id: str, response: HasActionFields
     ) -> None:
-        details: ActionAppliedDetails = DetailsFactory.action_applied(game, player_id, response)
+        details: ActionAppliedDetails = DetailsFactory.action_applied(
+            game, player_id, response
+        )
         for observer in self._observers:
             await observer.on_action_applied(game, details)

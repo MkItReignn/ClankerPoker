@@ -1,7 +1,5 @@
 """Blind schedule configuration data structures."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 from src.domain.models.blinds import BlindLevel
@@ -18,9 +16,13 @@ class BlindScheduleEntry:
 
     def __post_init__(self) -> None:
         if self.start_hand < 1:
-            raise ValueError(f"Start hand must be at least 1: {self.start_hand}")
+            raise ValueError(
+                f"Start hand must be at least 1: {self.start_hand}"
+            )
         if self.duration_hands < 1:
-            raise ValueError(f"Duration must be at least 1 hand: {self.duration_hands}")
+            raise ValueError(
+                f"Duration must be at least 1 hand: {self.duration_hands}"
+            )
 
     def applies_to_hand(self, hand_number: int) -> bool:
         """Check if this schedule entry applies to the given hand number."""

@@ -1,10 +1,8 @@
 """Turn record model - individual player action."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, Self
 
 from src.domain.models.narration import Narration
 
@@ -20,7 +18,9 @@ class TurnRecord:
 
     def __post_init__(self) -> None:
         if self.round_turn_number < 1:
-            raise ValueError(f"round_turn_number must be at least 1: {self.round_turn_number}")
+            raise ValueError(
+                f"round_turn_number must be at least 1: {self.round_turn_number}"
+            )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -31,10 +31,12 @@ class TurnRecord:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> TurnRecord:
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         action = ActionRecord.from_dict(data["action"])
         narration_data = data.get("narration")
-        narration = Narration.from_dict(narration_data) if narration_data else None
+        narration = (
+            Narration.from_dict(narration_data) if narration_data else None
+        )
 
         return cls(
             round_turn_number=data["round_turn_number"],

@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Self
 
 from textual.app import ComposeResult
 from textual.reactive import reactive
@@ -28,7 +26,7 @@ class PlayerDisplayState:
     seat: int
 
     @classmethod
-    def empty(cls, seat: int) -> PlayerDisplayState:
+    def empty(cls, seat: int) -> Self:
         return cls(
             player_id="",
             name="Empty",
@@ -53,7 +51,7 @@ class PlayerDisplayState:
         player_to_act_id: str | None,
         sb_seat: int | None = None,
         bb_seat: int | None = None,
-    ) -> PlayerDisplayState:
+    ) -> Self:
         seat = player.get("seat", 0)
         participation = player.get("participation_status", "in_hand")
 
@@ -173,7 +171,11 @@ class PlayerPanel(Static):
             return
 
         self.remove_class(
-            "player-active", "player-folded", "player-eliminated", "player-all-in", "player-winner"
+            "player-active",
+            "player-folded",
+            "player-eliminated",
+            "player-all-in",
+            "player-winner",
         )
 
         if self.is_winner:
@@ -223,15 +225,21 @@ class PlayerPanel(Static):
 
         if self.is_eliminated:
             seat_color = PlayerTheme.get_color(self.seat)
-            line1.update(f"[dim {seat_color}]{self.player_name}[/dim {seat_color}]")
+            line1.update(
+                f"[dim {seat_color}]{self.player_name}[/dim {seat_color}]"
+            )
             line2.update("[dim]ELIMINATED[/dim]")
             line3.update("[dim]--[/dim]")
             return
 
         seat_color = PlayerTheme.get_color(self.seat)
         badge_str = self._build_badges()
-        name_with_color = f"[{seat_color} bold]{self.player_name}[/{seat_color} bold]"
-        name_display = f"{name_with_color} {badge_str}" if badge_str else name_with_color
+        name_with_color = (
+            f"[{seat_color} bold]{self.player_name}[/{seat_color} bold]"
+        )
+        name_display = (
+            f"{name_with_color} {badge_str}" if badge_str else name_with_color
+        )
 
         line1.update(name_display)
         line2.update(f"{self.chips:,}  {self._build_cards_display()}")

@@ -1,9 +1,5 @@
 """Poker context builder - builds decision context from game state."""
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
 from src.application.poker.context.types import (
     ActingPlayerState,
     CurrentHandRecord,
@@ -12,7 +8,9 @@ from src.application.poker.context.types import (
     PokerDecisionContext,
     PreviousHandsRecord,
 )
-from src.application.poker.records.context_serializer import RecordToLlmContextSerializer
+from src.application.poker.records.context_serializer import (
+    RecordToLlmContextSerializer,
+)
 from src.application.poker.records.models import GameRecord
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game
@@ -20,9 +18,6 @@ from src.domain.models.player import HandParticipationStatus, Player
 from src.domain.models.position import TablePositionMapping
 from src.domain.rules.betting_calculator import BettingCalculator
 from src.domain.rules.position_manager import PositionManager
-
-if TYPE_CHECKING:
-    pass
 
 
 class PokerContextBuilder:
@@ -65,15 +60,19 @@ class PokerContextBuilder:
 
         # Calculate positions
         active_players: list[Player] = state.get_active_players()
-        position_mapping: TablePositionMapping = PositionManager.resolve_positions_for_hand(
-            all_players=active_players,
-            previous_button_seat=state.button_seat,
-            advance_button=False,  # Just reading current state
+        position_mapping: TablePositionMapping = (
+            PositionManager.resolve_positions_for_hand(
+                all_players=active_players,
+                previous_button_seat=state.button_seat,
+                advance_button=False,  # Just reading current state
+            )
         )
 
         # Calculate call amount
         players_in_hand: list[Player] = state.players_in_hand()
-        max_invested: ChipAmount = BettingCalculator.get_max_invested_this_hand(players_in_hand)
+        max_invested: ChipAmount = (
+            BettingCalculator.get_max_invested_this_hand(players_in_hand)
+        )
         call_amount: ChipAmount = BettingCalculator.calculate_call_amount(
             max_invested,
             player.total_invested_this_hand,
@@ -113,7 +112,8 @@ class PokerContextBuilder:
                     seat=p.seat,
                     position=position_mapping.get_position_for_seat(p.seat),
                     stack=p.remaining_chips,
-                    is_folded=p.participation_status == HandParticipationStatus.FOLDED,
+                    is_folded=p.participation_status
+                    == HandParticipationStatus.FOLDED,
                     is_all_in=p.is_all_in(),
                     invested_this_hand=p.total_invested_this_hand,
                 )
@@ -128,14 +128,18 @@ class PokerContextBuilder:
                     record.current_hand,
                     state.current_phase.value,
                 )
-            previous_hands_summary = RecordToLlmContextSerializer.serialize_recent_records(
-                record,
-                viewer_id=player_id,
-                max_hands=5,
+            previous_hands_summary = (
+                RecordToLlmContextSerializer.serialize_recent_records(
+                    record,
+                    viewer_id=player_id,
+                    max_hands=5,
+                )
             )
 
         # Build record wrappers
-        current_hand_record: CurrentHandRecord = CurrentHandRecord(text=actions_this_hand)
+        current_hand_record: CurrentHandRecord = CurrentHandRecord(
+            text=actions_this_hand
+        )
         previous_hands_record: PreviousHandsRecord = PreviousHandsRecord(
             text=previous_hands_summary
         )

@@ -3,8 +3,6 @@
 Contains the data classes for prompt components that can be composed together.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 

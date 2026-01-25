@@ -6,8 +6,6 @@ level of the game hierarchy: Game -> Hand -> Round -> Turn.
 Updated for Phase 1: All methods are now async and use Details dataclasses.
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from datetime import datetime
 

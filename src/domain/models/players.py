@@ -1,10 +1,8 @@
 """Immutable Players collection for managing player state."""
 
-from __future__ import annotations
-
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Self
 
 from src.domain.models.player import HandParticipationStatus, Player, PlayerId
 from src.domain.models.seat import Seat
@@ -47,7 +45,7 @@ class Players:
         return list(self._players.values())[index]
 
     @classmethod
-    def from_list(cls, players: list[Player]) -> Players:
+    def from_list(cls, players: list[Player]) -> Self:
         """Create Players collection from a list of players."""
         return cls(_players={p.id: p for p in players})
 
@@ -82,7 +80,9 @@ class Players:
             if p.participation_status != HandParticipationStatus.ELIMINATED
         )
 
-    def in_hand(self, excluded_player_id: PlayerId | None = None) -> tuple[Player, ...]:
+    def in_hand(
+        self, excluded_player_id: PlayerId | None = None
+    ) -> tuple[Player, ...]:
         """Get all players currently in hand, optionally excluding a specific player."""
         players = [p for p in self._players.values() if p.is_in_hand()]
         if excluded_player_id is not None:
@@ -91,7 +91,11 @@ class Players:
 
     def players_in_hand_and_not_all_in(self) -> tuple[Player, ...]:
         """Get all players who are in the hand and not all-in (can still act)."""
-        return tuple(p for p in self._players.values() if p.is_in_hand() and not p.is_all_in())
+        return tuple(
+            p
+            for p in self._players.values()
+            if p.is_in_hand() and not p.is_all_in()
+        )
 
     def are_all_players_all_in(self) -> bool:
         """Check if all players in hand are all-in (no more betting possible)."""
@@ -106,9 +110,15 @@ class Players:
 
     def get_all_players_invested_in_current_hand(self) -> list[Player]:
         """Get all players who have invested chips in the current hand (including folded)."""
-        return [p for p in self._players.values() if p.total_invested_this_hand.value > 0]
+        return [
+            p
+            for p in self._players.values()
+            if p.total_invested_this_hand.value > 0
+        ]
 
-    def replace_player(self, player_id: PlayerId, updated_player: Player) -> Players:
+    def replace_player(
+        self, player_id: PlayerId, updated_player: Player
+    ) -> Self:
         """Replace a single player. Returns new Players instance.
 
         Raises ValueError if player_id not found.
@@ -118,31 +128,38 @@ class Players:
 
         return Players(_players={**self._players, player_id: updated_player})
 
-    def replace_at_index(self, index: int, updated_player: Player) -> Players:
+    def replace_at_index(self, index: int, updated_player: Player) -> Self:
         """Replace player at index. Returns new Players instance."""
         if index < 0 or index >= len(self._players):
-            raise IndexError(f"Index {index} out of range for {len(self._players)} players")
+            raise IndexError(
+                f"Index {index} out of range for {len(self._players)} players"
+            )
 
         keys = list(self._players.keys())
         player_id = keys[index]
         return Players(_players={**self._players, player_id: updated_player})
 
-    def replace_all(self, updates: dict[PlayerId, Player]) -> Players:
+    def replace_all(self, updates: dict[PlayerId, Player]) -> Self:
         """Replace multiple players at once. Returns new Players instance."""
         return Players(_players={**self._players, **updates})
 
-    def transform_all(self, transform: Callable[[Player], Player]) -> Players:
+    def transform_all(self, transform: Callable[[Player], Player]) -> Self:
         """Apply transformation to all players. Returns new Players instance."""
-        return Players(_players={pid: transform(p) for pid, p in self._players.items()})
+        return Players(
+            _players={pid: transform(p) for pid, p in self._players.items()}
+        )
 
     def transform_filtered(
         self,
         predicate: Callable[[Player], bool],
         transform: Callable[[Player], Player],
-    ) -> Players:
+    ) -> Self:
         """Apply transformation to players matching predicate. Returns new Players instance."""
         return Players(
-            _players={pid: transform(p) if predicate(p) else p for pid, p in self._players.items()}
+            _players={
+                pid: transform(p) if predicate(p) else p
+                for pid, p in self._players.items()
+            }
         )
 
     def to_dict(self) -> list[dict[str, Any]]:

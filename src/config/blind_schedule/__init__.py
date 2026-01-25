@@ -6,7 +6,9 @@ from src.config.blind_schedule.config import (
     BlindScheduleRegistry,
 )
 from src.config.blind_schedule.config_loader import BlindScheduleLoader
-from src.config.blind_schedule.registry_loader import BlindScheduleRegistryLoader
+from src.config.blind_schedule.registry_loader import (
+    BlindScheduleRegistryLoader,
+)
 from src.constants.config import BLIND_SCHEDULE_CONFIG_PATH
 
 __all__ = [

@@ -136,9 +136,7 @@ class ConfigTypeExtractor:
 
         if not isinstance(value, int):
             context_prefix = f"{context}: " if context else ""
-            error_msg = (
-                f"{context_prefix}'{key}' must be an integer or null, got {type(value).__name__}"
-            )
+            error_msg = f"{context_prefix}'{key}' must be an integer or null, got {type(value).__name__}"
             self._logger.error(
                 "config_validation_error",
                 key=key,
@@ -362,9 +360,7 @@ class ConfigTypeExtractor:
 
         if not isinstance(value, str):
             context_prefix = f"{context}: " if context else ""
-            error_msg = (
-                f"{context_prefix}'{key}' must be a string or null, got {type(value).__name__}"
-            )
+            error_msg = f"{context_prefix}'{key}' must be a string or null, got {type(value).__name__}"
             self._logger.error(
                 "config_validation_error",
                 key=key,
@@ -474,9 +470,7 @@ class ConfigTypeExtractor:
 
         if not isinstance(value, dict):
             context_prefix = f"{context}: " if context else ""
-            error_msg = (
-                f"{context_prefix}'{key}' must be a JSON object or null, got {type(value).__name__}"
-            )
+            error_msg = f"{context_prefix}'{key}' must be a JSON object or null, got {type(value).__name__}"
             self._logger.error(
                 "config_validation_error",
                 key=key,
@@ -512,7 +506,9 @@ class ConfigTypeExtractor:
         """
         allowed_types = {str, int, float, bool}
         if element_type not in allowed_types:
-            raise TypeError(f"element_type must be one of {allowed_types}, got {element_type}")
+            raise TypeError(
+                f"element_type must be one of {allowed_types}, got {element_type}"
+            )
 
         if key not in data:
             context_prefix = f"{context}: " if context else ""

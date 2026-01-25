@@ -1,7 +1,5 @@
 """Poker game state manager."""
 
-from __future__ import annotations
-
 from dataclasses import replace as dataclass_replace
 from datetime import UTC, datetime
 

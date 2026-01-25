@@ -1,7 +1,5 @@
 """Protocols for building decision context and formatting prompts."""
 
-from __future__ import annotations
-
 from typing import Protocol, TypeVar
 
 # Generic type variables
@@ -11,7 +9,9 @@ TGameState = TypeVar("TGameState", contravariant=True)
 TContext = TypeVar("TContext", covariant=True)  # Return type in ContextBuilder
 TAvailableActions = TypeVar("TAvailableActions", contravariant=True)
 TRecord = TypeVar("TRecord", contravariant=True)
-TContextInput = TypeVar("TContextInput", contravariant=True)  # Parameter in PromptFormatter
+TContextInput = TypeVar(
+    "TContextInput", contravariant=True
+)  # Parameter in PromptFormatter
 TPlayerInfo = TypeVar(
     "TPlayerInfo", contravariant=True
 )  # Player info for prompt formatting (typically PlayerConfig)

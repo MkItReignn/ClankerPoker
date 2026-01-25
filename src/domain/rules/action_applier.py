@@ -1,21 +1,25 @@
-from __future__ import annotations
-
 from dataclasses import dataclass, replace
 
 from src.domain.models.actions import Action, ActionType
-from src.domain.models.available_action import (AvailableActions,
-                                                AvailableAllInAction,
-                                                AvailableBetAction,
-                                                AvailableCallAction,
-                                                AvailableRaiseAction)
+from src.domain.models.available_action import (
+    AvailableActions,
+    AvailableAllInAction,
+    AvailableBetAction,
+    AvailableCallAction,
+    AvailableRaiseAction,
+)
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import NO_POSITION_TO_ACT, BettingState, Game
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player,
-                                      PlayerId)
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    Player,
+    PlayerId,
+)
 from src.domain.models.players import Players
-from src.domain.rules.available_action_calculator import \
-    AvailableActionCalculator
+from src.domain.rules.available_action_calculator import (
+    AvailableActionCalculator,
+)
 from src.domain.rules.betting_calculator import BettingCalculator
 from src.domain.rules.pot_calculator import PotCalculator
 
@@ -64,42 +68,58 @@ class ActionApplier:
             raise ValueError(f"Player {player_id} not found in game")
 
         available_actions: list[AvailableActions] = (
-            AvailableActionCalculator.calculate_available_actions(game, player_id)
+            AvailableActionCalculator.calculate_available_actions(
+                game, player_id
+            )
         )
         ActionApplier._validate_action(action, available_actions)
 
         players_in_hand: list[Player] = list(game.players.in_hand())
-        max_invested: ChipAmount = BettingCalculator.get_max_invested_this_hand(players_in_hand)
+        max_invested: ChipAmount = (
+            BettingCalculator.get_max_invested_this_hand(players_in_hand)
+        )
         call_amount: ChipAmount = BettingCalculator.calculate_call_amount(
             max_invested, player.total_invested_this_hand
         )
 
-        minimum_raise_increment: ChipAmount = BettingCalculator.calculate_minimum_raise_increment(
-            game.betting_state.last_raise_increment,
-            game.current_blind_level.big_blind,
+        minimum_raise_increment: ChipAmount = (
+            BettingCalculator.calculate_minimum_raise_increment(
+                game.betting_state.last_raise_increment,
+                game.current_blind_level.big_blind,
+            )
         )
 
-        result: _ActionApplicationResult = ActionApplier._apply_action_to_player(
-            player, action, call_amount, minimum_raise_increment
+        result: _ActionApplicationResult = (
+            ActionApplier._apply_action_to_player(
+                player, action, call_amount, minimum_raise_increment
+            )
         )
 
-        updated_players: Players = game.players.replace_player(player_id, result.updated_player)
+        updated_players: Players = game.players.replace_player(
+            player_id, result.updated_player
+        )
 
         # Reset players based on betting state change
         if result.betting_state_update.bet_increased:
             if result.betting_state_update.was_legal_raise:
                 # Full raise: reopen betting, players can raise
-                updated_players = ActionApplier._reset_acted_players_after_raise(
-                    updated_players, player_id
+                updated_players = (
+                    ActionApplier._reset_acted_players_after_raise(
+                        updated_players, player_id
+                    )
                 )
             else:
                 # Short all-in: players must respond but cannot re-raise (WSOP Rule 96)
-                updated_players = ActionApplier._reset_acted_players_for_short_allin(
-                    updated_players, player_id
+                updated_players = (
+                    ActionApplier._reset_acted_players_for_short_allin(
+                        updated_players, player_id
+                    )
                 )
 
-        position_to_act: int = ActionApplier._find_next_position_to_act_within_round(
-            updated_players, game.betting_state.position_to_act
+        position_to_act: int = (
+            ActionApplier._find_next_position_to_act_within_round(
+                updated_players, game.betting_state.position_to_act
+            )
         )
 
         updated_betting_state: BettingState = BettingState(
@@ -111,10 +131,14 @@ class ActionApplier:
             position_to_act=position_to_act,
         )
 
-        return ActionApplier._build_updated_game(game, updated_players, updated_betting_state)
+        return ActionApplier._build_updated_game(
+            game, updated_players, updated_betting_state
+        )
 
     @staticmethod
-    def _validate_action(action: Action, available_actions: list[AvailableActions]) -> None:
+    def _validate_action(
+        action: Action, available_actions: list[AvailableActions]
+    ) -> None:
         """Validate that action matches one of the available actions.
 
         Raises ValueError if action is invalid.
@@ -199,8 +223,13 @@ class ActionApplier:
         elif action.action_type == ActionType.RAISE:
             return ActionApplier._apply_raise(player, action, call_amount)
         elif action.action_type == ActionType.ALL_IN:
-            return ActionApplier._apply_all_in(player, action, call_amount, minimum_raise_increment)
-        elif action.action_type in (ActionType.POST_SMALL_BLIND, ActionType.POST_BIG_BLIND):
+            return ActionApplier._apply_all_in(
+                player, action, call_amount, minimum_raise_increment
+            )
+        elif action.action_type in (
+            ActionType.POST_SMALL_BLIND,
+            ActionType.POST_BIG_BLIND,
+        ):
             raise ValueError(
                 f"Blind posting actions ({action.action_type.value}) cannot be applied directly. "
                 "Blinds are posted automatically during hand initialization."
@@ -242,13 +271,16 @@ class ActionApplier:
         )
 
     @staticmethod
-    def _apply_call(player: Player, call_amount: ChipAmount) -> _ActionApplicationResult:
+    def _apply_call(
+        player: Player, call_amount: ChipAmount
+    ) -> _ActionApplicationResult:
         """Apply call action: player matches current bet level."""
         chips_to_call = min(call_amount.value, player.remaining_chips.value)
         updated_player = replace(
             player,
             remaining_chips=player.remaining_chips - ChipAmount(chips_to_call),
-            total_invested_this_hand=player.total_invested_this_hand + ChipAmount(chips_to_call),
+            total_invested_this_hand=player.total_invested_this_hand
+            + ChipAmount(chips_to_call),
             betting_status=BettingRoundActionStatus.ACTED,
         )
         return _ActionApplicationResult(
@@ -274,7 +306,8 @@ class ActionApplier:
         updated_player = replace(
             player,
             remaining_chips=player.remaining_chips - bet_amount,
-            total_invested_this_hand=player.total_invested_this_hand + bet_amount,
+            total_invested_this_hand=player.total_invested_this_hand
+            + bet_amount,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         return _ActionApplicationResult(
@@ -302,7 +335,8 @@ class ActionApplier:
         updated_player = replace(
             player,
             remaining_chips=player.remaining_chips - total_needed,
-            total_invested_this_hand=player.total_invested_this_hand + total_needed,
+            total_invested_this_hand=player.total_invested_this_hand
+            + total_needed,
             betting_status=BettingRoundActionStatus.ACTED,
         )
         return _ActionApplicationResult(
@@ -341,7 +375,8 @@ class ActionApplier:
         updated_player = replace(
             player,
             remaining_chips=player.remaining_chips - all_in_amount,
-            total_invested_this_hand=player.total_invested_this_hand + all_in_amount,
+            total_invested_this_hand=player.total_invested_this_hand
+            + all_in_amount,
             betting_status=BettingRoundActionStatus.ACTED,
         )
 
@@ -354,7 +389,9 @@ class ActionApplier:
                 betting_state_update=_BettingStateUpdate(
                     bet_increased=True,  # Always increases bet level
                     was_legal_raise=is_legal_bet,  # Only reopens fully if >= minimum
-                    last_raise_increment=all_in_amount if is_legal_bet else ChipAmount(0),
+                    last_raise_increment=(
+                        all_in_amount if is_legal_bet else ChipAmount(0)
+                    ),
                 ),
             )
 
@@ -379,12 +416,16 @@ class ActionApplier:
             betting_state_update=_BettingStateUpdate(
                 bet_increased=True,  # Bet level increased
                 was_legal_raise=is_legal_raise,  # Only reopens fully if >= minimum
-                last_raise_increment=raise_increment if is_legal_raise else ChipAmount(0),
+                last_raise_increment=(
+                    raise_increment if is_legal_raise else ChipAmount(0)
+                ),
             ),
         )
 
     @staticmethod
-    def _reset_acted_players_after_raise(players: Players, raising_player_id: str) -> Players:
+    def _reset_acted_players_after_raise(
+        players: Players, raising_player_id: str
+    ) -> Players:
         """Reset all acted players to NEEDS_ACTION after a legal raise.
 
         Sets can_raise=True because a legal raise reopens betting fully.
@@ -410,7 +451,9 @@ class ActionApplier:
         )
 
     @staticmethod
-    def _reset_acted_players_for_short_allin(players: Players, acting_player_id: str) -> Players:
+    def _reset_acted_players_for_short_allin(
+        players: Players, acting_player_id: str
+    ) -> Players:
         """Reset all acted players to NEEDS_ACTION after a short all-in.
 
         Sets can_raise=False because a short all-in does not reopen betting (WSOP Rule 96).
@@ -434,7 +477,9 @@ class ActionApplier:
 
     @staticmethod
     def _build_updated_game(
-        game: Game, updated_players: Players, updated_betting_state: BettingState
+        game: Game,
+        updated_players: Players,
+        updated_betting_state: BettingState,
     ) -> Game:
         """Build new Game instance with updated players, betting state, and pot."""
         updated_pot_state = PotCalculator.calculate_pot_state(
@@ -454,7 +499,9 @@ class ActionApplier:
         )
 
     @staticmethod
-    def _find_next_position_to_act_within_round(players: Players, last_position_to_act: int) -> int:
+    def _find_next_position_to_act_within_round(
+        players: Players, last_position_to_act: int
+    ) -> int:
         """Find next player who needs action within the current betting round, starting from last_position_to_act.
 
         This method is used to find the next player to act after someone has taken an action

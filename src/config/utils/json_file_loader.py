@@ -94,10 +94,14 @@ class JsonFileLoader:
                 "config_file_not_found",
                 config_path=str(self._config_path),
             )
-            raise FileNotFoundError(f"Configuration file not found: {self._config_path}")
+            raise FileNotFoundError(
+                f"Configuration file not found: {self._config_path}"
+            )
 
         try:
-            raw_text = self._file_reader.read_text(self._config_path, encoding="utf-8")
+            raw_text = self._file_reader.read_text(
+                self._config_path, encoding="utf-8"
+            )
             loaded_config = json.loads(raw_text)
         except json.JSONDecodeError as e:
             self._logger.error(
@@ -165,6 +169,8 @@ class JsonFileLoader:
             return None
 
         if not isinstance(env_section_raw, dict):
-            raise ValueError(f"Environment '{env_key}' config must be a JSON object")
+            raise ValueError(
+                f"Environment '{env_key}' config must be a JSON object"
+            )
 
         return env_section_raw

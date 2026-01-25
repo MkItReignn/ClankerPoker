@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Any
 
 from textual.app import ComposeResult
@@ -9,8 +7,10 @@ from textual.widgets import Static
 
 from src.presentation.tui.player_registry import PlayerRegistry
 from src.presentation.tui.widgets.card import CardRenderer
-from src.presentation.tui.widgets.player_panel import (PlayerDisplayState,
-                                                       PlayerPanel)
+from src.presentation.tui.widgets.player_panel import (
+    PlayerDisplayState,
+    PlayerPanel,
+)
 
 
 class TableCenter(Static):
@@ -43,7 +43,9 @@ class TableCenter(Static):
     """
 
     # init=False prevents watchers from firing before mount
-    community_cards: reactive[list[dict[str, Any]]] = reactive(list, init=False)
+    community_cards: reactive[list[dict[str, Any]]] = reactive(
+        list, init=False
+    )
     pot_total: reactive[int] = reactive(0, init=False)
     main_pot: reactive[int] = reactive(0, init=False)
     side_pots: reactive[list[int]] = reactive(list, init=False)
@@ -64,7 +66,9 @@ class TableCenter(Static):
         pot_widget = self.query_one("#pot-display", Static)
         breakdown_widget = self.query_one("#pot-breakdown", Static)
 
-        cards_str = CardRenderer.format_community_cards(list(self.community_cards), total_slots=5)
+        cards_str = CardRenderer.format_community_cards(
+            list(self.community_cards), total_slots=5
+        )
         cards_widget.update(cards_str)
 
         pot_widget.update(f"[bold green]POT: {self.pot_total:,}[/bold green]")
@@ -73,7 +77,9 @@ class TableCenter(Static):
 
     def _format_pot_breakdown(self) -> str:
         items = [f"Main: {self.main_pot:,}"]
-        items.extend(f"S{i + 1}: {pot:,}" for i, pot in enumerate(self.side_pots))
+        items.extend(
+            f"S{i + 1}: {pot:,}" for i, pot in enumerate(self.side_pots)
+        )
 
         lines: list[str] = []
         for i in range(0, len(items), 4):
@@ -91,7 +97,11 @@ class TableCenter(Static):
         self.main_pot = pot_state.get("main_pot", {}).get("amount", 0)
 
         side_pot_list = pot_state.get("side_pots", [])
-        self.side_pots = [sp.get("amount", 0) for sp in side_pot_list if sp.get("amount", 0) > 0]
+        self.side_pots = [
+            sp.get("amount", 0)
+            for sp in side_pot_list
+            if sp.get("amount", 0) > 0
+        ]
 
     def watch_community_cards(self, _: list[dict[str, Any]]) -> None:
         self._update_display()

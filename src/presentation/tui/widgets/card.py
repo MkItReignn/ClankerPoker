@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Any, ClassVar
 
 
@@ -48,7 +46,9 @@ class CardRenderer:
         return " ".join(cls.format_card_rich(card) for card in cards)
 
     @classmethod
-    def format_community_cards(cls, cards: list[dict[str, Any]], total_slots: int = 5) -> str:
+    def format_community_cards(
+        cls, cards: list[dict[str, Any]], total_slots: int = 5
+    ) -> str:
         """Format community cards with empty slots for undealt cards."""
         result: list[str] = []
         for i in range(total_slots):
