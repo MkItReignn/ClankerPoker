@@ -135,7 +135,7 @@ class PokerTableArea(Static):
     }
 
     PokerTableArea .player-row {
-        height: 6;
+        height: 7;
     }
     """
 

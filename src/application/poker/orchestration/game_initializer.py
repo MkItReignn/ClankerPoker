@@ -94,6 +94,7 @@ class GameInitializer:
                 id=config.player_id,
                 name=config.name,
                 bot_id=BotId(config.name),
+                llm_model=config.model_id,
                 seat=Seat.from_int(i),
                 remaining_chips=ChipAmount(starting_chips),
                 hole_cards=None,

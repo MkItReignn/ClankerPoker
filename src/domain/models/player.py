@@ -5,6 +5,7 @@ from typing import Any, Self
 from src.domain.models.bot import BotId
 from src.domain.models.chips import ChipAmount
 from src.domain.models.hand import Hand
+from src.domain.models.llm_model import LlmModel
 from src.domain.models.seat import Seat
 
 PlayerId = str
@@ -30,6 +31,7 @@ class Player:
     id: PlayerId
     name: str
     bot_id: BotId
+    llm_model: LlmModel
     seat: Seat
     remaining_chips: ChipAmount
     hole_cards: Hand | None
@@ -150,6 +152,8 @@ class Player:
             "id": self.id,
             "name": self.name,
             "bot_id": self.bot_id,
+            "llm_model": self.llm_model.value,
+            "model_display_name": self.llm_model.display_name,
             "seat": self.seat.value,
             "remaining_chips": self.remaining_chips.value,
             "hole_cards": (

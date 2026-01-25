@@ -24,6 +24,7 @@ class PlayerDisplayState:
     is_all_in: bool
     is_eliminated: bool
     seat: int
+    model_name: str
 
     @classmethod
     def empty(cls, seat: int) -> Self:
@@ -41,6 +42,7 @@ class PlayerDisplayState:
             is_all_in=False,
             is_eliminated=True,
             seat=seat,
+            model_name="",
         )
 
     @classmethod
@@ -69,6 +71,7 @@ class PlayerDisplayState:
             is_all_in=player.get("is_all_in", False),
             is_eliminated=(participation == "eliminated"),
             seat=seat,
+            model_name=player.get("model_display_name", "unknown"),
         )
 
 
@@ -77,7 +80,7 @@ class PlayerPanel(Static):
     DEFAULT_CSS = """
     PlayerPanel {
         width: 22;
-        height: 5;
+        height: 6;
         border: solid $primary;
         padding: 0 1;
     }
@@ -121,6 +124,7 @@ class PlayerPanel(Static):
     # init=False prevents watchers from firing before mount
     player_id: reactive[str] = reactive("", init=False)
     player_name: reactive[str] = reactive("", init=False)
+    model_name: reactive[str] = reactive("", init=False)
     chips: reactive[int] = reactive(0, init=False)
     current_bet: reactive[int] = reactive(0, init=False)
     is_dealer: reactive[bool] = reactive(False, init=False)
@@ -142,6 +146,7 @@ class PlayerPanel(Static):
         yield Static(id="player-line1")
         yield Static(id="player-line2")
         yield Static(id="player-line3")
+        yield Static(id="player-line4")
 
     def on_mount(self) -> None:
         self._update_display()
@@ -149,6 +154,7 @@ class PlayerPanel(Static):
     def update_state(self, state: PlayerDisplayState) -> None:
         self.player_id = state.player_id
         self.player_name = state.name
+        self.model_name = state.model_name
         self.chips = state.chips
         self._hole_cards = state.hole_cards
         self.current_bet = state.current_bet
@@ -222,6 +228,7 @@ class PlayerPanel(Static):
         line1 = self.query_one("#player-line1", Static)
         line2 = self.query_one("#player-line2", Static)
         line3 = self.query_one("#player-line3", Static)
+        line4 = self.query_one("#player-line4", Static)
 
         if self.is_eliminated:
             seat_color = PlayerTheme.get_color(self.seat)
@@ -230,6 +237,7 @@ class PlayerPanel(Static):
             )
             line2.update("[dim]ELIMINATED[/dim]")
             line3.update("[dim]--[/dim]")
+            line4.update("")
             return
 
         seat_color = PlayerTheme.get_color(self.seat)
@@ -241,34 +249,9 @@ class PlayerPanel(Static):
             f"{name_with_color} {badge_str}" if badge_str else name_with_color
         )
 
+        model_display = f"[dim]{self.model_name}[/dim]" if self.model_name else ""
+
         line1.update(name_display)
-        line2.update(f"{self.chips:,}  {self._build_cards_display()}")
-        line3.update(self._build_bet_display())
-
-    def watch_player_name(self, _: str) -> None:
-        self._update_display()
-
-    def watch_chips(self, _: int) -> None:
-        self._update_display()
-
-    def watch_current_bet(self, _: int) -> None:
-        self._update_display()
-
-    def watch_is_dealer(self, _: bool) -> None:
-        self._update_display()
-
-    def watch_is_active(self, active: bool) -> None:
-        self._update_display()
-        self._update_classes()
-
-    def watch_is_folded(self, _: bool) -> None:
-        self._update_display()
-        self._update_classes()
-
-    def watch_is_all_in(self, _: bool) -> None:
-        self._update_display()
-        self._update_classes()
-
-    def watch_is_eliminated(self, _: bool) -> None:
-        self._update_display()
-        self._update_classes()
+        line2.update(model_display)
+        line3.update(f"{self.chips:,}  {self._build_cards_display()}")
+        line4.update(self._build_bet_display())
