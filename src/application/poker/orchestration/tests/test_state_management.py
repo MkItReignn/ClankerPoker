@@ -132,16 +132,17 @@ class TestRunTurn:
         """Given player's turn, when they fold, they are no longer in hand."""
         # Arrange
         await poker_state.initialize()
+        player_id = poker_state.get_player_to_act_id()
+        assert player_id is not None
         provider = scripted_provider_factory([fold()])
 
         # Act
         result = await run_turn(poker_state, provider)
 
         # Assert
-        assert result is not None
-        assert result.response.action.action_type == ActionType.FOLD
+        assert result
 
-        folded_player = poker_state.game.players.get_by_id(result.player_id)
+        folded_player = poker_state.game.players.get_by_id(player_id)
         assert folded_player is not None
         assert folded_player.is_in_hand() is False
 
@@ -163,8 +164,7 @@ class TestRunTurn:
         result = await run_turn(poker_state, provider)
 
         # Assert
-        assert result is not None
-        assert result.response.action.action_type == ActionType.CALL
+        assert result
 
         total_invested_after = sum(
             p.total_invested_this_hand.value for p in poker_state.game.players
@@ -172,19 +172,19 @@ class TestRunTurn:
         assert total_invested_after > total_invested_before
 
     @pytest.mark.asyncio
-    async def test_returns_none_when_hand_complete(
+    async def test_returns_false_when_hand_complete(
         self,
         poker_state: PokerStateManager,
         scripted_provider_factory,
     ) -> None:
-        """Given hand complete (one player folded), run_turn returns None."""
+        """Given hand complete (one player folded), run_turn returns False."""
         # Arrange
         await poker_state.initialize()
         provider = scripted_provider_factory([fold()])
 
         # One player folds, hand is complete
         result = await run_turn(poker_state, provider)
-        assert result is not None
+        assert result
         assert poker_state.game.is_hand_complete()
 
         # Act: Try to run another turn
@@ -192,7 +192,7 @@ class TestRunTurn:
         result = await run_turn(poker_state, provider_empty)
 
         # Assert
-        assert result is None
+        assert not result
 
     @pytest.mark.asyncio
     async def test_records_action_in_record(
@@ -236,7 +236,7 @@ class TestAdvanceGamePhase:
         provider = scripted_provider_factory([fold()])
 
         result = await run_turn(poker_state, provider)
-        assert result is not None
+        assert result
 
         # At this point only one player is in hand
         players_in_hand = list(poker_state.game.players_in_hand())
@@ -267,7 +267,7 @@ class TestAdvanceGamePhase:
 
         for _ in range(2):
             result = await run_turn(poker_state, provider)
-            if result is None:
+            if not result:
                 break
 
         assert poker_state.game.is_round_complete()
@@ -296,7 +296,7 @@ class TestAdvanceGamePhase:
         provider = scripted_provider_factory([call(), check()])
         for _ in range(2):
             result = await run_turn(poker_state, provider)
-            if result is None:
+            if not result:
                 break
 
         # Act - use explicit advance_round instead of deprecated advance_game_phase
@@ -384,7 +384,7 @@ class TestGameRecording:
 
         # Act: Run one turn (fold) and complete hand
         result = await run_turn(poker_state, provider)
-        assert result is not None
+        assert result
         assert poker_state.is_hand_complete()
         await poker_state.resolve_hand()
         await poker_state.mark_game_complete_if_over()
@@ -407,7 +407,7 @@ class TestGameRecording:
         # One player folds, other wins blinds
         provider = scripted_provider_factory([fold()])
         result = await run_turn(poker_state, provider)
-        assert result is not None
+        assert result
 
         # Complete the hand
         assert poker_state.is_hand_complete()
@@ -497,7 +497,7 @@ class TestEdgeCases:
 
         # Act
         result = await run_turn(three_player_state, provider)
-        assert result is not None
+        assert result
 
         # Assert: Still 2 players in hand, hand not complete
         players_in_hand = list(three_player_state.game.players_in_hand())
@@ -522,12 +522,19 @@ class TestBetAndRaiseActions:
 
         for _ in range(2):
             result = await run_turn(poker_state, provider)
-            if result is None:
+            if not result:
                 break
 
         # Advance to flop
         await poker_state.start_next_round()
         assert poker_state.game.current_phase == GamePhase.FLOP
+
+        # Capture player state before bet
+        player_id = poker_state.get_player_to_act_id()
+        assert player_id is not None
+        player_before = poker_state.game.players.get_by_id(player_id)
+        assert player_before is not None
+        investment_before = player_before.total_invested_this_hand.value
 
         # Act: First player bets
         bet_amount = BIG_BLIND.value * 2  # Standard bet size
@@ -535,9 +542,10 @@ class TestBetAndRaiseActions:
         result = await run_turn(poker_state, bet_provider)
 
         # Assert
-        assert result is not None
-        assert result.response.action.action_type == ActionType.BET
-        assert result.response.action.amount == ChipAmount(bet_amount)
+        assert result
+        player_after = poker_state.game.players.get_by_id(player_id)
+        assert player_after is not None
+        assert player_after.total_invested_this_hand.value == investment_before + bet_amount
 
     @pytest.mark.asyncio
     async def test_raise_action_increases_current_bet(
@@ -548,6 +556,8 @@ class TestBetAndRaiseActions:
         """Given player faces a bet, when they raise, the bet amount increases."""
         # Arrange
         await poker_state.initialize()
+        player_id = poker_state.get_player_to_act_id()
+        assert player_id is not None
 
         # Preflop: SB raises instead of just calling
         raise_amount = BIG_BLIND.value * 3  # 3x BB raise
@@ -557,12 +567,10 @@ class TestBetAndRaiseActions:
         result = await run_turn(poker_state, provider)
 
         # Assert
-        assert result is not None
-        assert result.response.action.action_type == ActionType.RAISE
-        assert result.response.action.amount == ChipAmount(raise_amount)
+        assert result
 
         # Verify the acting player's investment increased
-        acting_player = poker_state.game.players.get_by_id(result.player_id)
+        acting_player = poker_state.game.players.get_by_id(player_id)
         assert acting_player is not None
         assert acting_player.total_invested_this_hand.value >= raise_amount
 
@@ -593,7 +601,7 @@ class TestPhaseProgression:
         # --- PRE_FLOP ---
         for _ in range(2):
             result = await run_turn(poker_state, provider)
-            if result is None:
+            if not result:
                 break
         assert poker_state.game.is_round_complete()
 
@@ -605,7 +613,7 @@ class TestPhaseProgression:
         # --- FLOP ---
         for _ in range(2):
             result = await run_turn(poker_state, provider)
-            if result is None:
+            if not result:
                 break
         assert poker_state.game.is_round_complete()
 
@@ -617,7 +625,7 @@ class TestPhaseProgression:
         # --- TURN ---
         for _ in range(2):
             result = await run_turn(poker_state, provider)
-            if result is None:
+            if not result:
                 break
         assert poker_state.game.is_round_complete()
 
@@ -629,7 +637,7 @@ class TestPhaseProgression:
         # --- RIVER ---
         for _ in range(2):
             result = await run_turn(poker_state, provider)
-            if result is None:
+            if not result:
                 break
         assert poker_state.game.is_round_complete()
 
@@ -660,14 +668,14 @@ class TestPhaseProgression:
         # Complete preflop
         for _ in range(2):
             result = await run_turn(poker_state, provider)
-            if result is None:
+            if not result:
                 break
         await poker_state.start_next_round()  # To FLOP
 
         # Complete flop
         for _ in range(2):
             result = await run_turn(poker_state, provider)
-            if result is None:
+            if not result:
                 break
 
         assert len(poker_state.game.community_cards) == 3
@@ -694,21 +702,21 @@ class TestPhaseProgression:
         # Complete preflop
         for _ in range(2):
             result = await run_turn(poker_state, provider)
-            if result is None:
+            if not result:
                 break
         await poker_state.start_next_round()  # To FLOP
 
         # Complete flop
         for _ in range(2):
             result = await run_turn(poker_state, provider)
-            if result is None:
+            if not result:
                 break
         await poker_state.start_next_round()  # To TURN
 
         # Complete turn
         for _ in range(2):
             result = await run_turn(poker_state, provider)
-            if result is None:
+            if not result:
                 break
 
         assert len(poker_state.game.community_cards) == 4
@@ -743,7 +751,7 @@ class TestShowdown:
         for phase in phases:
             for _ in range(2):
                 result = await run_turn(poker_state, provider)
-                if result is None:
+                if not result:
                     break
             if poker_state.game.is_round_complete() and phase != GamePhase.RIVER:
                 await poker_state.start_next_round()
@@ -791,7 +799,7 @@ class TestShowdown:
             # 3 players means 3 actions per round
             for _ in range(3):
                 result = await run_turn(three_player_state, provider)
-                if result is None:
+                if not result:
                     break
             if three_player_state.game.is_round_complete() and phase != GamePhase.RIVER:
                 await three_player_state.start_next_round()
@@ -905,7 +913,7 @@ class TestCompleteGame:
         for i, _phase in enumerate(phases):
             for _ in range(2):
                 result = await run_turn(poker_state, provider)
-                if result is None:
+                if not result:
                     break
             if poker_state.game.is_round_complete():
                 if i < len(phases) - 1:  # Not RIVER yet
@@ -938,7 +946,7 @@ class TestCompleteGame:
         # Complete first hand via fold
         provider = scripted_provider_factory([fold()])
         result = await run_turn(poker_state, provider)
-        assert result is not None
+        assert result
 
         # Complete hand and start new one
         assert poker_state.is_hand_complete()

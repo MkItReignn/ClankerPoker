@@ -15,7 +15,6 @@ import pytest
 
 from src.application.poker.orchestration.state_manager import PokerStateManager
 from src.application.protocols.player import ActionResponse, PlayerConfig
-from src.application.protocols.response import TurnResult
 from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.config.poker.config import PokerGameConfig, PokerPlayerConfig
 from src.config.tournament.config import PayoutStructure, TournamentConfig
@@ -342,15 +341,14 @@ def all_in(amount: int) -> Action:
 async def run_turn(
     state: PokerStateManager,
     action_provider: ScriptedActionProvider,
-) -> TurnResult[Action, Narration] | None:
+) -> bool:
     """Run a single turn - get action from provider and apply it.
 
-    Test helper that bundles the typical test flow:
-    get player -> build context -> get available actions -> get action -> apply.
+    Returns True if a turn was executed, False if no player to act.
     """
     player_id = state.get_player_to_act_id()
     if player_id is None:
-        return None
+        return False
 
     config = state.get_player_config(player_id)
     context = state.build_context(player_id)
@@ -358,4 +356,5 @@ async def run_turn(
 
     response = await action_provider.get_action(context, available_actions, config)
 
-    return await state.apply_action(player_id, response)
+    await state.apply_action(player_id, response)
+    return True

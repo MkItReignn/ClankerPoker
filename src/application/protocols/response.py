@@ -97,14 +97,6 @@ class ActionResponse(Generic[TAction, TNarration]):
     narration: TNarration | None = None
 
 
-@dataclass(frozen=True, slots=True)
-class TurnResult(Generic[TAction, TNarration]):
-    """Result of executing a single turn - wraps ActionResponse with player context."""
-
-    player_id: str
-    response: ActionResponse[TAction, TNarration]
-
-
 class ResponseParser(Protocol[TAction, TNarration, TAvailableActions]):
     """Protocol for parsing LLM responses into game actions.
 

@@ -12,7 +12,6 @@ from src.application.poker.records.recorder import Recorder
 from src.application.poker.state_observers.notifier import GameStateNotifier
 from src.application.protocols.player import ActionResponse, PlayerConfig
 from src.application.protocols.record import GameRecordRepository
-from src.application.protocols.response import TurnResult
 from src.config.poker.config import PokerGameConfig
 from src.config.tournament.config import TournamentConfig
 from src.domain.models.actions import Action
@@ -104,7 +103,7 @@ class PokerStateManager:
         self,
         player_id: str,
         response: ActionResponse[Action, Narration],
-    ) -> TurnResult[Action, Narration]:
+    ) -> None:
         player: Player | None = self.game.players.get_by_id(player_id)
         if player is None:
             raise ValueError(f"Player {player_id} not found")
@@ -120,11 +119,6 @@ class PokerStateManager:
         )
 
         self._game = new_state
-
-        return TurnResult(
-            player_id=player_id,
-            response=response,
-        )
 
     def is_game_complete(self) -> bool:
         return self.game.status == GameStatus.COMPLETED
