@@ -25,7 +25,8 @@ from src.application.poker.state_observers.details_factory import (
 from src.domain.models.actions import ActionType
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import GamePhase, HandOutcome as GameHandOutcome
+from src.domain.models.game import HandOutcome as GameHandOutcome
+from src.domain.models.game import HandPhase
 from src.domain.models.hand import Hand
 from src.domain.models.narration import Narration, NarrationText
 from src.domain.models.player import (
@@ -49,11 +50,19 @@ class MockActionResponse:
 
 
 class TestGameStarted:
-    def test_returns_player_count_from_game(self, game_factory, sample_player_factory):
+    def test_returns_player_count_from_game(
+        self, game_factory, sample_player_factory
+    ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p3"), Seat.SEAT_2, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p3"), Seat.SEAT_2, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
 
@@ -65,8 +74,12 @@ class TestGameStarted:
         self, game_factory, sample_player_factory
     ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
 
@@ -99,7 +112,9 @@ class TestGameCompleted:
         assert result.winner_name == "Winner Bot"
         assert result.total_hands == 5
 
-    def test_raises_when_no_active_players(self, game_factory, sample_player_factory):
+    def test_raises_when_no_active_players(
+        self, game_factory, sample_player_factory
+    ):
         players = [
             sample_player_factory(
                 PlayerId("p1"),
@@ -121,10 +136,16 @@ class TestGameCompleted:
 
 
 class TestHandStarted:
-    def test_returns_hand_number_from_game(self, game_factory, sample_player_factory):
+    def test_returns_hand_number_from_game(
+        self, game_factory, sample_player_factory
+    ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players, hand_number=7)
 
@@ -132,10 +153,16 @@ class TestHandStarted:
 
         assert result.hand_number == 7
 
-    def test_returns_button_seat_from_game(self, game_factory, sample_player_factory):
+    def test_returns_button_seat_from_game(
+        self, game_factory, sample_player_factory
+    ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players, button_seat=Seat.SEAT_1)
 
@@ -145,7 +172,9 @@ class TestHandStarted:
 
 
 class TestHandCompleted:
-    def test_returns_winners_from_outcome(self, game_factory, sample_player_factory):
+    def test_returns_winners_from_outcome(
+        self, game_factory, sample_player_factory
+    ):
         players = [
             sample_player_factory(
                 PlayerId("p1"), Seat.SEAT_0, ChipAmount(1500), name="Alice"
@@ -170,7 +199,9 @@ class TestHandCompleted:
         self, game_factory, sample_player_factory
     ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(2000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(2000)
+            ),
             sample_player_factory(
                 PlayerId("p2"),
                 Seat.SEAT_1,
@@ -197,7 +228,9 @@ class TestHandCompleted:
         self, game_factory, sample_player_factory
     ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(2000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(2000)
+            ),
             sample_player_factory(
                 PlayerId("p2"),
                 Seat.SEAT_1,
@@ -221,7 +254,10 @@ class TestHandCompleted:
     ):
         players = [
             sample_player_factory(
-                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000), hole_cards=sample_hand
+                PlayerId("p1"),
+                Seat.SEAT_0,
+                ChipAmount(1000),
+                hole_cards=sample_hand,
             ),
             sample_player_factory(
                 PlayerId("p2"),
@@ -233,7 +269,9 @@ class TestHandCompleted:
         outcome = GameHandOutcome(
             hand_number=1, winners=[(PlayerId("p1"), ChipAmount(100))]
         )
-        game = game_factory(players=players, current_phase=GamePhase.PRE_FLOP, outcome=outcome)
+        game = game_factory(
+            players=players, current_phase=HandPhase.PRE_FLOP, outcome=outcome
+        )
 
         result = DetailsFactory.hand_completed(game)
 
@@ -259,7 +297,9 @@ class TestHandCompleted:
         outcome = GameHandOutcome(
             hand_number=1, winners=[(PlayerId("p1"), ChipAmount(100))]
         )
-        game = game_factory(players=players, current_phase=GamePhase.SHOWDOWN, outcome=outcome)
+        game = game_factory(
+            players=players, current_phase=HandPhase.SHOWDOWN, outcome=outcome
+        )
 
         result = DetailsFactory.hand_completed(game)
 
@@ -295,7 +335,9 @@ class TestHandCompleted:
         outcome = GameHandOutcome(
             hand_number=1, winners=[(PlayerId("p1"), ChipAmount(100))]
         )
-        game = game_factory(players=players, current_phase=GamePhase.SHOWDOWN, outcome=outcome)
+        game = game_factory(
+            players=players, current_phase=HandPhase.SHOWDOWN, outcome=outcome
+        )
 
         result = DetailsFactory.hand_completed(game)
 
@@ -308,30 +350,46 @@ class TestHandCompleted:
 class TestRoundStarted:
     def test_returns_current_phase(self, game_factory, sample_player_factory):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
-        game = game_factory(players=players, current_phase=GamePhase.FLOP)
+        game = game_factory(players=players, current_phase=HandPhase.FLOP)
 
         result = DetailsFactory.round_started(game)
 
-        assert result.phase == GamePhase.FLOP
+        assert result.phase == HandPhase.FLOP
 
-    def test_returns_empty_cards_for_preflop(self, game_factory, sample_player_factory):
+    def test_returns_empty_cards_for_preflop(
+        self, game_factory, sample_player_factory
+    ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
-        game = game_factory(players=players, current_phase=GamePhase.PRE_FLOP)
+        game = game_factory(players=players, current_phase=HandPhase.PRE_FLOP)
 
         result = DetailsFactory.round_started(game)
 
         assert result.new_cards == ()
 
-    def test_returns_three_cards_for_flop(self, game_factory, sample_player_factory):
+    def test_returns_three_cards_for_flop(
+        self, game_factory, sample_player_factory
+    ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         community = [
             Card(rank=Rank.TWO, suit=Suit.CLUBS),
@@ -340,7 +398,7 @@ class TestRoundStarted:
         ]
         game = game_factory(
             players=players,
-            current_phase=GamePhase.FLOP,
+            current_phase=HandPhase.FLOP,
             community_cards=community,
         )
 
@@ -349,10 +407,16 @@ class TestRoundStarted:
         assert len(result.new_cards) == 3
         assert result.new_cards == tuple(community)
 
-    def test_returns_one_card_for_turn(self, game_factory, sample_player_factory):
+    def test_returns_one_card_for_turn(
+        self, game_factory, sample_player_factory
+    ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         community = [
             Card(rank=Rank.TWO, suit=Suit.CLUBS),
@@ -362,7 +426,7 @@ class TestRoundStarted:
         ]
         game = game_factory(
             players=players,
-            current_phase=GamePhase.TURN,
+            current_phase=HandPhase.TURN,
             community_cards=community,
         )
 
@@ -371,10 +435,16 @@ class TestRoundStarted:
         assert len(result.new_cards) == 1
         assert result.new_cards[0] == Card(rank=Rank.JACK, suit=Suit.SPADES)
 
-    def test_returns_one_card_for_river(self, game_factory, sample_player_factory):
+    def test_returns_one_card_for_river(
+        self, game_factory, sample_player_factory
+    ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         community = [
             Card(rank=Rank.TWO, suit=Suit.CLUBS),
@@ -385,7 +455,7 @@ class TestRoundStarted:
         ]
         game = game_factory(
             players=players,
-            current_phase=GamePhase.RIVER,
+            current_phase=HandPhase.RIVER,
             community_cards=community,
         )
 
@@ -398,10 +468,14 @@ class TestRoundStarted:
         self, game_factory, sample_player_factory
     ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
-        game = game_factory(players=players, current_phase=GamePhase.SHOWDOWN)
+        game = game_factory(players=players, current_phase=HandPhase.SHOWDOWN)
 
         result = DetailsFactory.round_started(game)
 
@@ -486,7 +560,9 @@ class TestHoleCardsDealt:
         assert result.players["p2"].player_name == "Player Two"
         assert result.players["p2"].cards == hand2
 
-    def test_excludes_folded_players(self, game_factory, sample_player_factory):
+    def test_excludes_folded_players(
+        self, game_factory, sample_player_factory
+    ):
         hand1 = Hand(
             card1=Card(rank=Rank.ACE, suit=Suit.SPADES),
             card2=Card(rank=Rank.KING, suit=Suit.SPADES),
@@ -570,7 +646,9 @@ class TestPlayerToAct:
         assert result.player_name == "Acting Player"
         assert isinstance(result.available_actions, tuple)
 
-    def test_raises_when_no_player_to_act(self, game_factory, sample_player_factory):
+    def test_raises_when_no_player_to_act(
+        self, game_factory, sample_player_factory
+    ):
         players = [
             sample_player_factory(
                 PlayerId("p1"),
@@ -602,11 +680,15 @@ class TestActionApplied:
                 ChipAmount(900),
                 name="Betting Player",
             ),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
         response = MockActionResponse(
-            action=MockAction(action_type=ActionType.BET, amount=ChipAmount(100)),
+            action=MockAction(
+                action_type=ActionType.BET, amount=ChipAmount(100)
+            ),
             narration=None,
         )
 
@@ -622,13 +704,23 @@ class TestActionApplied:
         self, game_factory, sample_player_factory
     ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
-        narration = Narration(thought_process=NarrationText("I have a strong hand, going all-in!"))
+        narration = Narration(
+            thought_process=NarrationText(
+                "I have a strong hand, going all-in!"
+            )
+        )
         response = MockActionResponse(
-            action=MockAction(action_type=ActionType.ALL_IN, amount=ChipAmount(1000)),
+            action=MockAction(
+                action_type=ActionType.ALL_IN, amount=ChipAmount(1000)
+            ),
             narration=narration,
         )
 
@@ -636,10 +728,16 @@ class TestActionApplied:
 
         assert result.narration == narration
 
-    def test_raises_when_player_not_found(self, game_factory, sample_player_factory):
+    def test_raises_when_player_not_found(
+        self, game_factory, sample_player_factory
+    ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
         response = MockActionResponse(
@@ -650,10 +748,16 @@ class TestActionApplied:
         with pytest.raises(ValueError, match="not found"):
             DetailsFactory.action_applied(game, "nonexistent", response)
 
-    def test_handles_fold_with_no_amount(self, game_factory, sample_player_factory):
+    def test_handles_fold_with_no_amount(
+        self, game_factory, sample_player_factory
+    ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
         response = MockActionResponse(
@@ -666,10 +770,16 @@ class TestActionApplied:
         assert result.action_type == ActionType.FOLD
         assert result.amount is None
 
-    def test_handles_check_with_no_amount(self, game_factory, sample_player_factory):
+    def test_handles_check_with_no_amount(
+        self, game_factory, sample_player_factory
+    ):
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
         response = MockActionResponse(

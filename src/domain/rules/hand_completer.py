@@ -5,10 +5,13 @@ from dataclasses import replace
 import structlog
 
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game, GamePhase, HandOutcome
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player,
-                                      PlayerId)
+from src.domain.models.game import Game, HandOutcome, HandPhase
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    Player,
+    PlayerId,
+)
 from src.domain.models.players import Players
 from src.domain.models.pot import Pot, PotState
 from src.domain.rules.chip_distributor import ChipDistributor
@@ -18,7 +21,9 @@ from src.logger.factories import get_generic_logger
 
 
 class HandCompleter:
-    _logger: structlog.BoundLogger = get_generic_logger(__name__.removeprefix("src."))
+    _logger: structlog.BoundLogger = get_generic_logger(
+        __name__.removeprefix("src.")
+    )
 
     @staticmethod
     def _determine_winners_by_pot(
@@ -33,7 +38,10 @@ class HandCompleter:
                     f"This indicates a bug in game state management."
                 )
 
-        all_pots: list[Pot] = [game.pot_state.main_pot, *game.pot_state.side_pots]
+        all_pots: list[Pot] = [
+            game.pot_state.main_pot,
+            *game.pot_state.side_pots,
+        ]
         winners_by_pot: dict[Pot, list[Player]] = {}
 
         for pot in all_pots:
@@ -52,8 +60,10 @@ class HandCompleter:
             for player in eligible_players:
                 if player.hole_cards is None:
                     continue
-                evaluation: HandEvaluation = HandEvaluator.evaluate_hand_strength(
-                    player.hole_cards, game.community_cards
+                evaluation: HandEvaluation = (
+                    HandEvaluator.evaluate_hand_strength(
+                        player.hole_cards, game.community_cards
+                    )
                 )
                 evaluations.append((player, evaluation))
 
@@ -82,7 +92,9 @@ class HandCompleter:
         return winners_by_pot
 
     @staticmethod
-    def _mark_eliminated_players(players: Players, hand_number: int) -> Players:
+    def _mark_eliminated_players(
+        players: Players, hand_number: int
+    ) -> Players:
         """Mark players with 0 chips as eliminated and assign finish positions.
 
         Implements SIMUL-001 through SIMUL-004:
@@ -108,7 +120,9 @@ class HandCompleter:
         # Sort by stack_at_hand_start DESCENDING (larger stack = better position)
         # Use 0 as fallback if stack_at_hand_start is None (shouldn't happen)
         newly_eliminated.sort(
-            key=lambda p: p.stack_at_hand_start.value if p.stack_at_hand_start else 0,
+            key=lambda p: (
+                p.stack_at_hand_start.value if p.stack_at_hand_start else 0
+            ),
             reverse=True,
         )
 
@@ -121,7 +135,11 @@ class HandCompleter:
         prev_position: int = current_position
 
         for player in newly_eliminated:
-            stack_value = player.stack_at_hand_start.value if player.stack_at_hand_start else 0
+            stack_value = (
+                player.stack_at_hand_start.value
+                if player.stack_at_hand_start
+                else 0
+            )
 
             # If same stack as previous player, assign same position (tie)
             if prev_stack is not None and stack_value == prev_stack:
@@ -155,7 +173,7 @@ class HandCompleter:
         if len(players_in_hand) == 1:
             return HandCompleter._complete_early_win(game, players_in_hand[0])
 
-        if game.current_phase == GamePhase.SHOWDOWN:
+        if game.current_phase == HandPhase.SHOWDOWN:
             return HandCompleter._complete_showdown(game, players_in_hand)
 
         raise ValueError(
@@ -167,10 +185,14 @@ class HandCompleter:
     def _complete_early_win(game: Game, winner: Player) -> Game:
         # Always recalculate pot to ensure correctness
         # (No uncalled returns in early win - only 1 player remains)
-        all_players_with_investments = game.players.get_all_players_invested_in_current_hand()
+        all_players_with_investments = (
+            game.players.get_all_players_invested_in_current_hand()
+        )
 
         if all_players_with_investments:
-            updated_pot_state = PotCalculator.calculate_pot_state(all_players_with_investments)
+            updated_pot_state = PotCalculator.calculate_pot_state(
+                all_players_with_investments
+            )
             total_pot = updated_pot_state.total_amount()
         else:
             HandCompleter._logger.error(
@@ -186,10 +208,14 @@ class HandCompleter:
 
         updated_winner = replace(
             winner,
-            remaining_chips=ChipAmount(winner.remaining_chips.value + total_pot.value),
+            remaining_chips=ChipAmount(
+                winner.remaining_chips.value + total_pot.value
+            ),
         )
 
-        updated_players = game.players.replace_player(winner.id, updated_winner)
+        updated_players = game.players.replace_player(
+            winner.id, updated_winner
+        )
         updated_players = HandCompleter._mark_eliminated_players(
             updated_players, game.hand_state.hand_number
         )
@@ -225,7 +251,8 @@ class HandCompleter:
         for player in all_players:
             if player.id in uncalled_returns:
                 adjusted_investment = (
-                    player.total_invested_this_hand.value - uncalled_returns[player.id].value
+                    player.total_invested_this_hand.value
+                    - uncalled_returns[player.id].value
                 )
                 adjusted_player: Player = replace(
                     player,
@@ -237,7 +264,9 @@ class HandCompleter:
 
         # Filter to only players with investments for pot calculation
         adjusted_players_with_investments: list[Player] = [
-            p for p in adjusted_all_players if p.total_invested_this_hand.value > 0
+            p
+            for p in adjusted_all_players
+            if p.total_invested_this_hand.value > 0
         ]
 
         updated_pot_state: PotState = PotCalculator.calculate_pot_state(
@@ -285,7 +314,9 @@ class HandCompleter:
                 )
 
         updated_players = (
-            game.players.replace_all(player_updates) if player_updates else game.players
+            game.players.replace_all(player_updates)
+            if player_updates
+            else game.players
         )
         updated_players = HandCompleter._mark_eliminated_players(
             updated_players, game.hand_state.hand_number

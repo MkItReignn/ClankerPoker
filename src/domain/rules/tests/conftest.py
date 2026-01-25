@@ -13,14 +13,23 @@ from src.domain.models.blinds import BlindLevel
 from src.domain.models.bot import Bot, BotId, BotType, Prompt
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import (BettingState, BlindState, Game,
-                                    GameIdentity, GamePhase, GameStatus,
-                                    HandState)
+from src.domain.models.game import (
+    BettingState,
+    BlindState,
+    Game,
+    GameIdentity,
+    GameStatus,
+    HandPhase,
+    HandState,
+)
 from src.domain.models.hand import Hand
 from src.domain.models.llm_model import LlmModel
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player,
-                                      PlayerId)
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    Player,
+    PlayerId,
+)
 from src.domain.models.players import Players
 from src.domain.models.pot import Pot, PotState
 from src.domain.models.seat import Seat
@@ -147,7 +156,7 @@ def minimal_game_factory() -> Callable[..., Game]:
             ),
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.PRE_FLOP,
+                current_phase=HandPhase.PRE_FLOP,
                 community_cards=[],
                 is_initial_hand_setup=True,
             ),

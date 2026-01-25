@@ -9,14 +9,22 @@ import pytest
 from src.domain.models.actions import Action, ActionType
 from src.domain.models.card import Rank, Suit
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import NO_POSITION_TO_ACT, Game, GamePhase
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player)
+from src.domain.models.game import NO_POSITION_TO_ACT, Game, HandPhase
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    Player,
+)
 from src.domain.models.seat import Seat
 from src.domain.rules.action_applier import ActionApplier
 
-from .conftest import (BIG_BLIND_STANDARD, LARGE_CHIPS, MEDIUM_CHIPS,
-                       make_card, make_hand)
+from .conftest import (
+    BIG_BLIND_STANDARD,
+    LARGE_CHIPS,
+    MEDIUM_CHIPS,
+    make_card,
+    make_hand,
+)
 
 
 class TestFoldAction:
@@ -48,7 +56,10 @@ class TestFoldAction:
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
-        assert updated_player.participation_status == HandParticipationStatus.FOLDED
+        assert (
+            updated_player.participation_status
+            == HandParticipationStatus.FOLDED
+        )
 
     def test_fold_sets_player_betting_status_to_acted(
         self,
@@ -195,7 +206,10 @@ class TestFoldAction:
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.ACTED
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.ACTED
+        )
 
     def test_fold_preserves_last_raise_increment_after_previous_raise(
         self,
@@ -216,12 +230,16 @@ class TestFoldAction:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=raise_increment)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=raise_increment
+        )
         action = Action(action_type=ActionType.FOLD)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
-        assert updated_game.betting_state.last_raise_increment == raise_increment
+        assert (
+            updated_game.betting_state.last_raise_increment == raise_increment
+        )
 
 
 class TestCheckAction:
@@ -339,7 +357,10 @@ class TestCheckAction:
 
         updated_player = updated_game.get_player_by_id(player.id)
         assert updated_player is not None
-        assert updated_player.participation_status == HandParticipationStatus.IN_HAND
+        assert (
+            updated_player.participation_status
+            == HandParticipationStatus.IN_HAND
+        )
 
     def test_check_does_not_reset_other_players_betting_status(
         self,
@@ -367,7 +388,10 @@ class TestCheckAction:
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.ACTED
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.ACTED
+        )
 
     def test_check_preserves_last_raise_increment_after_previous_raise(
         self,
@@ -389,12 +413,16 @@ class TestCheckAction:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=raise_increment)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=raise_increment
+        )
         action = Action(action_type=ActionType.CHECK)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
-        assert updated_game.betting_state.last_raise_increment == raise_increment
+        assert (
+            updated_game.betting_state.last_raise_increment == raise_increment
+        )
 
 
 class TestCallAction:
@@ -542,7 +570,10 @@ class TestCallAction:
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.ACTED
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.ACTED
+        )
 
     def test_call_preserves_last_raise_increment_after_previous_raise(
         self,
@@ -564,12 +595,16 @@ class TestCallAction:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=raise_increment)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=raise_increment
+        )
         action = Action(action_type=ActionType.CALL)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
-        assert updated_game.betting_state.last_raise_increment == raise_increment
+        assert (
+            updated_game.betting_state.last_raise_increment == raise_increment
+        )
 
 
 class TestRaiseAction:
@@ -596,7 +631,9 @@ class TestRaiseAction:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=BIG_BLIND_STANDARD
+        )
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
@@ -626,7 +663,9 @@ class TestRaiseAction:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=BIG_BLIND_STANDARD
+        )
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
@@ -655,7 +694,9 @@ class TestRaiseAction:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=BIG_BLIND_STANDARD
+        )
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
@@ -684,14 +725,19 @@ class TestRaiseAction:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=BIG_BLIND_STANDARD
+        )
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
 
     def test_raise_does_not_reset_folded_players(
         self,
@@ -721,7 +767,8 @@ class TestRaiseAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory(
-            [player, acted_player, folded_player], last_raise_increment=BIG_BLIND_STANDARD
+            [player, acted_player, folded_player],
+            last_raise_increment=BIG_BLIND_STANDARD,
         )
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
@@ -729,7 +776,10 @@ class TestRaiseAction:
 
         updated_folded_player = updated_game.get_player_by_id(folded_player.id)
         assert updated_folded_player is not None
-        assert updated_folded_player.betting_status == BettingRoundActionStatus.ACTED
+        assert (
+            updated_folded_player.betting_status
+            == BettingRoundActionStatus.ACTED
+        )
 
     def test_raise_does_not_reset_raising_player(
         self,
@@ -751,7 +801,9 @@ class TestRaiseAction:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=BIG_BLIND_STANDARD
+        )
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
@@ -780,12 +832,16 @@ class TestRaiseAction:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=BIG_BLIND_STANDARD
+        )
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
-        assert updated_game.betting_state.last_raise_increment == raise_increment
+        assert (
+            updated_game.betting_state.last_raise_increment == raise_increment
+        )
 
     def test_last_raise_increment_preserved_through_multiple_calls_after_raise(
         self,
@@ -815,31 +871,51 @@ class TestRaiseAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory(
-            [player_a, player_b, player_c], last_raise_increment=BIG_BLIND_STANDARD
+            [player_a, player_b, player_c],
+            last_raise_increment=BIG_BLIND_STANDARD,
         )
 
-        raise_action = Action(action_type=ActionType.RAISE, amount=raise_increment)
-        game_after_raise = ActionApplier.apply_action(game, player_a.id, raise_action)
-        assert game_after_raise.betting_state.last_raise_increment == raise_increment
+        raise_action = Action(
+            action_type=ActionType.RAISE, amount=raise_increment
+        )
+        game_after_raise = ActionApplier.apply_action(
+            game, player_a.id, raise_action
+        )
+        assert (
+            game_after_raise.betting_state.last_raise_increment
+            == raise_increment
+        )
 
         updated_player_b = game_after_raise.get_player_by_id(player_b.id)
         assert updated_player_b is not None
-        assert updated_player_b.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_player_b.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
 
         updated_player_c = game_after_raise.get_player_by_id(player_c.id)
         assert updated_player_c is not None
-        assert updated_player_c.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_player_c.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
 
         call_action = Action(action_type=ActionType.CALL)
         game_after_call_b = ActionApplier.apply_action(
             game_after_raise, updated_player_b.id, call_action
         )
-        assert game_after_call_b.betting_state.last_raise_increment == raise_increment
+        assert (
+            game_after_call_b.betting_state.last_raise_increment
+            == raise_increment
+        )
 
         game_after_call_c = ActionApplier.apply_action(
             game_after_call_b, updated_player_c.id, call_action
         )
-        assert game_after_call_c.betting_state.last_raise_increment == raise_increment
+        assert (
+            game_after_call_c.betting_state.last_raise_increment
+            == raise_increment
+        )
 
     def test_raise_resets_multiple_acted_players_to_needs_action(
         self,
@@ -869,19 +945,30 @@ class TestRaiseAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory(
-            [player, acted_player_1, acted_player_2], last_raise_increment=BIG_BLIND_STANDARD
+            [player, acted_player_1, acted_player_2],
+            last_raise_increment=BIG_BLIND_STANDARD,
         )
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
-        updated_acted_player_1 = updated_game.get_player_by_id(acted_player_1.id)
+        updated_acted_player_1 = updated_game.get_player_by_id(
+            acted_player_1.id
+        )
         assert updated_acted_player_1 is not None
-        assert updated_acted_player_1.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_acted_player_1.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
 
-        updated_acted_player_2 = updated_game.get_player_by_id(acted_player_2.id)
+        updated_acted_player_2 = updated_game.get_player_by_id(
+            acted_player_2.id
+        )
         assert updated_acted_player_2 is not None
-        assert updated_acted_player_2.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_acted_player_2.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
 
 
 class TestAllInAction:
@@ -999,7 +1086,10 @@ class TestAllInAction:
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.ACTED
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.ACTED
+        )
 
     def test_all_in_as_raise_resets_other_players_betting_status(
         self,
@@ -1030,8 +1120,14 @@ class TestAllInAction:
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
-        assert updated_game.betting_state.last_raise_increment == expected_raise_increment
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
+        assert (
+            updated_game.betting_state.last_raise_increment
+            == expected_raise_increment
+        )
 
     def test_all_in_when_player_has_already_invested_some_chips(
         self,
@@ -1092,7 +1188,10 @@ class TestAllInAction:
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.ACTED
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.ACTED
+        )
         assert updated_game.betting_state.last_raise_increment == ChipAmount(0)
 
     def test_all_in_when_raise_increment_less_than_minimum_treated_as_call_does_not_reopen(
@@ -1120,7 +1219,8 @@ class TestAllInAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory(
-            [player, other_player], last_raise_increment=minimum_raise_increment
+            [player, other_player],
+            last_raise_increment=minimum_raise_increment,
         )
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
@@ -1128,8 +1228,14 @@ class TestAllInAction:
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.ACTED
-        assert updated_game.betting_state.last_raise_increment == minimum_raise_increment
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.ACTED
+        )
+        assert (
+            updated_game.betting_state.last_raise_increment
+            == minimum_raise_increment
+        )
 
     def test_all_in_when_raise_increment_equals_minimum_treated_as_raise_reopens_action(
         self,
@@ -1156,7 +1262,8 @@ class TestAllInAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory(
-            [player, other_player], last_raise_increment=minimum_raise_increment
+            [player, other_player],
+            last_raise_increment=minimum_raise_increment,
         )
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
@@ -1164,8 +1271,13 @@ class TestAllInAction:
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
-        assert updated_game.betting_state.last_raise_increment == raise_increment
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
+        assert (
+            updated_game.betting_state.last_raise_increment == raise_increment
+        )
 
     def test_all_in_when_raise_increment_greater_than_minimum_treated_as_raise_reopens_action(
         self,
@@ -1192,7 +1304,8 @@ class TestAllInAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory(
-            [player, other_player], last_raise_increment=minimum_raise_increment
+            [player, other_player],
+            last_raise_increment=minimum_raise_increment,
         )
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
@@ -1200,8 +1313,13 @@ class TestAllInAction:
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
-        assert updated_game.betting_state.last_raise_increment == raise_increment
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
+        assert (
+            updated_game.betting_state.last_raise_increment == raise_increment
+        )
 
     def test_all_in_for_exact_call_amount_less_than_big_blind_does_not_reopen(
         self,
@@ -1236,7 +1354,10 @@ class TestAllInAction:
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.ACTED
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.ACTED
+        )
         assert updated_game.betting_state.last_raise_increment == ChipAmount(0)
 
     def test_all_in_when_no_call_amount_and_all_in_equals_big_blind_treated_as_raise_reopens_action(
@@ -1266,7 +1387,10 @@ class TestAllInAction:
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
         assert updated_game.betting_state.last_raise_increment == all_in_amount
 
     def test_all_in_bb_option_for_less_than_minimum_raise_still_requires_action(
@@ -1311,7 +1435,10 @@ class TestAllInAction:
         # Limper needs to act (call 5 or fold) because they haven't matched the new level
         updated_limper = updated_game.get_player_by_id(limper.id)
         assert updated_limper is not None
-        assert updated_limper.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_limper.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
         # Limper cannot re-raise (WSOP Rule 96: short all-in doesn't reopen betting)
         assert updated_limper.can_raise is False
         # last_raise_increment is NOT updated because this is not a legal raise
@@ -1344,7 +1471,7 @@ class TestBetAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
@@ -1375,7 +1502,7 @@ class TestBetAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
@@ -1405,7 +1532,7 @@ class TestBetAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
@@ -1435,14 +1562,17 @@ class TestBetAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
 
     def test_bet_updates_betting_state_last_raise_increment_to_bet_amount(
         self,
@@ -1465,7 +1595,7 @@ class TestBetAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
@@ -1493,7 +1623,7 @@ class TestBetAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
@@ -1525,7 +1655,7 @@ class TestBetAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
@@ -1563,14 +1693,17 @@ class TestBetAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, acted_player, folded_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_folded_player = updated_game.get_player_by_id(folded_player.id)
         assert updated_folded_player is not None
-        assert updated_folded_player.betting_status == BettingRoundActionStatus.ACTED
+        assert (
+            updated_folded_player.betting_status
+            == BettingRoundActionStatus.ACTED
+        )
 
     def test_bet_resets_multiple_acted_players_to_needs_action(
         self,
@@ -1600,18 +1733,28 @@ class TestBetAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, acted_player_1, acted_player_2])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         action = Action(action_type=ActionType.BET, amount=bet_amount)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
-        updated_acted_player_1 = updated_game.get_player_by_id(acted_player_1.id)
+        updated_acted_player_1 = updated_game.get_player_by_id(
+            acted_player_1.id
+        )
         assert updated_acted_player_1 is not None
-        assert updated_acted_player_1.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_acted_player_1.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
 
-        updated_acted_player_2 = updated_game.get_player_by_id(acted_player_2.id)
+        updated_acted_player_2 = updated_game.get_player_by_id(
+            acted_player_2.id
+        )
         assert updated_acted_player_2 is not None
-        assert updated_acted_player_2.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_acted_player_2.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
 
     def test_bet_works_on_flop_turn_and_river(
         self,
@@ -1634,7 +1777,7 @@ class TestBetAction:
             betting_status=BettingRoundActionStatus.ACTED,
         )
 
-        for phase in [GamePhase.FLOP, GamePhase.TURN, GamePhase.RIVER]:
+        for phase in [HandPhase.FLOP, HandPhase.TURN, HandPhase.RIVER]:
             game = minimal_game_factory([player, other_player])
             game.hand_state.current_phase = phase
             action = Action(action_type=ActionType.BET, amount=bet_amount)
@@ -1644,7 +1787,9 @@ class TestBetAction:
             updated_player = updated_game.get_player_by_id(player.id)
             assert updated_player is not None
             assert updated_player.remaining_chips == ChipAmount(150)
-            assert updated_game.betting_state.last_raise_increment == bet_amount
+            assert (
+                updated_game.betting_state.last_raise_increment == bet_amount
+            )
 
 
 class TestActionValidation:
@@ -1670,7 +1815,7 @@ class TestActionValidation:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         bet_amount = ChipAmount(10)
         assert bet_amount.value < BIG_BLIND_STANDARD.value
         action = Action(action_type=ActionType.BET, amount=bet_amount)
@@ -1698,7 +1843,7 @@ class TestActionValidation:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         bet_amount = ChipAmount(100)
         assert bet_amount.value > player.remaining_chips.value
         action = Action(action_type=ActionType.BET, amount=bet_amount)
@@ -1729,7 +1874,9 @@ class TestActionValidation:
         game = minimal_game_factory([player, other_player])
         action = Action(action_type=ActionType.ALL_IN, amount=incorrect_amount)
 
-        with pytest.raises(ValueError, match="All-in amount .* does not match"):
+        with pytest.raises(
+            ValueError, match="All-in amount .* does not match"
+        ):
             ActionApplier.apply_action(game, player.id, action)
 
     def test_raises_error_when_action_type_not_available(
@@ -1752,7 +1899,7 @@ class TestActionValidation:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         action = Action(action_type=ActionType.RAISE, amount=ChipAmount(50))
 
         with pytest.raises(ValueError, match="Action raise is not available"):
@@ -1778,12 +1925,16 @@ class TestActionValidation:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=ChipAmount(30))
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=ChipAmount(30)
+        )
         raise_amount = ChipAmount(10)
         assert raise_amount.value < ChipAmount(30).value
         action = Action(action_type=ActionType.RAISE, amount=raise_amount)
 
-        with pytest.raises(ValueError, match="Raise amount .* is below minimum"):
+        with pytest.raises(
+            ValueError, match="Raise amount .* is below minimum"
+        ):
             ActionApplier.apply_action(game, player.id, action)
 
     def test_raises_error_when_raise_amount_above_maximum(
@@ -1806,13 +1957,17 @@ class TestActionValidation:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=BIG_BLIND_STANDARD
+        )
         max_raise = ChipAmount(70)
         raise_amount = ChipAmount(100)
         assert raise_amount.value > max_raise.value
         action = Action(action_type=ActionType.RAISE, amount=raise_amount)
 
-        with pytest.raises(ValueError, match="Raise amount .* exceeds maximum"):
+        with pytest.raises(
+            ValueError, match="Raise amount .* exceeds maximum"
+        ):
             ActionApplier.apply_action(game, player.id, action)
 
 
@@ -1995,7 +2150,9 @@ class TestNextPlayerCalculation:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player1, player2], last_raise_increment=BIG_BLIND_STANDARD)
+        game = minimal_game_factory(
+            [player1, player2], last_raise_increment=BIG_BLIND_STANDARD
+        )
         game.betting_state.position_to_act = 0
         action = Action(action_type=ActionType.RAISE, amount=ChipAmount(50))
 
@@ -2305,7 +2462,9 @@ class TestEdgeCases:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=BIG_BLIND_STANDARD
+        )
         action = Action(action_type=ActionType.RAISE, amount=minimum_raise)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
@@ -2334,7 +2493,9 @@ class TestEdgeCases:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=BIG_BLIND_STANDARD)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=BIG_BLIND_STANDARD
+        )
         action = Action(action_type=ActionType.RAISE, amount=max_raise)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
@@ -2431,15 +2592,21 @@ class TestEdgeCases:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory(
-            [player, acted_player, eliminated_player], last_raise_increment=BIG_BLIND_STANDARD
+            [player, acted_player, eliminated_player],
+            last_raise_increment=BIG_BLIND_STANDARD,
         )
         action = Action(action_type=ActionType.RAISE, amount=raise_increment)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
-        updated_eliminated_player = updated_game.get_player_by_id(eliminated_player.id)
+        updated_eliminated_player = updated_game.get_player_by_id(
+            eliminated_player.id
+        )
         assert updated_eliminated_player is not None
-        assert updated_eliminated_player.betting_status == BettingRoundActionStatus.ACTED
+        assert (
+            updated_eliminated_player.betting_status
+            == BettingRoundActionStatus.ACTED
+        )
 
 
 class TestInputValidation:
@@ -2567,8 +2734,14 @@ class TestMultiPlayerScenarios:
         # Players 2 and 3 should still be in hand
         p2 = updated_game.get_player_by_id(player2.id)
         p3 = updated_game.get_player_by_id(player3.id)
-        assert p2 is not None and p2.participation_status == HandParticipationStatus.IN_HAND
-        assert p3 is not None and p3.participation_status == HandParticipationStatus.IN_HAND
+        assert (
+            p2 is not None
+            and p2.participation_status == HandParticipationStatus.IN_HAND
+        )
+        assert (
+            p3 is not None
+            and p3.participation_status == HandParticipationStatus.IN_HAND
+        )
 
     def test_three_player_raise_resets_both_other_players(
         self,
@@ -2597,19 +2770,29 @@ class TestMultiPlayerScenarios:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([raiser, acted1, acted2], last_raise_increment=ChipAmount(30))
+        game = minimal_game_factory(
+            [raiser, acted1, acted2], last_raise_increment=ChipAmount(30)
+        )
         raise_amount = ChipAmount(50)
         call_amount = ChipAmount(30)  # 50 - 20 = 30
 
         updated_game = ActionApplier.apply_action(
-            game, raiser.id, Action(action_type=ActionType.RAISE, amount=raise_amount)
+            game,
+            raiser.id,
+            Action(action_type=ActionType.RAISE, amount=raise_amount),
         )
 
         # Both acted players should now need action
         p1 = updated_game.get_player_by_id(acted1.id)
         p2 = updated_game.get_player_by_id(acted2.id)
-        assert p1 is not None and p1.betting_status == BettingRoundActionStatus.NEEDS_ACTION
-        assert p2 is not None and p2.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            p1 is not None
+            and p1.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        )
+        assert (
+            p2 is not None
+            and p2.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        )
 
     def test_four_player_complex_action_sequence(
         self,
@@ -2648,19 +2831,27 @@ class TestMultiPlayerScenarios:
         game = minimal_game_factory([p1, p2, p3, p4])
 
         # P1 checks (position should go to P2)
-        game = ActionApplier.apply_action(game, p1.id, Action(action_type=ActionType.CHECK))
+        game = ActionApplier.apply_action(
+            game, p1.id, Action(action_type=ActionType.CHECK)
+        )
         assert game.betting_state.position_to_act == 1  # P2's seat
 
         # P2 checks (position should go to P3)
-        game = ActionApplier.apply_action(game, p2.id, Action(action_type=ActionType.CHECK))
+        game = ActionApplier.apply_action(
+            game, p2.id, Action(action_type=ActionType.CHECK)
+        )
         assert game.betting_state.position_to_act == 2  # P3's seat
 
         # P3 checks (position should go to P4)
-        game = ActionApplier.apply_action(game, p3.id, Action(action_type=ActionType.CHECK))
+        game = ActionApplier.apply_action(
+            game, p3.id, Action(action_type=ActionType.CHECK)
+        )
         assert game.betting_state.position_to_act == 3  # P4's seat
 
         # P4 checks (round complete, no position to act)
-        game = ActionApplier.apply_action(game, p4.id, Action(action_type=ActionType.CHECK))
+        game = ActionApplier.apply_action(
+            game, p4.id, Action(action_type=ActionType.CHECK)
+        )
         assert game.betting_state.position_to_act == NO_POSITION_TO_ACT
 
     def test_five_player_with_varying_investments(
@@ -2674,7 +2865,9 @@ class TestMultiPlayerScenarios:
                 player_id=f"p{i}",
                 seat=Seat(i),
                 remaining_chips=LARGE_CHIPS,
-                total_invested_this_hand=ChipAmount(i * 10 + 20),  # 20, 30, 40, 50, 60
+                total_invested_this_hand=ChipAmount(
+                    i * 10 + 20
+                ),  # 20, 30, 40, 50, 60
                 betting_status=(
                     BettingRoundActionStatus.ACTED
                     if i == 4
@@ -2683,7 +2876,9 @@ class TestMultiPlayerScenarios:
             )
             for i in range(5)
         ]
-        game = minimal_game_factory(players, last_raise_increment=ChipAmount(10))
+        game = minimal_game_factory(
+            players, last_raise_increment=ChipAmount(10)
+        )
 
         # Player 0 (invested 20) needs to call 40 to match highest (60)
         # Players 1, 2, 3 also need to call (30, 20, 10 respectively)
@@ -2730,11 +2925,15 @@ class TestMultiPlayerScenarios:
             total_invested_this_hand=ChipAmount(0),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([p1, p2, p3], last_raise_increment=ChipAmount(50))
+        game = minimal_game_factory(
+            [p1, p2, p3], last_raise_increment=ChipAmount(50)
+        )
 
         # P2 goes all-in for 100
         updated_game = ActionApplier.apply_action(
-            game, p2.id, Action(action_type=ActionType.ALL_IN, amount=ChipAmount(100))
+            game,
+            p2.id,
+            Action(action_type=ActionType.ALL_IN, amount=ChipAmount(100)),
         )
 
         # P2 should now be all-in
@@ -2746,7 +2945,9 @@ class TestMultiPlayerScenarios:
         # P3 should need to act (since 100 >= min raise of 50)
         p3_updated = updated_game.get_player_by_id(p3.id)
         assert p3_updated is not None
-        assert p3_updated.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            p3_updated.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        )
 
 
 class TestBoundaryConditions:
@@ -2773,10 +2974,12 @@ class TestBoundaryConditions:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
 
         updated_game = ActionApplier.apply_action(
-            game, player.id, Action(action_type=ActionType.BET, amount=BIG_BLIND_STANDARD)
+            game,
+            player.id,
+            Action(action_type=ActionType.BET, amount=BIG_BLIND_STANDARD),
         )
 
         p = updated_game.get_player_by_id(player.id)
@@ -2804,12 +3007,14 @@ class TestBoundaryConditions:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         bet_amount = ChipAmount(BIG_BLIND_STANDARD.value - 1)
 
         with pytest.raises(ValueError, match="below minimum"):
             ActionApplier.apply_action(
-                game, player.id, Action(action_type=ActionType.BET, amount=bet_amount)
+                game,
+                player.id,
+                Action(action_type=ActionType.BET, amount=bet_amount),
             )
 
     def test_raise_exactly_minimum_increment(
@@ -2832,11 +3037,15 @@ class TestBoundaryConditions:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, bettor], last_raise_increment=ChipAmount(50))
+        game = minimal_game_factory(
+            [player, bettor], last_raise_increment=ChipAmount(50)
+        )
         # Minimum raise is max(last_raise, BB) = max(50, 20) = 50
 
         updated_game = ActionApplier.apply_action(
-            game, player.id, Action(action_type=ActionType.RAISE, amount=ChipAmount(50))
+            game,
+            player.id,
+            Action(action_type=ActionType.RAISE, amount=ChipAmount(50)),
         )
 
         p = updated_game.get_player_by_id(player.id)
@@ -2864,12 +3073,16 @@ class TestBoundaryConditions:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, bettor], last_raise_increment=ChipAmount(50))
+        game = minimal_game_factory(
+            [player, bettor], last_raise_increment=ChipAmount(50)
+        )
         # Minimum raise is 50, raising 49 should fail
 
         with pytest.raises(ValueError, match="below minimum"):
             ActionApplier.apply_action(
-                game, player.id, Action(action_type=ActionType.RAISE, amount=ChipAmount(49))
+                game,
+                player.id,
+                Action(action_type=ActionType.RAISE, amount=ChipAmount(49)),
             )
 
     def test_call_with_exactly_call_amount_chips(
@@ -2928,7 +3141,9 @@ class TestBoundaryConditions:
 
         # Should be able to go all-in for 1 chip
         updated_game = ActionApplier.apply_action(
-            game, player.id, Action(action_type=ActionType.ALL_IN, amount=ChipAmount(1))
+            game,
+            player.id,
+            Action(action_type=ActionType.ALL_IN, amount=ChipAmount(1)),
         )
 
         p = updated_game.get_player_by_id(player.id)
@@ -2963,9 +3178,13 @@ class TestPreFlopVsPostFlopRules:
         game = minimal_game_factory([player, other])
         # Game is preflop by default
 
-        with pytest.raises(ValueError, match="(?i)action bet is not available"):
+        with pytest.raises(
+            ValueError, match="(?i)action bet is not available"
+        ):
             ActionApplier.apply_action(
-                game, player.id, Action(action_type=ActionType.BET, amount=ChipAmount(50))
+                game,
+                player.id,
+                Action(action_type=ActionType.BET, amount=ChipAmount(50)),
             )
 
     def test_raise_available_preflop_when_call_amount_is_zero(
@@ -3022,10 +3241,12 @@ class TestPreFlopVsPostFlopRules:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
 
         updated_game = ActionApplier.apply_action(
-            game, player.id, Action(action_type=ActionType.BET, amount=BIG_BLIND_STANDARD)
+            game,
+            player.id,
+            Action(action_type=ActionType.BET, amount=BIG_BLIND_STANDARD),
         )
 
         p = updated_game.get_player_by_id(player.id)
@@ -3052,16 +3273,22 @@ class TestPreFlopVsPostFlopRules:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, bettor], last_raise_increment=ChipAmount(50))
-        game.hand_state.current_phase = GamePhase.FLOP
+        game = minimal_game_factory(
+            [player, bettor], last_raise_increment=ChipAmount(50)
+        )
+        game.hand_state.current_phase = HandPhase.FLOP
 
         updated_game = ActionApplier.apply_action(
-            game, player.id, Action(action_type=ActionType.RAISE, amount=ChipAmount(50))
+            game,
+            player.id,
+            Action(action_type=ActionType.RAISE, amount=ChipAmount(50)),
         )
 
         p = updated_game.get_player_by_id(player.id)
         assert p is not None
-        assert p.total_invested_this_hand == ChipAmount(100)  # call 50 + raise 50
+        assert p.total_invested_this_hand == ChipAmount(
+            100
+        )  # call 50 + raise 50
 
 
 class TestRaiseSequences:
@@ -3087,17 +3314,23 @@ class TestRaiseSequences:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([p1, p2], last_raise_increment=ChipAmount(50))
+        game = minimal_game_factory(
+            [p1, p2], last_raise_increment=ChipAmount(50)
+        )
 
         # P1 raises 50 (call 50 + raise 50 = 100 total)
         game = ActionApplier.apply_action(
-            game, p1.id, Action(action_type=ActionType.RAISE, amount=ChipAmount(50))
+            game,
+            p1.id,
+            Action(action_type=ActionType.RAISE, amount=ChipAmount(50)),
         )
         assert game.betting_state.last_raise_increment == ChipAmount(50)
 
         # P2 now needs to act, reraises 100 (call 50 + raise 100 = 200 total)
         game = ActionApplier.apply_action(
-            game, p2.id, Action(action_type=ActionType.RAISE, amount=ChipAmount(100))
+            game,
+            p2.id,
+            Action(action_type=ActionType.RAISE, amount=ChipAmount(100)),
         )
         assert game.betting_state.last_raise_increment == ChipAmount(100)
 
@@ -3122,21 +3355,29 @@ class TestRaiseSequences:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         # Last raise was 100, so minimum for P1's re-raise is 100
-        game = minimal_game_factory([p1, p2], last_raise_increment=ChipAmount(100))
+        game = minimal_game_factory(
+            [p1, p2], last_raise_increment=ChipAmount(100)
+        )
 
         # Raising 99 should fail (below minimum)
         with pytest.raises(ValueError, match="below minimum"):
             ActionApplier.apply_action(
-                game, p1.id, Action(action_type=ActionType.RAISE, amount=ChipAmount(99))
+                game,
+                p1.id,
+                Action(action_type=ActionType.RAISE, amount=ChipAmount(99)),
             )
 
         # Raising exactly 100 should succeed
         updated_game = ActionApplier.apply_action(
-            game, p1.id, Action(action_type=ActionType.RAISE, amount=ChipAmount(100))
+            game,
+            p1.id,
+            Action(action_type=ActionType.RAISE, amount=ChipAmount(100)),
         )
         p1_updated = updated_game.get_player_by_id(p1.id)
         assert p1_updated is not None
-        assert p1_updated.total_invested_this_hand == ChipAmount(200)  # 100 call + 100 raise
+        assert p1_updated.total_invested_this_hand == ChipAmount(
+            200
+        )  # 100 call + 100 raise
 
 
 class TestPlayerStateConsistency:
@@ -3167,7 +3408,11 @@ class TestPlayerStateConsistency:
         # When player cannot afford to call, CALL is not available
         # Use ALL_IN instead, which should result in 0 chips, not negative
         updated_game = ActionApplier.apply_action(
-            game, player.id, Action(action_type=ActionType.ALL_IN, amount=player.remaining_chips)
+            game,
+            player.id,
+            Action(
+                action_type=ActionType.ALL_IN, amount=player.remaining_chips
+            ),
         )
 
         p = updated_game.get_player_by_id(player.id)
@@ -3243,7 +3488,9 @@ class TestPlayerStateConsistency:
         minimal_game_factory: Callable[..., Game],
     ) -> None:
         """Only FOLD should clear hole cards."""
-        hole_cards = make_hand(make_card(Rank.ACE, Suit.SPADES), make_card(Rank.KING, Suit.SPADES))
+        hole_cards = make_hand(
+            make_card(Rank.ACE, Suit.SPADES), make_card(Rank.KING, Suit.SPADES)
+        )
         player = sample_player_factory(
             player_id="player-1",
             seat=Seat.SEAT_0,
@@ -3303,7 +3550,8 @@ class TestAllInCanRaiseFlag:
             can_raise=True,
         )
         game = minimal_game_factory(
-            [player, other_player], last_raise_increment=minimum_raise_increment
+            [player, other_player],
+            last_raise_increment=minimum_raise_increment,
         )
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
@@ -3311,7 +3559,10 @@ class TestAllInCanRaiseFlag:
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
         assert updated_other_player.can_raise is False
 
     def test_short_all_in_postflop_no_bet_sets_can_raise_false(
@@ -3340,14 +3591,17 @@ class TestAllInCanRaiseFlag:
             can_raise=True,
         )
         game = minimal_game_factory([player, other_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
         assert updated_other_player.can_raise is False
 
     def test_legal_all_in_raise_sets_can_raise_true(
@@ -3379,7 +3633,8 @@ class TestAllInCanRaiseFlag:
             can_raise=True,
         )
         game = minimal_game_factory(
-            [player, other_player], last_raise_increment=minimum_raise_increment
+            [player, other_player],
+            last_raise_increment=minimum_raise_increment,
         )
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
@@ -3387,7 +3642,10 @@ class TestAllInCanRaiseFlag:
 
         updated_other_player = updated_game.get_player_by_id(other_player.id)
         assert updated_other_player is not None
-        assert updated_other_player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_other_player.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
         assert updated_other_player.can_raise is True
 
     def test_legal_raise_after_short_all_in_restores_can_raise_true(
@@ -3423,9 +3681,14 @@ class TestAllInCanRaiseFlag:
 
         updated_game = ActionApplier.apply_action(game, raiser.id, action)
 
-        updated_blocked_player = updated_game.get_player_by_id(player_blocked.id)
+        updated_blocked_player = updated_game.get_player_by_id(
+            player_blocked.id
+        )
         assert updated_blocked_player is not None
-        assert updated_blocked_player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            updated_blocked_player.betting_status
+            == BettingRoundActionStatus.NEEDS_ACTION
+        )
         assert updated_blocked_player.can_raise is True
 
     def test_raise_does_not_reset_all_in_player_to_needs_action(
@@ -3460,7 +3723,10 @@ class TestAllInCanRaiseFlag:
         updated_all_in_player = updated_game.get_player_by_id(all_in_player.id)
         assert updated_all_in_player is not None
         # All-in player should NOT be reset to NEEDS_ACTION
-        assert updated_all_in_player.betting_status == BettingRoundActionStatus.ACTED
+        assert (
+            updated_all_in_player.betting_status
+            == BettingRoundActionStatus.ACTED
+        )
 
     def test_short_all_in_does_not_reset_all_in_player(
         self,
@@ -3485,16 +3751,22 @@ class TestAllInCanRaiseFlag:
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         game = minimal_game_factory(
-            [all_in_player, short_all_in_player], last_raise_increment=ChipAmount(50)
+            [all_in_player, short_all_in_player],
+            last_raise_increment=ChipAmount(50),
         )
         action = Action(action_type=ActionType.ALL_IN, amount=ChipAmount(30))
 
-        updated_game = ActionApplier.apply_action(game, short_all_in_player.id, action)
+        updated_game = ActionApplier.apply_action(
+            game, short_all_in_player.id, action
+        )
 
         updated_all_in_player = updated_game.get_player_by_id(all_in_player.id)
         assert updated_all_in_player is not None
         # All-in player should stay ACTED
-        assert updated_all_in_player.betting_status == BettingRoundActionStatus.ACTED
+        assert (
+            updated_all_in_player.betting_status
+            == BettingRoundActionStatus.ACTED
+        )
 
     def test_three_player_short_all_in_affects_all_acted_players(
         self,
@@ -3527,7 +3799,8 @@ class TestAllInCanRaiseFlag:
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         game = minimal_game_factory(
-            [player1, player2, short_stack], last_raise_increment=ChipAmount(50)
+            [player1, player2, short_stack],
+            last_raise_increment=ChipAmount(50),
         )
         action = Action(action_type=ActionType.ALL_IN, amount=ChipAmount(130))
 
@@ -3571,7 +3844,8 @@ class TestAllInCanRaiseFlag:
             betting_status=BettingRoundActionStatus.NEEDS_ACTION,
         )
         game = minimal_game_factory(
-            [player1, player2_not_acted, short_stack], last_raise_increment=ChipAmount(50)
+            [player1, player2_not_acted, short_stack],
+            last_raise_increment=ChipAmount(50),
         )
         game.betting_state.position_to_act = 2  # Short stack to act
         action = Action(action_type=ActionType.ALL_IN, amount=ChipAmount(130))
@@ -3614,7 +3888,8 @@ class TestAllInCanRaiseFlag:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory(
-            [player, other_player], last_raise_increment=minimum_raise_increment
+            [player, other_player],
+            last_raise_increment=minimum_raise_increment,
         )
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
@@ -3652,7 +3927,8 @@ class TestAllInCanRaiseFlag:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory(
-            [player, other_player], last_raise_increment=minimum_raise_increment
+            [player, other_player],
+            last_raise_increment=minimum_raise_increment,
         )
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
@@ -3691,13 +3967,18 @@ class TestLastRaiseIncrementPreservation:
             total_invested_this_hand=call_amount,
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=initial_last_raise)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=initial_last_raise
+        )
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
         # last_raise_increment should be preserved (not updated)
-        assert updated_game.betting_state.last_raise_increment == initial_last_raise
+        assert (
+            updated_game.betting_state.last_raise_increment
+            == initial_last_raise
+        )
 
     def test_legal_all_in_updates_last_raise_increment(
         self,
@@ -3708,7 +3989,9 @@ class TestLastRaiseIncrementPreservation:
         # last_raise=50, legal all-in of 200 (increment=100) should update to 100
         initial_last_raise = ChipAmount(50)
         call_amount = ChipAmount(100)
-        all_in_amount = ChipAmount(200)  # Legal all-in (increment=100 >= min=50)
+        all_in_amount = ChipAmount(
+            200
+        )  # Legal all-in (increment=100 >= min=50)
         expected_new_last_raise = all_in_amount - call_amount
 
         player = sample_player_factory(
@@ -3725,13 +4008,18 @@ class TestLastRaiseIncrementPreservation:
             total_invested_this_hand=call_amount,
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=initial_last_raise)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=initial_last_raise
+        )
         action = Action(action_type=ActionType.ALL_IN, amount=all_in_amount)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
         # last_raise_increment should be updated
-        assert updated_game.betting_state.last_raise_increment == expected_new_last_raise
+        assert (
+            updated_game.betting_state.last_raise_increment
+            == expected_new_last_raise
+        )
 
     def test_call_preserves_last_raise_increment(
         self,
@@ -3755,13 +4043,18 @@ class TestLastRaiseIncrementPreservation:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=initial_last_raise)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=initial_last_raise
+        )
         action = Action(action_type=ActionType.CALL)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
         # last_raise_increment should be preserved
-        assert updated_game.betting_state.last_raise_increment == initial_last_raise
+        assert (
+            updated_game.betting_state.last_raise_increment
+            == initial_last_raise
+        )
 
     def test_fold_preserves_last_raise_increment(
         self,
@@ -3785,10 +4078,15 @@ class TestLastRaiseIncrementPreservation:
             total_invested_this_hand=ChipAmount(50),
             betting_status=BettingRoundActionStatus.ACTED,
         )
-        game = minimal_game_factory([player, other_player], last_raise_increment=initial_last_raise)
+        game = minimal_game_factory(
+            [player, other_player], last_raise_increment=initial_last_raise
+        )
         action = Action(action_type=ActionType.FOLD)
 
         updated_game = ActionApplier.apply_action(game, player.id, action)
 
         # last_raise_increment should be preserved
-        assert updated_game.betting_state.last_raise_increment == initial_last_raise
+        assert (
+            updated_game.betting_state.last_raise_increment
+            == initial_last_raise
+        )

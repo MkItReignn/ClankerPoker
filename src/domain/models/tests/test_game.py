@@ -5,13 +5,21 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game, GamePhase
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player)
+from src.domain.models.game import Game, HandPhase
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    Player,
+)
 from src.domain.models.seat import Seat
 
-from .conftest import (BIG_BLIND_STANDARD, LARGE_CHIPS, MEDIUM_CHIPS,
-                       SMALL_BLIND_STANDARD, ZERO_CHIPS)
+from .conftest import (
+    BIG_BLIND_STANDARD,
+    LARGE_CHIPS,
+    MEDIUM_CHIPS,
+    SMALL_BLIND_STANDARD,
+    ZERO_CHIPS,
+)
 
 
 class TestIsHandComplete:
@@ -48,7 +56,7 @@ class TestIsHandComplete:
 
         game = minimal_game_factory(
             players=[player1, player2, player3],
-            current_phase=GamePhase.SHOWDOWN,
+            current_phase=HandPhase.SHOWDOWN,
         )
 
         assert game.is_hand_complete() is True
@@ -79,7 +87,7 @@ class TestIsHandComplete:
 
         game = minimal_game_factory(
             players=[player1, player2, player3],
-            current_phase=GamePhase.PRE_FLOP,
+            current_phase=HandPhase.PRE_FLOP,
         )
 
         assert game.is_hand_complete() is True
@@ -108,12 +116,19 @@ class TestIsHandComplete:
             participation_status=HandParticipationStatus.IN_HAND,
         )
 
-        for phase in [GamePhase.PRE_FLOP, GamePhase.FLOP, GamePhase.TURN, GamePhase.RIVER]:
+        for phase in [
+            HandPhase.PRE_FLOP,
+            HandPhase.FLOP,
+            HandPhase.TURN,
+            HandPhase.RIVER,
+        ]:
             game = minimal_game_factory(
                 players=[player1, player2, player3],
                 current_phase=phase,
             )
-            assert game.is_hand_complete() is False, f"Hand should not be complete in {phase} phase"
+            assert (
+                game.is_hand_complete() is False
+            ), f"Hand should not be complete in {phase} phase"
 
     def test_returns_false_when_two_players_remain_in_pre_flop(
         self,
@@ -135,7 +150,7 @@ class TestIsHandComplete:
 
         game = minimal_game_factory(
             players=[player1, player2],
-            current_phase=GamePhase.PRE_FLOP,
+            current_phase=HandPhase.PRE_FLOP,
         )
 
         assert game.is_hand_complete() is False
@@ -166,7 +181,7 @@ class TestIsHandComplete:
 
         game = minimal_game_factory(
             players=[player1, player2, player3],
-            current_phase=GamePhase.PRE_FLOP,
+            current_phase=HandPhase.PRE_FLOP,
         )
 
         assert game.is_hand_complete() is True
@@ -602,7 +617,9 @@ class TestIsTournamentComplete:
             participation_status=HandParticipationStatus.IN_HAND,
         )
 
-        game = minimal_game_factory(players=[player1, player2, player3, player4])
+        game = minimal_game_factory(
+            players=[player1, player2, player3, player4]
+        )
 
         assert game.is_tournament_complete() is False
 
@@ -637,7 +654,9 @@ class TestIsTournamentComplete:
             participation_status=HandParticipationStatus.ELIMINATED,
         )
 
-        game = minimal_game_factory(players=[player1, player2, player3, player4])
+        game = minimal_game_factory(
+            players=[player1, player2, player3, player4]
+        )
 
         assert game.is_tournament_complete() is True
 

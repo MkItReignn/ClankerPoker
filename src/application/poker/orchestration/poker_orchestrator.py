@@ -8,10 +8,13 @@ from dataclasses import dataclass
 from src.application.poker.context import PokerDecisionContext
 from src.application.poker.orchestration.state_manager import PokerStateManager
 from src.application.poker.records.models import GameRecord
-from src.application.protocols.player import ActionResponse, AsyncActionProvider
+from src.application.protocols.player import (
+    ActionResponse,
+    AsyncActionProvider,
+)
 from src.domain.models.actions import Action
 from src.domain.models.available_action import AvailableActions
-from src.domain.models.game import Game, GamePhase
+from src.domain.models.game import Game, HandPhase
 from src.domain.models.narration import Narration
 from src.logger.factories import get_generic_logger
 
@@ -42,8 +45,6 @@ class GameResult:
     record: GameRecord | None
     total_hands: int
     total_actions: int
-
-
 
 
 class PokerOrchestrator:
@@ -111,7 +112,10 @@ class PokerOrchestrator:
                     break
 
                 # Safety limit
-                if self._max_hands is not None and hands_played >= self._max_hands:
+                if (
+                    self._max_hands is not None
+                    and hands_played >= self._max_hands
+                ):
                     self._logger.warning(
                         "Max hands reached, stopping game",
                         max_hands=self._max_hands,
@@ -183,8 +187,10 @@ class PokerOrchestrator:
         context = self._state.build_context(player_id)
         config = self._state.get_player_config(player_id)
 
-        response: ActionResponse[Action, Narration] = await self._action_provider.get_action(
-            context, available_actions, config
+        response: ActionResponse[Action, Narration] = (
+            await self._action_provider.get_action(
+                context, available_actions, config
+            )
         )
 
         await self._state.apply_action(player_id, response)
@@ -192,7 +198,7 @@ class PokerOrchestrator:
 
     async def _deal_remaining_community_cards(self) -> None:
         """Deal remaining community cards when all players are all-in."""
-        while self._state.game.current_phase != GamePhase.SHOWDOWN:
+        while self._state.game.current_phase != HandPhase.SHOWDOWN:
             await self._state.start_next_round()
 
     def _determine_winner(self) -> tuple[str, str] | None:

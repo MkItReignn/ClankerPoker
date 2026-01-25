@@ -7,12 +7,11 @@ from src.domain.models.actions import ActionType
 from src.domain.models.available_action import AvailableActions
 from src.domain.models.card import Card
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import GamePhase
+from src.domain.models.game import HandPhase
 from src.domain.models.hand import Hand
 from src.domain.models.narration import Narration
 from src.domain.models.seat import Seat
 from src.domain.rules.hand_evaluator import HandEvaluation
-
 
 # =============================================================================
 # Game Lifecycle
@@ -266,13 +265,17 @@ class HandOutcomeDetails:
         if not self.winners:
             raise ValueError("winners cannot be empty")
         if self.pot_amount.value <= 0:
-            raise ValueError(f"pot_amount must be positive: {self.pot_amount.value}")
+            raise ValueError(
+                f"pot_amount must be positive: {self.pot_amount.value}"
+            )
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "winners": [w.to_dict() for w in self.winners],
             "eliminated": [e.to_dict() for e in self.eliminated],
-            "showdown": [s.to_dict() for s in self.showdown] if self.showdown else None,
+            "showdown": (
+                [s.to_dict() for s in self.showdown] if self.showdown else None
+            ),
             "pot_amount": self.pot_amount.value,
             "player_outcomes": [p.to_dict() for p in self.player_outcomes],
         }
@@ -281,7 +284,9 @@ class HandOutcomeDetails:
     def from_dict(cls, data: dict[str, Any]) -> HandOutcomeDetails:
         return cls(
             winners=tuple(WinnerInfo.from_dict(w) for w in data["winners"]),
-            eliminated=tuple(EliminatedInfo.from_dict(e) for e in data.get("eliminated", [])),
+            eliminated=tuple(
+                EliminatedInfo.from_dict(e) for e in data.get("eliminated", [])
+            ),
             showdown=(
                 tuple(ShowdownResult.from_dict(s) for s in data["showdown"])
                 if data.get("showdown")
@@ -289,7 +294,8 @@ class HandOutcomeDetails:
             ),
             pot_amount=ChipAmount(data["pot_amount"]),
             player_outcomes=tuple(
-                PlayerOutcome.from_dict(p) for p in data.get("player_outcomes", [])
+                PlayerOutcome.from_dict(p)
+                for p in data.get("player_outcomes", [])
             ),
         )
 
@@ -309,7 +315,9 @@ class PlayerToActDetails:
         return {
             "player_id": self.player_id,
             "player_name": self.player_name,
-            "available_actions": [action.to_dict() for action in self.available_actions],
+            "available_actions": [
+                action.to_dict() for action in self.available_actions
+            ],
         }
 
 
@@ -338,7 +346,7 @@ class ActionAppliedDetails:
 
 @dataclass(frozen=True, slots=True)
 class RoundStartedDetails:
-    phase: GamePhase
+    phase: HandPhase
     new_cards: tuple[Card, ...]
 
     def to_dict(self) -> dict[str, Any]:

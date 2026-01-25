@@ -5,15 +5,18 @@ from typing import TYPE_CHECKING
 
 from src.domain.models.actions import ActionType
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import GamePhase
+from src.domain.models.game import HandPhase
 from src.domain.models.hand import Hand
 from src.domain.models.position import PositionName
 
 if TYPE_CHECKING:
-    from src.application.poker.records.models import (GameRecord,
-                                                      HandLevelPlayerRecord,
-                                                      HandRecord, RoundRecord,
-                                                      TurnRecord)
+    from src.application.poker.records.models import (
+        GameRecord,
+        HandLevelPlayerRecord,
+        HandRecord,
+        RoundRecord,
+        TurnRecord,
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,11 +44,17 @@ class TurnDto:
         action = turn.action
         player_record = hand.player_records.get(action.player_id)
         if player_record is None:
-            raise ValueError(f"Player {action.player_id} not found in hand records")
+            raise ValueError(
+                f"Player {action.player_id} not found in hand records"
+            )
         if player_record.position is None:
             raise ValueError(f"Player {action.player_id} has no position")
 
-        name = "you" if viewer_id and action.player_id == viewer_id else action.player_name
+        name = (
+            "you"
+            if viewer_id and action.player_id == viewer_id
+            else action.player_name
+        )
         return cls(
             name=name,
             position=player_record.position,
@@ -87,7 +96,9 @@ class PlayerDto:
         viewer_id: str | None = None,
     ) -> PlayerDto:
         if player_record.position is None:
-            raise ValueError(f"Player {player_record.player_id} has no position")
+            raise ValueError(
+                f"Player {player_record.player_id} has no position"
+            )
 
         name = (
             "you"
@@ -114,7 +125,7 @@ class RoundDto:
         - "FLOP: ?" (current phase with no actions yet)
     """
 
-    phase: GamePhase
+    phase: HandPhase
     turns: tuple[TurnDto, ...]
     is_current_phase: bool = False
 
@@ -127,7 +138,8 @@ class RoundDto:
         is_current: bool = False,
     ) -> RoundDto:
         turns = tuple(
-            TurnDto.from_turn_record(turn, hand, viewer_id) for turn in round_record.turns
+            TurnDto.from_turn_record(turn, hand, viewer_id)
+            for turn in round_record.turns
         )
         return cls(
             phase=round_record.phase,
@@ -138,7 +150,11 @@ class RoundDto:
     def serialize(self) -> str:
         phase_name = self.phase.value.upper()
         if not self.turns:
-            return f"{phase_name}: ?" if self.is_current_phase else f"{phase_name}:"
+            return (
+                f"{phase_name}: ?"
+                if self.is_current_phase
+                else f"{phase_name}:"
+            )
         actions_str = ", ".join(turn.serialize() for turn in self.turns)
         if self.is_current_phase:
             actions_str += ", ?"
@@ -170,9 +186,12 @@ class HandDto:
         viewer_id: str | None = None,
     ) -> HandDto:
         stacks = tuple(
-            PlayerDto.from_player_record(pr, viewer_id) for pr in hand.player_records.values()
+            PlayerDto.from_player_record(pr, viewer_id)
+            for pr in hand.player_records.values()
         )
-        rounds = tuple(RoundDto.from_round_record(r, hand, viewer_id) for r in hand.rounds)
+        rounds = tuple(
+            RoundDto.from_round_record(r, hand, viewer_id) for r in hand.rounds
+        )
 
         winner_names: tuple[str, ...] | None = None
         pot: ChipAmount | None = None
@@ -198,7 +217,8 @@ class HandDto:
                     (
                         (
                             "you"
-                            if viewer_id and showdown_result.player_id == viewer_id
+                            if viewer_id
+                            and showdown_result.player_id == viewer_id
                             else showdown_result.player_name
                         ),
                         showdown_result.hole_cards,
@@ -224,7 +244,9 @@ class HandDto:
         showdown_str = "yes" if self.was_showdown else "no"
         summary = f"H{self.hand_number}: Winner={winners_str}, Pot={self.pot.value}, Showdown={showdown_str}"
         if self.was_showdown and self.shown_hands:
-            shown_str = "; ".join(f"{name} showed {cards}" for name, cards in self.shown_hands)
+            shown_str = "; ".join(
+                f"{name} showed {cards}" for name, cards in self.shown_hands
+            )
             summary += f", {shown_str}"
         return summary
 
@@ -237,7 +259,9 @@ class HandDto:
         for round_dto in self.rounds:
             phase_name = round_dto.phase.value.upper()
             if round_dto.turns:
-                actions_str = ", ".join(turn.serialize() for turn in round_dto.turns)
+                actions_str = ", ".join(
+                    turn.serialize() for turn in round_dto.turns
+                )
                 lines.append(f"  {phase_name}: {actions_str}")
         return "\n".join(lines)
 
@@ -298,14 +322,22 @@ class CurrentHandActionsDto:
         found_current = False
 
         for round_record in hand.rounds:
-            is_current = round_record.phase.value.upper() == current_phase_upper
+            is_current = (
+                round_record.phase.value.upper() == current_phase_upper
+            )
             if is_current:
                 found_current = True
-            rounds.append(RoundDto.from_round_record(round_record, hand, None, is_current))
+            rounds.append(
+                RoundDto.from_round_record(
+                    round_record, hand, None, is_current
+                )
+            )
 
         if not found_current:
-            phase = GamePhase(current_phase.lower())
-            rounds.append(RoundDto(phase=phase, turns=(), is_current_phase=True))
+            phase = HandPhase(current_phase.lower())
+            rounds.append(
+                RoundDto(phase=phase, turns=(), is_current_phase=True)
+            )
 
         return cls(rounds=tuple(rounds))
 

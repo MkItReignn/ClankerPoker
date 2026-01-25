@@ -18,7 +18,7 @@ import pytest
 
 from src.domain.models.card import Rank, Suit
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game, GamePhase
+from src.domain.models.game import Game, HandPhase
 from src.domain.models.player import HandParticipationStatus, Player, PlayerId
 from src.domain.models.players import Players
 from src.domain.models.pot import Pot, PotState
@@ -79,7 +79,9 @@ class TestEarlyWinScenarios:
             game,
             players=players,
             pot_state=pot_state,
-            hand_state=replace(game.hand_state, current_phase=GamePhase.PRE_FLOP),
+            hand_state=replace(
+                game.hand_state, current_phase=HandPhase.PRE_FLOP
+            ),
         )
 
         # Act
@@ -132,7 +134,11 @@ class TestEarlyWinScenarios:
             game,
             players=players,
             pot_state=pot_state,
-            hand_state=replace(game.hand_state, current_phase=GamePhase.PRE_FLOP, hand_number=5),
+            hand_state=replace(
+                game.hand_state,
+                current_phase=HandPhase.PRE_FLOP,
+                hand_number=5,
+            ),
         )
 
         # Act
@@ -141,7 +147,10 @@ class TestEarlyWinScenarios:
         # Assert: P2 marked as ELIMINATED with correct hand number
         eliminated_player = completed_game.players.get_by_id(p2.id)
         assert eliminated_player is not None
-        assert eliminated_player.participation_status == HandParticipationStatus.ELIMINATED
+        assert (
+            eliminated_player.participation_status
+            == HandParticipationStatus.ELIMINATED
+        )
         assert eliminated_player.elimination_hand_number == 5
 
     def test_creates_game_results_with_winner_and_amount(
@@ -182,7 +191,9 @@ class TestEarlyWinScenarios:
             game,
             players=players,
             pot_state=pot_state,
-            hand_state=replace(game.hand_state, current_phase=GamePhase.FLOP, hand_number=3),
+            hand_state=replace(
+                game.hand_state, current_phase=HandPhase.FLOP, hand_number=3
+            ),
         )
 
         # Act
@@ -220,11 +231,13 @@ class TestEarlyWinScenarios:
         game = replace(
             game,
             players=players,
-            hand_state=replace(game.hand_state, current_phase=GamePhase.FLOP),
+            hand_state=replace(game.hand_state, current_phase=HandPhase.FLOP),
         )
 
         # Act & Assert
-        with pytest.raises(ValueError, match="Cannot complete hand: hand is not yet complete"):
+        with pytest.raises(
+            ValueError, match="Cannot complete hand: hand is not yet complete"
+        ):
             HandCompleter.complete(game)
 
 
@@ -291,7 +304,7 @@ class TestShowdownScenarios:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
@@ -367,7 +380,7 @@ class TestShowdownScenarios:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
@@ -422,7 +435,9 @@ class TestShowdownScenarios:
             PlayerId("p3"),
             Seat.SEAT_2,  # BB - second left of button
             ChipAmount(400),
-            total_invested_this_hand=ChipAmount(50),  # Changed from 55 to 50 for equal split
+            total_invested_this_hand=ChipAmount(
+                50
+            ),  # Changed from 55 to 50 for equal split
             participation_status=HandParticipationStatus.IN_HAND,
             hole_cards=make_hand(
                 make_card(Rank.SEVEN, Suit.DIAMONDS),
@@ -456,7 +471,7 @@ class TestShowdownScenarios:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
             button_seat=Seat.SEAT_0,
@@ -566,7 +581,7 @@ class TestSidePotDistribution:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
@@ -681,7 +696,7 @@ class TestSidePotDistribution:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
@@ -709,7 +724,9 @@ class TestSidePotDistribution:
 
         # All players eliminated except none (they all have some chips now from winnings)
         # Actually P4 has 0, so should be eliminated
-        assert player4.participation_status == HandParticipationStatus.ELIMINATED
+        assert (
+            player4.participation_status == HandParticipationStatus.ELIMINATED
+        )
 
 
 class TestUncalledBetReturns:
@@ -777,7 +794,7 @@ class TestUncalledBetReturns:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
@@ -862,7 +879,7 @@ class TestUncalledBetReturns:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
@@ -961,7 +978,7 @@ class TestPlayerElimination:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
                 hand_number=7,
             ),
@@ -975,8 +992,12 @@ class TestPlayerElimination:
         player3 = completed_game.players.get_by_id(p3.id)
         assert player2 is not None
         assert player3 is not None
-        assert player2.participation_status == HandParticipationStatus.ELIMINATED
-        assert player3.participation_status == HandParticipationStatus.ELIMINATED
+        assert (
+            player2.participation_status == HandParticipationStatus.ELIMINATED
+        )
+        assert (
+            player3.participation_status == HandParticipationStatus.ELIMINATED
+        )
         assert player2.elimination_hand_number == 7
         assert player3.elimination_hand_number == 7
 
@@ -1050,7 +1071,7 @@ class TestPlayerElimination:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
                 hand_number=5,
             ),
@@ -1062,7 +1083,9 @@ class TestPlayerElimination:
         # Assert: P3 still shows elimination from hand 3, not hand 5
         player3 = completed_game.players.get_by_id(p3.id)
         assert player3 is not None
-        assert player3.participation_status == HandParticipationStatus.ELIMINATED
+        assert (
+            player3.participation_status == HandParticipationStatus.ELIMINATED
+        )
         assert player3.elimination_hand_number == 3  # Unchanged
 
 
@@ -1149,7 +1172,7 @@ class TestEliminationTiebreakers:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
                 hand_number=5,
             ),
@@ -1161,7 +1184,9 @@ class TestEliminationTiebreakers:
         # Assert: P3 eliminated with finish position 3 (3rd out of 3 players)
         player3 = completed_game.players.get_by_id(p3.id)
         assert player3 is not None
-        assert player3.participation_status == HandParticipationStatus.ELIMINATED
+        assert (
+            player3.participation_status == HandParticipationStatus.ELIMINATED
+        )
         assert player3.table_finish_position == 3
 
     def test_two_eliminations_higher_stack_gets_better_position(
@@ -1251,7 +1276,7 @@ class TestEliminationTiebreakers:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
                 hand_number=3,
             ),
@@ -1353,7 +1378,7 @@ class TestEliminationTiebreakers:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
                 hand_number=2,
             ),
@@ -1426,13 +1451,15 @@ class TestEdgeCases:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
 
         # Act & Assert
-        with pytest.raises(ValueError, match="Player p1 is in hand but has no hole cards"):
+        with pytest.raises(
+            ValueError, match="Player p1 is in hand but has no hole cards"
+        ):
             HandCompleter.complete(game)
 
     def test_single_player_eligible_for_pot_wins_automatically(
@@ -1504,7 +1531,7 @@ class TestEdgeCases:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
@@ -1524,7 +1551,9 @@ class TestEdgeCases:
         assert player1 is not None
         assert player2 is not None
         assert player3 is not None
-        assert player1.remaining_chips.value == 300  # Fixed: includes P3's folded chips
+        assert (
+            player1.remaining_chips.value == 300
+        )  # Fixed: includes P3's folded chips
         assert player2.remaining_chips.value == 300
         assert player3.remaining_chips.value == 200  # Unchanged
 
@@ -1612,8 +1641,12 @@ class TestChipConservationWithStalePot:
         # This simulates what happens when hand ends before RoundManager.advance()
         pot_state = PotState(
             main_pot=Pot(
-                amount=ChipAmount(0),  # Stale! Should be 800 (350+100+100+100+50+100)
-                eligible_player_ids=frozenset({p1.id, p2.id, p3.id, p4.id, p5.id, p6.id}),
+                amount=ChipAmount(
+                    0
+                ),  # Stale! Should be 800 (350+100+100+100+50+100)
+                eligible_player_ids=frozenset(
+                    {p1.id, p2.id, p3.id, p4.id, p5.id, p6.id}
+                ),
             ),
             side_pots=[],
         )
@@ -1622,19 +1655,25 @@ class TestChipConservationWithStalePot:
             game,
             players=players,
             pot_state=pot_state,
-            hand_state=replace(game.hand_state, current_phase=GamePhase.PRE_FLOP),
+            hand_state=replace(
+                game.hand_state, current_phase=HandPhase.PRE_FLOP
+            ),
         )
 
         # Calculate total chips before hand completion
         total_chips_before = sum(p.remaining_chips.value for p in game.players)
-        total_invested = sum(p.total_invested_this_hand.value for p in game.players)
+        total_invested = sum(
+            p.total_invested_this_hand.value for p in game.players
+        )
         expected_total = total_chips_before + total_invested
 
         # Act
         completed_game = HandCompleter.complete(game)
 
         # Assert: Chips must be conserved
-        total_chips_after = sum(p.remaining_chips.value for p in completed_game.players)
+        total_chips_after = sum(
+            p.remaining_chips.value for p in completed_game.players
+        )
 
         # Expected: P1 should have 9650 + 800 = 10450
         # Others should have their remaining amounts unchanged
@@ -1645,8 +1684,12 @@ class TestChipConservationWithStalePot:
         # This is the bug: winner gets 0 chips because pot_state.total_amount() is 0
         # Expected: 9650 + 800 = 10450
         # Actual (buggy): 9650 + 0 = 9650
-        print(f"Winner chips: {winner.remaining_chips.value} (expected: 10450)")
-        print(f"Total chips after: {total_chips_after} (expected: {expected_total})")
+        print(
+            f"Winner chips: {winner.remaining_chips.value} (expected: 10450)"
+        )
+        print(
+            f"Total chips after: {total_chips_after} (expected: {expected_total})"
+        )
         print(f"Chips lost: {expected_total - total_chips_after}")
 
         # Total chips must be conserved
@@ -1728,23 +1771,29 @@ class TestChipConservationWithStalePot:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
 
         # Calculate total chips before
         total_chips_before = sum(p.remaining_chips.value for p in game.players)
-        total_invested = sum(p.total_invested_this_hand.value for p in game.players)
+        total_invested = sum(
+            p.total_invested_this_hand.value for p in game.players
+        )
         expected_total = total_chips_before + total_invested  # 3000
 
         # Act
         completed_game = HandCompleter.complete(game)
 
         # Assert: Chips must be conserved
-        total_chips_after = sum(p.remaining_chips.value for p in completed_game.players)
+        total_chips_after = sum(
+            p.remaining_chips.value for p in completed_game.players
+        )
 
-        print(f"Total chips after: {total_chips_after} (expected: {expected_total})")
+        print(
+            f"Total chips after: {total_chips_after} (expected: {expected_total})"
+        )
         print(f"Chips lost: {expected_total - total_chips_after}")
 
         # P1 should win with AA: 800 + 550 = 1350
@@ -1855,14 +1904,16 @@ class TestPotDistributionChipConservation:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
 
         # Calculate totals before
         total_chips_before = sum(p.remaining_chips.value for p in game.players)
-        total_invested = sum(p.total_invested_this_hand.value for p in game.players)
+        total_invested = sum(
+            p.total_invested_this_hand.value for p in game.players
+        )
         expected_total_after = total_chips_before + total_invested
 
         # Expected pot: 300 + 300 + 200 + 150 = 950
@@ -1872,7 +1923,9 @@ class TestPotDistributionChipConservation:
         completed_game = HandCompleter.complete(game)
 
         # Assert: Chip conservation
-        total_chips_after = sum(p.remaining_chips.value for p in completed_game.players)
+        total_chips_after = sum(
+            p.remaining_chips.value for p in completed_game.players
+        )
         assert total_chips_after == expected_total_after, (
             f"Chips not conserved! Before: {total_chips_before}, "
             f"Invested: {total_invested}, Expected after: {expected_total_after}, "
@@ -2023,7 +2076,9 @@ class TestPotDistributionChipConservation:
         pot_state = PotState(
             main_pot=Pot(
                 amount=ChipAmount(0),  # Stale
-                eligible_player_ids=frozenset({p1.id, p2.id, p3.id, p4.id, p5.id, p6.id}),
+                eligible_player_ids=frozenset(
+                    {p1.id, p2.id, p3.id, p4.id, p5.id, p6.id}
+                ),
             ),
             side_pots=[],
         )
@@ -2034,14 +2089,16 @@ class TestPotDistributionChipConservation:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
 
         # Calculate totals before
         total_chips_before = sum(p.remaining_chips.value for p in game.players)
-        total_invested = sum(p.total_invested_this_hand.value for p in game.players)
+        total_invested = sum(
+            p.total_invested_this_hand.value for p in game.players
+        )
         expected_total_after = total_chips_before + total_invested
 
         # Expected pot: 100 + 300 + 500 + 500 + 200 + 150 = 1750
@@ -2051,7 +2108,9 @@ class TestPotDistributionChipConservation:
         completed_game = HandCompleter.complete(game)
 
         # Assert: Chip conservation
-        total_chips_after = sum(p.remaining_chips.value for p in completed_game.players)
+        total_chips_after = sum(
+            p.remaining_chips.value for p in completed_game.players
+        )
         assert total_chips_after == expected_total_after, (
             f"Chips not conserved! Before: {total_chips_before}, "
             f"Invested: {total_invested}, Expected after: {expected_total_after}, "
@@ -2171,7 +2230,9 @@ class TestPotDistributionChipConservation:
         pot_state = PotState(
             main_pot=Pot(
                 amount=ChipAmount(0),  # Stale - will be recalculated
-                eligible_player_ids=frozenset({p1.id, p2.id, p3.id, p4.id, p5.id}),
+                eligible_player_ids=frozenset(
+                    {p1.id, p2.id, p3.id, p4.id, p5.id}
+                ),
             ),
             side_pots=[],
         )
@@ -2180,12 +2241,16 @@ class TestPotDistributionChipConservation:
             game,
             players=players,
             pot_state=pot_state,
-            hand_state=replace(game.hand_state, current_phase=GamePhase.PRE_FLOP),
+            hand_state=replace(
+                game.hand_state, current_phase=HandPhase.PRE_FLOP
+            ),
         )
 
         # Calculate totals before
         total_chips_before = sum(p.remaining_chips.value for p in game.players)
-        total_invested = sum(p.total_invested_this_hand.value for p in game.players)
+        total_invested = sum(
+            p.total_invested_this_hand.value for p in game.players
+        )
         expected_total_after = total_chips_before + total_invested
 
         # Expected pot: 500 + 300 + 200 + 150 + 100 = 1250
@@ -2195,7 +2260,9 @@ class TestPotDistributionChipConservation:
         completed_game = HandCompleter.complete(game)
 
         # Assert: Chip conservation
-        total_chips_after = sum(p.remaining_chips.value for p in completed_game.players)
+        total_chips_after = sum(
+            p.remaining_chips.value for p in completed_game.players
+        )
         assert total_chips_after == expected_total_after, (
             f"Chips not conserved! Before: {total_chips_before}, "
             f"Invested: {total_invested}, Expected after: {expected_total_after}, "
@@ -2307,7 +2374,7 @@ class TestEliminatedPlayerStateCleanup:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
@@ -2316,7 +2383,10 @@ class TestEliminatedPlayerStateCleanup:
 
         eliminated = completed_game.players.get_by_id(p2.id)
         assert eliminated is not None
-        assert eliminated.participation_status == HandParticipationStatus.ELIMINATED
+        assert (
+            eliminated.participation_status
+            == HandParticipationStatus.ELIMINATED
+        )
         assert eliminated.total_invested_this_hand.value == 0
 
     def test_eliminated_player_hole_cards_preserved(
@@ -2377,7 +2447,7 @@ class TestEliminatedPlayerStateCleanup:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
@@ -2386,7 +2456,10 @@ class TestEliminatedPlayerStateCleanup:
 
         eliminated = completed_game.players.get_by_id(p2.id)
         assert eliminated is not None
-        assert eliminated.participation_status == HandParticipationStatus.ELIMINATED
+        assert (
+            eliminated.participation_status
+            == HandParticipationStatus.ELIMINATED
+        )
         assert eliminated.hole_cards == p2_hole_cards
 
     def test_multiple_eliminations_preserve_hole_cards(
@@ -2461,7 +2534,7 @@ class TestEliminatedPlayerStateCleanup:
             pot_state=pot_state,
             hand_state=replace(
                 game.hand_state,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=community_cards,
             ),
         )
@@ -2475,10 +2548,14 @@ class TestEliminatedPlayerStateCleanup:
         assert player2 is not None
         assert player3 is not None
 
-        assert player2.participation_status == HandParticipationStatus.ELIMINATED
+        assert (
+            player2.participation_status == HandParticipationStatus.ELIMINATED
+        )
         assert player2.total_invested_this_hand.value == 0
         assert player2.hole_cards == p2_hole_cards
 
-        assert player3.participation_status == HandParticipationStatus.ELIMINATED
+        assert (
+            player3.participation_status == HandParticipationStatus.ELIMINATED
+        )
         assert player3.total_invested_this_hand.value == 0
         assert player3.hole_cards == p3_hole_cards

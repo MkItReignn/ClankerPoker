@@ -6,14 +6,14 @@ from typing import Any
 
 from src.domain.models.actions import ActionType
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import GamePhase
+from src.domain.models.game import HandPhase
 
 
 @dataclass(frozen=True, slots=True)
 class ActionRecord:
     player_id: str
     player_name: str
-    phase: GamePhase
+    phase: HandPhase
     action_type: ActionType
     amount: ChipAmount | None
     timestamp: datetime
@@ -51,8 +51,12 @@ class ActionRecord:
         return cls(
             player_id=data["player_id"],
             player_name=data["player_name"],
-            phase=GamePhase(data["phase"]),
+            phase=HandPhase(data["phase"]),
             action_type=ActionType(data["action_type"]),
-            amount=ChipAmount(data["amount"]) if data.get("amount") is not None else None,
+            amount=(
+                ChipAmount(data["amount"])
+                if data.get("amount") is not None
+                else None
+            ),
             timestamp=datetime.fromisoformat(data["timestamp"]),
         )

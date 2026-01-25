@@ -8,7 +8,7 @@ from src.application.poker.state_observers.details import (
     WinnerInfo,
 )
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game, GamePhase
+from src.domain.models.game import Game, HandPhase
 from src.domain.models.player import HandParticipationStatus, Player
 from src.domain.rules.hand_evaluator import HandEvaluator
 
@@ -18,12 +18,18 @@ class HandOutcomeBuilder:
     def build(game: Game) -> HandOutcomeDetails:
         HandOutcomeBuilder._validate_eliminations_marked(game)
 
-        winners: tuple[WinnerInfo, ...] = HandOutcomeBuilder._derive_winners(game)
-        eliminated: tuple[EliminatedInfo, ...] = HandOutcomeBuilder._derive_eliminated(game)
-        showdown: tuple[ShowdownResult, ...] | None = HandOutcomeBuilder._derive_showdown(game)
-        pot_amount: ChipAmount = HandOutcomeBuilder._calculate_pot_amount(game)
-        player_outcomes: tuple[PlayerOutcome, ...] = HandOutcomeBuilder._derive_player_outcomes(
+        winners: tuple[WinnerInfo, ...] = HandOutcomeBuilder._derive_winners(
             game
+        )
+        eliminated: tuple[EliminatedInfo, ...] = (
+            HandOutcomeBuilder._derive_eliminated(game)
+        )
+        showdown: tuple[ShowdownResult, ...] | None = (
+            HandOutcomeBuilder._derive_showdown(game)
+        )
+        pot_amount: ChipAmount = HandOutcomeBuilder._calculate_pot_amount(game)
+        player_outcomes: tuple[PlayerOutcome, ...] = (
+            HandOutcomeBuilder._derive_player_outcomes(game)
         )
 
         return HandOutcomeDetails(
@@ -40,7 +46,8 @@ class HandOutcomeBuilder:
         for player in game.players:
             if (
                 player.remaining_chips.value == 0
-                and player.participation_status != HandParticipationStatus.ELIMINATED
+                and player.participation_status
+                != HandParticipationStatus.ELIMINATED
             ):
                 raise ValueError(
                     f"Player '{player.id}' has 0 chips but is not marked as eliminated. "
@@ -90,7 +97,7 @@ class HandOutcomeBuilder:
 
     @staticmethod
     def _derive_showdown(game: Game) -> tuple[ShowdownResult, ...] | None:
-        if game.current_phase != GamePhase.SHOWDOWN:
+        if game.current_phase != HandPhase.SHOWDOWN:
             return None
 
         showdown_players: list[Player] = [
@@ -98,7 +105,10 @@ class HandOutcomeBuilder:
             for p in game.players
             if p.hole_cards is not None
             and p.participation_status
-            in (HandParticipationStatus.IN_HAND, HandParticipationStatus.ELIMINATED)
+            in (
+                HandParticipationStatus.IN_HAND,
+                HandParticipationStatus.ELIMINATED,
+            )
         ]
 
         if len(showdown_players) <= 1:
@@ -147,7 +157,9 @@ class HandOutcomeBuilder:
             ):
                 continue
 
-            chips_won: ChipAmount = HandOutcomeBuilder._get_chips_won(player.id, game)
+            chips_won: ChipAmount = HandOutcomeBuilder._get_chips_won(
+                player.id, game
+            )
 
             outcomes.append(
                 PlayerOutcome(

@@ -7,19 +7,29 @@ from src.config.blind_schedule.config import BlindSchedule
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.chips import ChipAmount
 from src.domain.models.deck import Deck
-from src.domain.models.game import (BettingState, BlindState, Game, GamePhase,
-                                    HandState)
+from src.domain.models.game import (
+    BettingState,
+    BlindState,
+    Game,
+    HandPhase,
+    HandState,
+)
 from src.domain.models.hand import Hand
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player)
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    Player,
+)
 from src.domain.models.pot import Pot, PotState
-from src.domain.rules.pot_calculator import PotCalculator
 from src.domain.rules.position_manager import PositionManager
+from src.domain.rules.pot_calculator import PotCalculator
 
 
 class HandInitializer:
     @staticmethod
-    def _get_blind_level_for_hand(hand_number: int, blind_schedule: BlindSchedule) -> BlindLevel:
+    def _get_blind_level_for_hand(
+        hand_number: int, blind_schedule: BlindSchedule
+    ) -> BlindLevel:
         """Get the blind level for a given hand number from the schedule.
 
         Args:
@@ -38,7 +48,9 @@ class HandInitializer:
 
         return replace(
             player,
-            remaining_chips=ChipAmount(player.remaining_chips.value - blind_posted),
+            remaining_chips=ChipAmount(
+                player.remaining_chips.value - blind_posted
+            ),
             total_invested_this_hand=ChipAmount(blind_posted),
             betting_status=(
                 BettingRoundActionStatus.ACTED
@@ -88,7 +100,9 @@ class HandInitializer:
         for player in active_players:
             card1 = updated_deck.deal_card()
             card2 = updated_deck.deal_card()
-            updated_player = player.reset_for_new_hand(Hand(card1=card1, card2=card2))
+            updated_player = player.reset_for_new_hand(
+                Hand(card1=card1, card2=card2)
+            )
             player_updates[player.id] = updated_player
 
         updated_players = game.players.replace_all(player_updates)
@@ -110,14 +124,16 @@ class HandInitializer:
 
         updated_hand_state = HandState(
             hand_number=next_hand_number,
-            current_phase=GamePhase.PRE_FLOP,
+            current_phase=HandPhase.PRE_FLOP,
             community_cards=[],
             is_initial_hand_setup=False,
         )
 
         eligible_ids = game.get_active_player_ids()
         updated_pot_state = PotState(
-            main_pot=Pot(amount=ChipAmount(0), eligible_player_ids=eligible_ids),
+            main_pot=Pot(
+                amount=ChipAmount(0), eligible_player_ids=eligible_ids
+            ),
             side_pots=[],
         )
 
@@ -156,8 +172,12 @@ class HandInitializer:
         sb_player = game.players[position_mapping.small_blind_seat]
         bb_player = game.players[position_mapping.big_blind_seat]
 
-        updated_sb = HandInitializer._post_blind(sb_player, blind_level.small_blind)
-        updated_bb = HandInitializer._post_blind(bb_player, blind_level.big_blind)
+        updated_sb = HandInitializer._post_blind(
+            sb_player, blind_level.small_blind
+        )
+        updated_bb = HandInitializer._post_blind(
+            bb_player, blind_level.big_blind
+        )
 
         updated_players = game.players.replace_all(
             {
@@ -174,9 +194,11 @@ class HandInitializer:
         # Now determine betting order (depends on who went all-in from blinds)
         players_in_hand = [p for p in updated_players if p.is_in_hand()]
         betting_order = PositionManager.get_betting_order(
-            position_mapping, GamePhase.PRE_FLOP, players_in_hand
+            position_mapping, HandPhase.PRE_FLOP, players_in_hand
         )
-        first_to_act = PositionManager.find_first_position_to_act(betting_order, updated_players)
+        first_to_act = PositionManager.find_first_position_to_act(
+            betting_order, updated_players
+        )
 
         updated_betting_state = BettingState(
             last_raise_increment=ChipAmount(0),

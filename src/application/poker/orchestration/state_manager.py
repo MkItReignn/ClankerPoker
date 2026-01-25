@@ -5,8 +5,13 @@ from __future__ import annotations
 from dataclasses import replace as dataclass_replace
 from datetime import UTC, datetime
 
-from src.application.poker.context import PokerContextBuilder, PokerDecisionContext
-from src.application.poker.orchestration.game_initializer import GameInitializer
+from src.application.poker.context import (
+    PokerContextBuilder,
+    PokerDecisionContext,
+)
+from src.application.poker.orchestration.game_initializer import (
+    GameInitializer,
+)
 from src.application.poker.records.models import GameRecord
 from src.application.poker.records.recorder import Recorder
 from src.application.poker.state_observers.notifier import GameStateNotifier
@@ -17,11 +22,19 @@ from src.config.tournament.config import TournamentConfig
 from src.domain.models.actions import Action
 from src.domain.models.available_action import AvailableActions
 from src.domain.models.deck import Deck
-from src.domain.models.game import Game, GameIdentity, GamePhase, GameStatus, HandState
+from src.domain.models.game import (
+    Game,
+    GameIdentity,
+    GameStatus,
+    HandPhase,
+    HandState,
+)
 from src.domain.models.narration import Narration
 from src.domain.models.player import Player
 from src.domain.rules.action_applier import ActionApplier
-from src.domain.rules.available_action_calculator import AvailableActionCalculator
+from src.domain.rules.available_action_calculator import (
+    AvailableActionCalculator,
+)
 from src.domain.rules.hand_engine import HandEngine
 from src.domain.utils.seed_sequence import SeedSequence
 from src.logger.factories import get_generic_logger
@@ -49,14 +62,18 @@ class PokerStateManager:
         self._deck: Deck | None = None
 
         player_names = self.player_names
-        self._context_builder: PokerContextBuilder = PokerContextBuilder(player_names=player_names)
+        self._context_builder: PokerContextBuilder = PokerContextBuilder(
+            player_names=player_names
+        )
 
         # Initialize recorder and notifier
         self._recorder: Recorder = Recorder(
             player_configs=self._config.player_configs,
             repository=repository,
         )
-        self._notifier: GameStateNotifier = GameStateNotifier(observers=[self._recorder])
+        self._notifier: GameStateNotifier = GameStateNotifier(
+            observers=[self._recorder]
+        )
 
         # If record was provided, set it on the recorder
         if record is not None:
@@ -65,7 +82,9 @@ class PokerStateManager:
     @property
     def game(self) -> Game:
         if self._game is None:
-            raise RuntimeError("Game not initialized. Call initialize() first.")
+            raise RuntimeError(
+                "Game not initialized. Call initialize() first."
+            )
         return self._game
 
     @property
@@ -74,7 +93,9 @@ class PokerStateManager:
 
     @property
     def player_names(self) -> dict[str, str]:
-        return {pid: cfg.name for pid, cfg in self._config.player_configs.items()}
+        return {
+            pid: cfg.name for pid, cfg in self._config.player_configs.items()
+        }
 
     def get_player_to_act_id(self) -> str | None:
         return self.game.get_player_to_act_id()
@@ -97,7 +118,9 @@ class PokerStateManager:
         )
 
     def get_available_actions(self, player_id: str) -> list[AvailableActions]:
-        return AvailableActionCalculator.calculate_available_actions(self.game, player_id)
+        return AvailableActionCalculator.calculate_available_actions(
+            self.game, player_id
+        )
 
     async def apply_action(
         self,
@@ -108,7 +131,9 @@ class PokerStateManager:
         if player is None:
             raise ValueError(f"Player {player_id} not found")
 
-        new_state: Game = ActionApplier.apply_action(self.game, player_id, response.action)
+        new_state: Game = ActionApplier.apply_action(
+            self.game, player_id, response.action
+        )
 
         new_player: Player | None = new_state.players.get_by_id(player_id)
         if new_player is None:
@@ -130,22 +155,26 @@ class PokerStateManager:
         return self.game.is_round_complete()
 
     def _transition_to_showdown(self) -> None:
-        if self.game.current_phase != GamePhase.RIVER:
+        if self.game.current_phase != HandPhase.RIVER:
             raise ValueError(
                 f"Cannot transition to showdown: must be in RIVER phase, "
                 f"currently in {self.game.current_phase}"
             )
 
         if not self.is_round_complete():
-            raise ValueError("Cannot transition to showdown: RIVER betting not complete")
+            raise ValueError(
+                "Cannot transition to showdown: RIVER betting not complete"
+            )
 
         players_in_hand = list(self.game.players_in_hand())
         if len(players_in_hand) <= 1:
-            raise ValueError("Cannot transition to showdown: need 2+ players for showdown")
+            raise ValueError(
+                "Cannot transition to showdown: need 2+ players for showdown"
+            )
 
         showdown_hand_state = HandState(
             hand_number=self.game.hand_state.hand_number,
-            current_phase=GamePhase.SHOWDOWN,
+            current_phase=HandPhase.SHOWDOWN,
             community_cards=self.game.hand_state.community_cards,
             is_initial_hand_setup=self.game.hand_state.is_initial_hand_setup,
         )
@@ -186,16 +215,18 @@ class PokerStateManager:
 
         return True
 
-    async def start_next_round(self) -> GamePhase | None:
+    async def start_next_round(self) -> HandPhase | None:
         if len(list(self.game.players_in_hand())) <= 1:
             return None
 
         if not self.is_round_complete():
-            raise ValueError("Cannot transition to next round: round is not complete")
+            raise ValueError(
+                "Cannot transition to next round: round is not complete"
+            )
 
         await self._notifier.on_round_completed(game=self.game)
 
-        if self.game.current_phase == GamePhase.RIVER:
+        if self.game.current_phase == HandPhase.RIVER:
             self._transition_to_showdown()
             await self._notifier.on_round_started(game=self.game)
             return self.game.current_phase
@@ -205,10 +236,13 @@ class PokerStateManager:
         cards_before = len(self._game.community_cards)
         if (
             self._deck is not None
-            and self._game.current_phase in (GamePhase.FLOP, GamePhase.TURN, GamePhase.RIVER)
+            and self._game.current_phase
+            in (HandPhase.FLOP, HandPhase.TURN, HandPhase.RIVER)
             and cards_before < self._game.current_phase.card_count
         ):
-            self._game, self._deck = HandEngine.deal_community_cards(self._game, self._deck)
+            self._game, self._deck = HandEngine.deal_community_cards(
+                self._game, self._deck
+            )
 
         await self._notifier.on_round_started(game=self._game)
 
@@ -226,7 +260,9 @@ class PokerStateManager:
             next_hand_number = state.hand_state.hand_number + 1
 
         seed_sequence = SeedSequence(base_seed=state.identity.seed)
-        shuffle_seed = seed_sequence.get_shuffle_seed_for_hand(next_hand_number)
+        shuffle_seed = seed_sequence.get_shuffle_seed_for_hand(
+            next_hand_number
+        )
 
         self._deck = Deck.create_shuffled(seed=shuffle_seed)
 

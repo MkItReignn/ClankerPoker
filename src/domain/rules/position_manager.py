@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TypeAlias
 
-from src.domain.models.game import NO_POSITION_TO_ACT, GamePhase
+from src.domain.models.game import NO_POSITION_TO_ACT, HandPhase
 from src.domain.models.player import HandParticipationStatus, Player
 from src.domain.models.players import Players
 from src.domain.models.position import PositionName, TablePositionMapping
@@ -21,12 +21,14 @@ class PositionManager:
     - Betting order determination
     """
 
-    BETTING_ORDER_RULES: dict[tuple[GamePhase, is_heads_up], list[PositionName]] = {
-        (GamePhase.PRE_FLOP, True): [
+    BETTING_ORDER_RULES: dict[
+        tuple[HandPhase, is_heads_up], list[PositionName]
+    ] = {
+        (HandPhase.PRE_FLOP, True): [
             PositionName.SMALL_BLIND,
             PositionName.BIG_BLIND,
         ],
-        (GamePhase.PRE_FLOP, False): [
+        (HandPhase.PRE_FLOP, False): [
             PositionName.UNDER_THE_GUN,
             PositionName.UTG_PLUS_ONE,
             PositionName.CUTOFF,
@@ -34,27 +36,19 @@ class PositionManager:
             PositionName.SMALL_BLIND,
             PositionName.BIG_BLIND,
         ],
-        (GamePhase.FLOP, True): [
+        (HandPhase.FLOP, True): [
             PositionName.BIG_BLIND,
             PositionName.SMALL_BLIND,
         ],
-        (GamePhase.TURN, True): [
+        (HandPhase.TURN, True): [
             PositionName.BIG_BLIND,
             PositionName.SMALL_BLIND,
         ],
-        (GamePhase.RIVER, True): [
+        (HandPhase.RIVER, True): [
             PositionName.BIG_BLIND,
             PositionName.SMALL_BLIND,
         ],
-        (GamePhase.FLOP, False): [
-            PositionName.SMALL_BLIND,
-            PositionName.BIG_BLIND,
-            PositionName.UNDER_THE_GUN,
-            PositionName.UTG_PLUS_ONE,
-            PositionName.CUTOFF,
-            PositionName.BUTTON,
-        ],
-        (GamePhase.TURN, False): [
+        (HandPhase.FLOP, False): [
             PositionName.SMALL_BLIND,
             PositionName.BIG_BLIND,
             PositionName.UNDER_THE_GUN,
@@ -62,7 +56,15 @@ class PositionManager:
             PositionName.CUTOFF,
             PositionName.BUTTON,
         ],
-        (GamePhase.RIVER, False): [
+        (HandPhase.TURN, False): [
+            PositionName.SMALL_BLIND,
+            PositionName.BIG_BLIND,
+            PositionName.UNDER_THE_GUN,
+            PositionName.UTG_PLUS_ONE,
+            PositionName.CUTOFF,
+            PositionName.BUTTON,
+        ],
+        (HandPhase.RIVER, False): [
             PositionName.SMALL_BLIND,
             PositionName.BIG_BLIND,
             PositionName.UNDER_THE_GUN,
@@ -90,13 +92,19 @@ class PositionManager:
             Complete position mapping for the hand.
         """
         if len(all_players) < 2:
-            raise ValueError(f"Need at least 2 players, got {len(all_players)}")
+            raise ValueError(
+                f"Need at least 2 players, got {len(all_players)}"
+            )
 
         active_count = sum(
-            1 for p in all_players if p.participation_status != HandParticipationStatus.ELIMINATED
+            1
+            for p in all_players
+            if p.participation_status != HandParticipationStatus.ELIMINATED
         )
         if active_count < 2:
-            raise ValueError(f"Need at least 2 active players, got {active_count}")
+            raise ValueError(
+                f"Need at least 2 active players, got {active_count}"
+            )
 
         if advance_button:
             button_seat = PositionManager.advance_button(
@@ -106,17 +114,21 @@ class PositionManager:
         else:
             button_seat = previous_button_seat
 
-        small_blind_seat, big_blind_seat = PositionManager._calculate_blind_positions(
-            all_players, button_seat
+        small_blind_seat, big_blind_seat = (
+            PositionManager._calculate_blind_positions(
+                all_players, button_seat
+            )
         )
 
         is_heads_up = active_count == 2
 
-        utg_seat, utg_plus_one_seat, cutoff_seat = PositionManager._calculate_relative_positions(
-            all_players=all_players,
-            button_seat=button_seat,
-            big_blind_seat=big_blind_seat,
-            active_count=active_count,
+        utg_seat, utg_plus_one_seat, cutoff_seat = (
+            PositionManager._calculate_relative_positions(
+                all_players=all_players,
+                button_seat=button_seat,
+                big_blind_seat=big_blind_seat,
+                active_count=active_count,
+            )
         )
 
         return TablePositionMapping(
@@ -141,7 +153,9 @@ class PositionManager:
         Button moves clockwise, skipping eliminated players.
         """
         total_seats = len(all_players)
-        return PositionManager._find_next_active_seat(all_players, current_button_seat, total_seats)
+        return PositionManager._find_next_active_seat(
+            all_players, current_button_seat, total_seats
+        )
 
     @staticmethod
     def _calculate_blind_positions(
@@ -155,7 +169,9 @@ class PositionManager:
         """
         total_seats = len(all_players)
         active_count = sum(
-            1 for p in all_players if p.participation_status != HandParticipationStatus.ELIMINATED
+            1
+            for p in all_players
+            if p.participation_status != HandParticipationStatus.ELIMINATED
         )
 
         is_heads_up = active_count == 2
@@ -239,7 +255,9 @@ class PositionManager:
         if active_count <= 3:
             return (None, None, None)
 
-        utg_seat = PositionManager._find_next_active_seat(all_players, big_blind_seat, total_seats)
+        utg_seat = PositionManager._find_next_active_seat(
+            all_players, big_blind_seat, total_seats
+        )
 
         if active_count == 4:
             return (utg_seat, None, None)
@@ -261,12 +279,14 @@ class PositionManager:
 
             return (utg_seat, utg_plus_one_seat, cutoff_seat)
 
-        raise ValueError(f"Unexpected active player count: {active_count}. Expected 2-6 players.")
+        raise ValueError(
+            f"Unexpected active player count: {active_count}. Expected 2-6 players."
+        )
 
     @staticmethod
     def get_betting_order(
         position_mapping: TablePositionMapping,
-        phase: GamePhase,
+        phase: HandPhase,
         players_in_hand: list[Player],
     ) -> list[Seat]:
         """Get betting order as list of seats.
@@ -278,16 +298,22 @@ class PositionManager:
         4. Return seats in betting order
         """
         is_heads_up = position_mapping.is_heads_up
-        position_order = PositionManager.BETTING_ORDER_RULES.get((phase, is_heads_up))
+        position_order = PositionManager.BETTING_ORDER_RULES.get(
+            (phase, is_heads_up)
+        )
 
         if position_order is None:
-            raise ValueError(f"No betting order rule for phase={phase}, is_heads_up={is_heads_up}")
+            raise ValueError(
+                f"No betting order rule for phase={phase}, is_heads_up={is_heads_up}"
+            )
 
         seats_in_hand = {p.seat for p in players_in_hand}
         seat_order: list[Seat] = []
 
         for position_name in position_order:
-            seat: Seat | None = position_mapping.get_seat_for_position(position_name)
+            seat: Seat | None = position_mapping.get_seat_for_position(
+                position_name
+            )
             if seat is None:
                 continue
 

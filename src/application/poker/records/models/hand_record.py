@@ -8,7 +8,7 @@ from typing import Any
 
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.card import Card
-from src.domain.models.game import GamePhase
+from src.domain.models.game import HandPhase
 from src.domain.models.seat import Seat
 
 from .hand_outcome_record import HandOutcomeRecord
@@ -29,11 +29,13 @@ class HandRecord:
 
     def __post_init__(self) -> None:
         if self.hand_number < 1:
-            raise ValueError(f"hand_number must be at least 1: {self.hand_number}")
+            raise ValueError(
+                f"hand_number must be at least 1: {self.hand_number}"
+            )
 
     def start_round(
         self,
-        phase: GamePhase,
+        phase: HandPhase,
         community_cards: tuple[Card, ...],
         player_records: dict[str, RoundLevelPlayerRecord],
     ) -> RoundRecord:
@@ -69,12 +71,15 @@ class HandRecord:
             "big_blind": self.blinds.big_blind.value,
             "blind_level": self.blinds.level,
             "player_records": {
-                player_id: record.to_dict() for player_id, record in self.player_records.items()
+                player_id: record.to_dict()
+                for player_id, record in self.player_records.items()
             },
             "rounds": [round.to_dict() for round in self.rounds],
             "outcome": self.outcome.to_dict() if self.outcome else None,
             "started_at": self.started_at.isoformat(),
-            "completed_at": (self.completed_at.isoformat() if self.completed_at else None),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
         }
 
     @classmethod
@@ -86,7 +91,9 @@ class HandRecord:
         player_records: dict[str, HandLevelPlayerRecord] = {}
         player_records_data = data.get("player_records", {})
         for player_id, record_data in player_records_data.items():
-            player_records[player_id] = HandLevelPlayerRecord.from_dict(record_data)
+            player_records[player_id] = HandLevelPlayerRecord.from_dict(
+                record_data
+            )
 
         hand = cls(
             hand_number=data["hand_number"],

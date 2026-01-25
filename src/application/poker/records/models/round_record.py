@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Any
 
 from src.domain.models.card import Card
-from src.domain.models.game import GamePhase
+from src.domain.models.game import HandPhase
 
 from .player_records import RoundLevelPlayerRecord
 from .turn_record import TurnRecord
@@ -15,7 +15,7 @@ from .turn_record import TurnRecord
 
 @dataclass(slots=True)
 class RoundRecord:
-    phase: GamePhase
+    phase: HandPhase
     community_cards: tuple[Card, ...]
     player_records: dict[str, RoundLevelPlayerRecord]
     turns: list[TurnRecord] = field(default_factory=list)
@@ -42,13 +42,18 @@ class RoundRecord:
         """Serialize RoundRecord to a dictionary."""
         return {
             "phase": self.phase.value,
-            "community_cards": [card.to_dict() for card in self.community_cards],
+            "community_cards": [
+                card.to_dict() for card in self.community_cards
+            ],
             "player_records": {
-                player_id: record.to_dict() for player_id, record in self.player_records.items()
+                player_id: record.to_dict()
+                for player_id, record in self.player_records.items()
             },
             "turns": [turn.to_dict() for turn in self.turns],
             "started_at": self.started_at.isoformat(),
-            "completed_at": (self.completed_at.isoformat() if self.completed_at else None),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
         }
 
     @classmethod
@@ -57,15 +62,18 @@ class RoundRecord:
         # Deserialize player records
         player_records: dict[str, RoundLevelPlayerRecord] = {}
         for player_id, record_data in data.get("player_records", {}).items():
-            player_records[player_id] = RoundLevelPlayerRecord.from_dict(record_data)
+            player_records[player_id] = RoundLevelPlayerRecord.from_dict(
+                record_data
+            )
 
         # Deserialize community cards
         community_cards = tuple(
-            Card.from_dict(card_data) for card_data in data.get("community_cards", [])
+            Card.from_dict(card_data)
+            for card_data in data.get("community_cards", [])
         )
 
         round_record = cls(
-            phase=GamePhase(data["phase"]),
+            phase=HandPhase(data["phase"]),
             community_cards=community_cards,
             player_records=player_records,
             started_at=datetime.fromisoformat(data["started_at"]),
@@ -77,6 +85,8 @@ class RoundRecord:
 
         # Set completed_at if present
         if data.get("completed_at"):
-            round_record.completed_at = datetime.fromisoformat(data["completed_at"])
+            round_record.completed_at = datetime.fromisoformat(
+                data["completed_at"]
+            )
 
         return round_record

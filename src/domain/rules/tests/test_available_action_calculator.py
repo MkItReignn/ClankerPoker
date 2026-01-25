@@ -4,19 +4,25 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from src.domain.models.available_action import (AvailableAllInAction,
-                                                AvailableBetAction,
-                                                AvailableCallAction,
-                                                AvailableCheckAction,
-                                                AvailableFoldAction,
-                                                AvailableRaiseAction)
+from src.domain.models.available_action import (
+    AvailableAllInAction,
+    AvailableBetAction,
+    AvailableCallAction,
+    AvailableCheckAction,
+    AvailableFoldAction,
+    AvailableRaiseAction,
+)
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game, GamePhase
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player)
+from src.domain.models.game import Game, HandPhase
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    Player,
+)
 from src.domain.models.seat import Seat
-from src.domain.rules.available_action_calculator import \
-    AvailableActionCalculator
+from src.domain.rules.available_action_calculator import (
+    AvailableActionCalculator,
+)
 
 
 class TestPlayerCannotAct:
@@ -41,7 +47,9 @@ class TestPlayerCannotAct:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         assert result == []
 
@@ -64,7 +72,9 @@ class TestPlayerCannotAct:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         assert result == []
 
@@ -87,7 +97,9 @@ class TestPlayerCannotAct:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         assert result == []
 
@@ -115,9 +127,13 @@ class TestFoldAction:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        fold_actions = [a for a in result if isinstance(a, AvailableFoldAction)]
+        fold_actions = [
+            a for a in result if isinstance(a, AvailableFoldAction)
+        ]
         assert len(fold_actions) == 1
 
     def test_fold_available_even_when_player_has_minimal_chips(
@@ -140,9 +156,13 @@ class TestFoldAction:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        fold_actions = [a for a in result if isinstance(a, AvailableFoldAction)]
+        fold_actions = [
+            a for a in result if isinstance(a, AvailableFoldAction)
+        ]
         assert len(fold_actions) == 1
 
 
@@ -170,9 +190,13 @@ class TestCheckAction:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        check_actions = [a for a in result if isinstance(a, AvailableCheckAction)]
+        check_actions = [
+            a for a in result if isinstance(a, AvailableCheckAction)
+        ]
         assert len(check_actions) == 1
 
     def test_check_available_when_player_already_matched_bet(
@@ -196,9 +220,13 @@ class TestCheckAction:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        check_actions = [a for a in result if isinstance(a, AvailableCheckAction)]
+        check_actions = [
+            a for a in result if isinstance(a, AvailableCheckAction)
+        ]
         assert len(check_actions) == 1
 
     def test_check_not_available_when_call_amount_greater_than_zero(
@@ -221,9 +249,13 @@ class TestCheckAction:
         )
         game = minimal_game_factory([player, other_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        check_actions = [a for a in result if isinstance(a, AvailableCheckAction)]
+        check_actions = [
+            a for a in result if isinstance(a, AvailableCheckAction)
+        ]
         assert len(check_actions) == 0
 
 
@@ -250,9 +282,13 @@ class TestCallAction:
         )
         game = minimal_game_factory([player, other_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        call_actions = [a for a in result if isinstance(a, AvailableCallAction)]
+        call_actions = [
+            a for a in result if isinstance(a, AvailableCallAction)
+        ]
         assert len(call_actions) == 1
         assert call_actions[0].call_amount == ChipAmount(30)
 
@@ -276,9 +312,13 @@ class TestCallAction:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        call_actions = [a for a in result if isinstance(a, AvailableCallAction)]
+        call_actions = [
+            a for a in result if isinstance(a, AvailableCallAction)
+        ]
         assert len(call_actions) == 0
 
     def test_call_not_available_when_player_has_insufficient_chips(
@@ -301,9 +341,13 @@ class TestCallAction:
         )
         game = minimal_game_factory([player, other_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        call_actions = [a for a in result if isinstance(a, AvailableCallAction)]
+        call_actions = [
+            a for a in result if isinstance(a, AvailableCallAction)
+        ]
         assert len(call_actions) == 0
 
     def test_call_available_when_player_has_exactly_enough_chips(
@@ -326,9 +370,13 @@ class TestCallAction:
         )
         game = minimal_game_factory([player, other_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        call_actions = [a for a in result if isinstance(a, AvailableCallAction)]
+        call_actions = [
+            a for a in result if isinstance(a, AvailableCallAction)
+        ]
         assert len(call_actions) == 1
         assert call_actions[0].call_amount == ChipAmount(30)
 
@@ -359,9 +407,13 @@ class TestRaiseAction:
             last_raise_increment=ChipAmount(0),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        raise_actions = [a for a in result if isinstance(a, AvailableRaiseAction)]
+        raise_actions = [
+            a for a in result if isinstance(a, AvailableRaiseAction)
+        ]
         assert len(raise_actions) == 1
         assert raise_actions[0].min_raise_amount == ChipAmount(20)
         assert raise_actions[0].max_raise_amount == ChipAmount(170)
@@ -389,9 +441,13 @@ class TestRaiseAction:
             last_raise_increment=ChipAmount(0),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        raise_actions = [a for a in result if isinstance(a, AvailableRaiseAction)]
+        raise_actions = [
+            a for a in result if isinstance(a, AvailableRaiseAction)
+        ]
         assert raise_actions[0].min_raise_amount == ChipAmount(20)
 
     def test_raise_min_amount_uses_last_raise_increment_when_re_raising(
@@ -417,9 +473,13 @@ class TestRaiseAction:
             last_raise_increment=ChipAmount(40),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        raise_actions = [a for a in result if isinstance(a, AvailableRaiseAction)]
+        raise_actions = [
+            a for a in result if isinstance(a, AvailableRaiseAction)
+        ]
         assert raise_actions[0].min_raise_amount == ChipAmount(40)
 
     def test_raise_max_amount_is_chips_available_after_call(
@@ -445,9 +505,13 @@ class TestRaiseAction:
             last_raise_increment=ChipAmount(0),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        raise_actions = [a for a in result if isinstance(a, AvailableRaiseAction)]
+        raise_actions = [
+            a for a in result if isinstance(a, AvailableRaiseAction)
+        ]
         assert raise_actions[0].max_raise_amount == ChipAmount(70)
 
     def test_raise_not_available_when_player_has_insufficient_chips_for_minimum_raise(
@@ -473,9 +537,13 @@ class TestRaiseAction:
             last_raise_increment=ChipAmount(0),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        raise_actions = [a for a in result if isinstance(a, AvailableRaiseAction)]
+        raise_actions = [
+            a for a in result if isinstance(a, AvailableRaiseAction)
+        ]
         assert len(raise_actions) == 0
 
     def test_raise_not_available_when_chips_after_call_less_than_minimum_increment(
@@ -501,9 +569,13 @@ class TestRaiseAction:
             last_raise_increment=ChipAmount(30),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        raise_actions = [a for a in result if isinstance(a, AvailableRaiseAction)]
+        raise_actions = [
+            a for a in result if isinstance(a, AvailableRaiseAction)
+        ]
         assert len(raise_actions) == 0
 
     def test_raise_not_available_when_player_has_no_chips_beyond_call(
@@ -529,9 +601,13 @@ class TestRaiseAction:
             last_raise_increment=ChipAmount(0),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        raise_actions = [a for a in result if isinstance(a, AvailableRaiseAction)]
+        raise_actions = [
+            a for a in result if isinstance(a, AvailableRaiseAction)
+        ]
         assert len(raise_actions) == 0
 
 
@@ -558,9 +634,13 @@ class TestAllInAction:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        all_in_actions = [a for a in result if isinstance(a, AvailableAllInAction)]
+        all_in_actions = [
+            a for a in result if isinstance(a, AvailableAllInAction)
+        ]
         assert len(all_in_actions) == 1
         assert all_in_actions[0].all_in_amount == ChipAmount(100)
 
@@ -584,9 +664,13 @@ class TestAllInAction:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        all_in_actions = [a for a in result if isinstance(a, AvailableAllInAction)]
+        all_in_actions = [
+            a for a in result if isinstance(a, AvailableAllInAction)
+        ]
         assert all_in_actions[0].all_in_amount == ChipAmount(75)
 
     def test_all_in_not_available_when_player_has_zero_chips(
@@ -608,9 +692,13 @@ class TestAllInAction:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        all_in_actions = [a for a in result if isinstance(a, AvailableAllInAction)]
+        all_in_actions = [
+            a for a in result if isinstance(a, AvailableAllInAction)
+        ]
         assert len(all_in_actions) == 0
 
 
@@ -638,7 +726,9 @@ class TestActionCombinations:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableFoldAction in action_types
@@ -666,7 +756,9 @@ class TestActionCombinations:
         )
         game = minimal_game_factory([player, other_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableFoldAction in action_types
@@ -697,7 +789,9 @@ class TestActionCombinations:
             last_raise_increment=ChipAmount(0),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableFoldAction in action_types
@@ -726,7 +820,9 @@ class TestActionCombinations:
         )
         game = minimal_game_factory([player, other_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableFoldAction in action_types
@@ -762,9 +858,13 @@ class TestNoOpponentsRemaining:
             remaining_chips=ChipAmount(500),
             participation_status=HandParticipationStatus.FOLDED,
         )
-        game = minimal_game_factory([active_player, folded_player1, folded_player2])
+        game = minimal_game_factory(
+            [active_player, folded_player1, folded_player2]
+        )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, active_player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, active_player.id
+        )
 
         assert result == []
 
@@ -787,7 +887,9 @@ class TestNoOpponentsRemaining:
         )
         game = minimal_game_factory([active_player, eliminated_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, active_player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, active_player.id
+        )
 
         assert result == []
 
@@ -814,9 +916,13 @@ class TestNoOpponentsRemaining:
             remaining_chips=ChipAmount(0),
             participation_status=HandParticipationStatus.ELIMINATED,
         )
-        game = minimal_game_factory([active_player, folded_player, eliminated_player])
+        game = minimal_game_factory(
+            [active_player, folded_player, eliminated_player]
+        )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, active_player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, active_player.id
+        )
 
         assert result == []
 
@@ -846,7 +952,9 @@ class TestEdgeCases:
         )
         game = minimal_game_factory([player, opponent])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableFoldAction in action_types
@@ -877,7 +985,9 @@ class TestEdgeCases:
         )
         game = minimal_game_factory([player, opponent])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableFoldAction in action_types
@@ -906,7 +1016,9 @@ class TestEdgeCases:
         )
         game = minimal_game_factory([player, other_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         assert result == []
 
@@ -930,7 +1042,9 @@ class TestEdgeCases:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         assert result == []
 
@@ -954,7 +1068,9 @@ class TestEdgeCases:
         )
         game = minimal_game_factory([player, dummy_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         assert result == []
 
@@ -981,9 +1097,13 @@ class TestEdgeCases:
             last_raise_increment=ChipAmount(10),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        raise_actions = [a for a in result if isinstance(a, AvailableRaiseAction)]
+        raise_actions = [
+            a for a in result if isinstance(a, AvailableRaiseAction)
+        ]
         assert raise_actions[0].min_raise_amount == ChipAmount(20)
 
     def test_call_amount_correctly_calculated_when_other_players_have_higher_bets(
@@ -1012,9 +1132,13 @@ class TestEdgeCases:
         )
         game = minimal_game_factory([player, other_player1, other_player2])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        call_actions = [a for a in result if isinstance(a, AvailableCallAction)]
+        call_actions = [
+            a for a in result if isinstance(a, AvailableCallAction)
+        ]
         assert call_actions[0].call_amount == ChipAmount(80)
 
     def test_raise_available_when_min_equals_max(
@@ -1042,9 +1166,13 @@ class TestEdgeCases:
             last_raise_increment=ChipAmount(40),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        raise_actions = [a for a in result if isinstance(a, AvailableRaiseAction)]
+        raise_actions = [
+            a for a in result if isinstance(a, AvailableRaiseAction)
+        ]
         assert len(raise_actions) == 1
         assert raise_actions[0].min_raise_amount == ChipAmount(40)
         assert raise_actions[0].max_raise_amount == ChipAmount(40)
@@ -1074,7 +1202,9 @@ class TestEdgeCases:
             last_raise_increment=ChipAmount(0),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableFoldAction in action_types
@@ -1082,7 +1212,9 @@ class TestEdgeCases:
         assert AvailableRaiseAction in action_types
         assert AvailableAllInAction in action_types
 
-        call_actions = [a for a in result if isinstance(a, AvailableCallAction)]
+        call_actions = [
+            a for a in result if isinstance(a, AvailableCallAction)
+        ]
         assert call_actions[0].call_amount == ChipAmount(80)
 
     def test_big_blind_option_check_available_when_facing_limp(
@@ -1110,7 +1242,9 @@ class TestEdgeCases:
             last_raise_increment=ChipAmount(0),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, big_blind_player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, big_blind_player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableFoldAction in action_types
@@ -1152,10 +1286,16 @@ class TestEdgeCases:
             last_raise_increment=ChipAmount(180),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        call_actions = [a for a in result if isinstance(a, AvailableCallAction)]
-        raise_actions = [a for a in result if isinstance(a, AvailableRaiseAction)]
+        call_actions = [
+            a for a in result if isinstance(a, AvailableCallAction)
+        ]
+        raise_actions = [
+            a for a in result if isinstance(a, AvailableRaiseAction)
+        ]
 
         assert call_actions[0].call_amount == ChipAmount(180)
         assert raise_actions[0].min_raise_amount == ChipAmount(180)
@@ -1186,7 +1326,9 @@ class TestEdgeCases:
             last_raise_increment=ChipAmount(0),
         )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableFoldAction in action_types
@@ -1223,9 +1365,11 @@ class TestRaiseActionRules:
             [big_blind_player, limping_player],
             last_raise_increment=ChipAmount(0),
         )
-        assert game.current_phase == GamePhase.PRE_FLOP
+        assert game.current_phase == HandPhase.PRE_FLOP
 
-        result = AvailableActionCalculator.calculate_available_actions(game, big_blind_player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, big_blind_player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableRaiseAction in action_types
@@ -1259,9 +1403,11 @@ class TestRaiseActionRules:
             [player, raiser],
             last_raise_increment=ChipAmount(0),
         )
-        assert game.current_phase == GamePhase.PRE_FLOP
+        assert game.current_phase == HandPhase.PRE_FLOP
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableRaiseAction in action_types
@@ -1290,9 +1436,11 @@ class TestRaiseActionRules:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, better])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableRaiseAction in action_types
@@ -1320,9 +1468,11 @@ class TestRaiseActionRules:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, checked_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableRaiseAction not in action_types
@@ -1353,9 +1503,11 @@ class TestBetActionRules:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, checked_player])
-        assert game.current_phase == GamePhase.PRE_FLOP
+        assert game.current_phase == HandPhase.PRE_FLOP
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableBetAction not in action_types
@@ -1383,16 +1535,20 @@ class TestBetActionRules:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, checked_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableBetAction in action_types
         assert AvailableRaiseAction not in action_types
         bet_actions = [a for a in result if isinstance(a, AvailableBetAction)]
         assert len(bet_actions) == 1
-        assert bet_actions[0].min_bet_amount == game.current_blind_level.big_blind
+        assert (
+            bet_actions[0].min_bet_amount == game.current_blind_level.big_blind
+        )
         assert bet_actions[0].max_bet_amount == player.remaining_chips
 
     def test_bet_available_postflop_on_turn_when_call_amount_is_zero(
@@ -1416,9 +1572,11 @@ class TestBetActionRules:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, checked_player])
-        game.hand_state.current_phase = GamePhase.TURN
+        game.hand_state.current_phase = HandPhase.TURN
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableBetAction in action_types
@@ -1445,9 +1603,11 @@ class TestBetActionRules:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, checked_player])
-        game.hand_state.current_phase = GamePhase.RIVER
+        game.hand_state.current_phase = HandPhase.RIVER
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableBetAction in action_types
@@ -1475,9 +1635,11 @@ class TestBetActionRules:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, better])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableBetAction not in action_types
@@ -1512,7 +1674,9 @@ class TestInputValidation:
         game = minimal_game_factory([player, other])
 
         with pytest.raises(ValueError, match="not found"):
-            AvailableActionCalculator.calculate_available_actions(game, "non-existent-id")
+            AvailableActionCalculator.calculate_available_actions(
+                game, "non-existent-id"
+            )
 
 
 class TestMultiPlayerActionAvailability:
@@ -1548,10 +1712,14 @@ class TestMultiPlayerActionAvailability:
         )
         game = minimal_game_factory([player, p2, p3])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         # Player 1 needs to call 80 (100 - 20)
-        call_action = next(a for a in result if isinstance(a, AvailableCallAction))
+        call_action = next(
+            a for a in result if isinstance(a, AvailableCallAction)
+        )
         assert call_action.call_amount == ChipAmount(80)
 
     def test_four_player_one_folded_one_all_in(
@@ -1591,7 +1759,9 @@ class TestMultiPlayerActionAvailability:
         )
         game = minimal_game_factory([player, all_in, folded, active])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         # Player should have fold, call, raise, all-in available
         action_types = {type(a) for a in result}
@@ -1621,7 +1791,9 @@ class TestMultiPlayerActionAvailability:
         ]
         game = minimal_game_factory(players)
 
-        result = AvailableActionCalculator.calculate_available_actions(game, players[0].id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, players[0].id
+        )
 
         # All players at 50, so check is available
         action_types = {type(a) for a in result}
@@ -1653,11 +1825,15 @@ class TestBetMinMaxBoundaries:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        bet_action = next(a for a in result if isinstance(a, AvailableBetAction))
+        bet_action = next(
+            a for a in result if isinstance(a, AvailableBetAction)
+        )
         # BB is 20 (from conftest.py)
         assert bet_action.min_bet_amount == ChipAmount(20)
 
@@ -1683,11 +1859,15 @@ class TestBetMinMaxBoundaries:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        bet_action = next(a for a in result if isinstance(a, AvailableBetAction))
+        bet_action = next(
+            a for a in result if isinstance(a, AvailableBetAction)
+        )
         assert bet_action.max_bet_amount == remaining
 
     def test_bet_not_available_when_chips_less_than_minimum(
@@ -1711,9 +1891,11 @@ class TestBetMinMaxBoundaries:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableBetAction not in action_types
@@ -1745,11 +1927,17 @@ class TestRaiseMinMaxBoundaries:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         # No last_raise_increment set (or 0)
-        game = minimal_game_factory([player, bettor], last_raise_increment=ChipAmount(0))
+        game = minimal_game_factory(
+            [player, bettor], last_raise_increment=ChipAmount(0)
+        )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        raise_action = next(a for a in result if isinstance(a, AvailableRaiseAction))
+        raise_action = next(
+            a for a in result if isinstance(a, AvailableRaiseAction)
+        )
         # BB is 20, so min raise is 20
         assert raise_action.min_raise_amount == ChipAmount(20)
 
@@ -1774,11 +1962,17 @@ class TestRaiseMinMaxBoundaries:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         # Last raise was 100
-        game = minimal_game_factory([player, raiser], last_raise_increment=ChipAmount(100))
+        game = minimal_game_factory(
+            [player, raiser], last_raise_increment=ChipAmount(100)
+        )
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        raise_action = next(a for a in result if isinstance(a, AvailableRaiseAction))
+        raise_action = next(
+            a for a in result if isinstance(a, AvailableRaiseAction)
+        )
         # min raise should be 100, not BB (20)
         assert raise_action.min_raise_amount == ChipAmount(100)
 
@@ -1804,9 +1998,13 @@ class TestRaiseMinMaxBoundaries:
         )
         game = minimal_game_factory([player, bettor])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        raise_action = next(a for a in result if isinstance(a, AvailableRaiseAction))
+        raise_action = next(
+            a for a in result if isinstance(a, AvailableRaiseAction)
+        )
         # Call is 50, remaining is 200, so max raise is 150
         assert raise_action.max_raise_amount == ChipAmount(150)
 
@@ -1836,7 +2034,9 @@ class TestBigBlindOption:
         )
         game = minimal_game_factory([bb, limper])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, bb.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, bb.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableCheckAction in action_types
@@ -1863,7 +2063,9 @@ class TestBigBlindOption:
         )
         game = minimal_game_factory([bb, limper])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, bb.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, bb.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableRaiseAction in action_types
@@ -1890,7 +2092,9 @@ class TestBigBlindOption:
         )
         game = minimal_game_factory([bb, raiser])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, bb.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, bb.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableCheckAction not in action_types
@@ -1922,7 +2126,9 @@ class TestSmallBlindPreflop:
         )
         game = minimal_game_factory([sb, bb])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, sb.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, sb.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableCheckAction not in action_types
@@ -1950,9 +2156,13 @@ class TestSmallBlindPreflop:
         )
         game = minimal_game_factory([sb, bb])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, sb.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, sb.id
+        )
 
-        call_action = next(a for a in result if isinstance(a, AvailableCallAction))
+        call_action = next(
+            a for a in result if isinstance(a, AvailableCallAction)
+        )
         # Call amount is 20 - 10 = 10
         assert call_action.call_amount == ChipAmount(10)
 
@@ -1984,7 +2194,9 @@ class TestCanRaiseRestrictions:
         )
         game = minimal_game_factory([player, other_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableRaiseAction not in action_types
@@ -2015,9 +2227,11 @@ class TestCanRaiseRestrictions:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([player, other_player])
-        game.hand_state.current_phase = GamePhase.FLOP
+        game.hand_state.current_phase = HandPhase.FLOP
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableBetAction not in action_types
@@ -2048,9 +2262,11 @@ class TestCanRaiseRestrictions:
             betting_status=BettingRoundActionStatus.ACTED,
         )
         game = minimal_game_factory([bb_player, limper])
-        assert game.current_phase == GamePhase.PRE_FLOP
+        assert game.current_phase == HandPhase.PRE_FLOP
 
-        result = AvailableActionCalculator.calculate_available_actions(game, bb_player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, bb_player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableRaiseAction not in action_types
@@ -2082,7 +2298,9 @@ class TestCanRaiseRestrictions:
         )
         game = minimal_game_factory([player, other_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableRaiseAction in action_types
@@ -2111,9 +2329,13 @@ class TestCanRaiseRestrictions:
         )
         game = minimal_game_factory([player, other_player])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
-        call_actions = [a for a in result if isinstance(a, AvailableCallAction)]
+        call_actions = [
+            a for a in result if isinstance(a, AvailableCallAction)
+        ]
         assert len(call_actions) == 1
         assert call_actions[0].call_amount == ChipAmount(30)
 
@@ -2144,7 +2366,9 @@ class TestAllInAmountCorrectness:
         )
         game = minimal_game_factory([player, other])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         all_in = next(a for a in result if isinstance(a, AvailableAllInAction))
         assert all_in.all_in_amount == remaining
@@ -2171,7 +2395,9 @@ class TestAllInAmountCorrectness:
         )
         game = minimal_game_factory([player, other])
 
-        result = AvailableActionCalculator.calculate_available_actions(game, player.id)
+        result = AvailableActionCalculator.calculate_available_actions(
+            game, player.id
+        )
 
         action_types = {type(a) for a in result}
         assert AvailableAllInAction not in action_types

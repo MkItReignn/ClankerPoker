@@ -23,9 +23,13 @@ from src.application.poker.state_observers.details import (
 from src.domain.models.actions import ActionType
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game, GamePhase, GameStatus
+from src.domain.models.game import Game, GameStatus, HandPhase
 from src.domain.models.hand import Hand
-from src.domain.models.player import BettingRoundActionStatus, HandParticipationStatus, PlayerId
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    PlayerId,
+)
 from src.domain.models.seat import Seat
 from src.infrastructure.realtime.mock_transport import InMemoryTransport
 
@@ -38,14 +42,23 @@ class TestEventPublisherSequenceNumbers:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
 
-        details1 = GameStartedDetails(player_count=2, starting_chips=ChipAmount(1000))
+        details1 = GameStartedDetails(
+            player_count=2, starting_chips=ChipAmount(1000)
+        )
         details2 = HandStartedDetails(
-            hand_number=1, button_seat=Seat.SEAT_0, sb_seat=Seat.SEAT_1, bb_seat=Seat.SEAT_0
+            hand_number=1,
+            button_seat=Seat.SEAT_0,
+            sb_seat=Seat.SEAT_1,
+            bb_seat=Seat.SEAT_0,
         )
 
         await publisher.on_game_started(game, details1)
@@ -61,20 +74,29 @@ class TestEventPublisherSequenceNumbers:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
 
-        await publisher.on_game_started(game, GameStartedDetails(2, ChipAmount(1000)))
+        await publisher.on_game_started(
+            game, GameStartedDetails(2, ChipAmount(1000))
+        )
         await publisher.on_hand_started(
             game,
             HandStartedDetails(
-                hand_number=1, button_seat=Seat.SEAT_0, sb_seat=Seat.SEAT_1, bb_seat=Seat.SEAT_0
+                hand_number=1,
+                button_seat=Seat.SEAT_0,
+                sb_seat=Seat.SEAT_1,
+                bb_seat=Seat.SEAT_0,
             ),
         )
         await publisher.on_round_started(
-            game, RoundStartedDetails(phase=GamePhase.PRE_FLOP, new_cards=())
+            game, RoundStartedDetails(phase=HandPhase.PRE_FLOP, new_cards=())
         )
         await publisher.on_round_completed(game, RoundCompletedDetails())
 
@@ -90,11 +112,17 @@ class TestEventPublisherGameEvents:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
-        details = GameStartedDetails(player_count=2, starting_chips=ChipAmount(1000))
+        details = GameStartedDetails(
+            player_count=2, starting_chips=ChipAmount(1000)
+        )
 
         await publisher.on_game_started(game, details)
 
@@ -126,9 +154,14 @@ class TestEventPublisherGameEvents:
                 table_finish_position=2,
             ),
         ]
-        outcome = HandOutcome(hand_number=5, winners=[(PlayerId("p1"), ChipAmount(2000))])
+        outcome = HandOutcome(
+            hand_number=5, winners=[(PlayerId("p1"), ChipAmount(2000))]
+        )
         game = game_factory(
-            players=players, status=GameStatus.COMPLETED, hand_number=5, outcome=outcome
+            players=players,
+            status=GameStatus.COMPLETED,
+            hand_number=5,
+            outcome=outcome,
         )
         details = GameCompletedDetails(
             winner_id="p1",
@@ -154,8 +187,12 @@ class TestEventPublisherHandEvents:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players, hand_number=3)
         details = HandStartedDetails(
@@ -181,12 +218,22 @@ class TestEventPublisherHandEvents:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1500)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(500)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1500)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(500)
+            ),
         ]
         game = game_factory(players=players)
         details = HandOutcomeDetails(
-            winners=(WinnerInfo(player_id="p1", player_name="Player p1", amount=ChipAmount(100)),),
+            winners=(
+                WinnerInfo(
+                    player_id="p1",
+                    player_name="Player p1",
+                    amount=ChipAmount(100),
+                ),
+            ),
             eliminated=(),
             showdown=None,
             pot_amount=ChipAmount(100),
@@ -209,13 +256,20 @@ class TestEventPublisherHandEvents:
 
     @pytest.mark.asyncio
     async def test_publishes_hole_cards_dealt(
-        self, game_factory: Callable[..., Game], sample_player_factory, sample_hand
+        self,
+        game_factory: Callable[..., Game],
+        sample_player_factory,
+        sample_hand,
     ) -> None:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
         details = HoleCardsDealtDetails(
@@ -244,18 +298,26 @@ class TestEventPublisherRoundEvents:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
-        game = game_factory(players=players, current_phase=GamePhase.PRE_FLOP, position_to_act=-1)
-        details = RoundStartedDetails(phase=GamePhase.PRE_FLOP, new_cards=())
+        game = game_factory(
+            players=players,
+            current_phase=HandPhase.PRE_FLOP,
+            position_to_act=-1,
+        )
+        details = RoundStartedDetails(phase=HandPhase.PRE_FLOP, new_cards=())
 
         await publisher.on_round_started(game, details)
 
         events = transport.events
         assert len(events) == 1
         assert events[0].event_type == EventType.ROUND_STARTED
-        assert events[0].details["phase"] == GamePhase.PRE_FLOP.value
+        assert events[0].details["phase"] == HandPhase.PRE_FLOP.value
 
     @pytest.mark.asyncio
     async def test_publishes_round_started_and_player_to_act_for_flop(
@@ -270,15 +332,21 @@ class TestEventPublisherRoundEvents:
                 ChipAmount(1000),
                 betting_status=BettingRoundActionStatus.NEEDS_ACTION,
             ),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
-        game = game_factory(players=players, current_phase=GamePhase.FLOP, position_to_act=0)
+        game = game_factory(
+            players=players, current_phase=HandPhase.FLOP, position_to_act=0
+        )
         flop_cards = (
             Card(rank=Rank.ACE, suit=Suit.SPADES),
             Card(rank=Rank.KING, suit=Suit.HEARTS),
             Card(rank=Rank.QUEEN, suit=Suit.DIAMONDS),
         )
-        details = RoundStartedDetails(phase=GamePhase.FLOP, new_cards=flop_cards)
+        details = RoundStartedDetails(
+            phase=HandPhase.FLOP, new_cards=flop_cards
+        )
 
         await publisher.on_round_started(game, details)
 
@@ -300,11 +368,16 @@ class TestEventPublisherRoundEvents:
                 ChipAmount(1000),
                 betting_status=BettingRoundActionStatus.ACTED,
             ),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
-        game = game_factory(players=players, current_phase=GamePhase.TURN, position_to_act=-1)
+        game = game_factory(
+            players=players, current_phase=HandPhase.TURN, position_to_act=-1
+        )
         details = RoundStartedDetails(
-            phase=GamePhase.TURN, new_cards=(Card(rank=Rank.TEN, suit=Suit.CLUBS),)
+            phase=HandPhase.TURN,
+            new_cards=(Card(rank=Rank.TEN, suit=Suit.CLUBS),),
         )
 
         await publisher.on_round_started(game, details)
@@ -320,8 +393,12 @@ class TestEventPublisherRoundEvents:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
         details = RoundCompletedDetails()
@@ -356,8 +433,12 @@ class TestEventPublisherBettingEvents:
         ]
         game = game_factory(players=players, position_to_act=0)
         details = BlindsPostedDetails(
-            small_blind=BlindInfo(player_id="p1", player_name="Player p1", amount=ChipAmount(10)),
-            big_blind=BlindInfo(player_id="p2", player_name="Player p2", amount=ChipAmount(20)),
+            small_blind=BlindInfo(
+                player_id="p1", player_name="Player p1", amount=ChipAmount(10)
+            ),
+            big_blind=BlindInfo(
+                player_id="p2", player_name="Player p2", amount=ChipAmount(20)
+            ),
         )
 
         await publisher.on_blinds_posted(game, details)
@@ -376,13 +457,21 @@ class TestEventPublisherBettingEvents:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players, position_to_act=-1)
         details = BlindsPostedDetails(
-            small_blind=BlindInfo(player_id="p1", player_name="Player p1", amount=ChipAmount(10)),
-            big_blind=BlindInfo(player_id="p2", player_name="Player p2", amount=ChipAmount(20)),
+            small_blind=BlindInfo(
+                player_id="p1", player_name="Player p1", amount=ChipAmount(10)
+            ),
+            big_blind=BlindInfo(
+                player_id="p2", player_name="Player p2", amount=ChipAmount(20)
+            ),
         )
 
         await publisher.on_blinds_posted(game, details)
@@ -404,7 +493,9 @@ class TestEventPublisherBettingEvents:
                 ChipAmount(1000),
                 betting_status=BettingRoundActionStatus.NEEDS_ACTION,
             ),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players, position_to_act=0)
         details = ActionAppliedDetails(
@@ -432,8 +523,12 @@ class TestEventPublisherBettingEvents:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players, position_to_act=-1)
         details = ActionAppliedDetails(
@@ -459,11 +554,17 @@ class TestEventPublisherMetadata:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
-        details = GameStartedDetails(player_count=2, starting_chips=ChipAmount(1000))
+        details = GameStartedDetails(
+            player_count=2, starting_chips=ChipAmount(1000)
+        )
 
         await publisher.on_game_started(game, details)
 
@@ -477,11 +578,17 @@ class TestEventPublisherMetadata:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players, hand_number=7)
-        details = GameStartedDetails(player_count=2, starting_chips=ChipAmount(1000))
+        details = GameStartedDetails(
+            player_count=2, starting_chips=ChipAmount(1000)
+        )
 
         await publisher.on_game_started(game, details)
 
@@ -495,11 +602,17 @@ class TestEventPublisherMetadata:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
-        details = GameStartedDetails(player_count=2, starting_chips=ChipAmount(1000))
+        details = GameStartedDetails(
+            player_count=2, starting_chips=ChipAmount(1000)
+        )
 
         await publisher.on_game_started(game, details)
 
@@ -515,11 +628,17 @@ class TestEventPublisherGameState:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
-        game = game_factory(players=players, current_phase=GamePhase.FLOP)
-        details = GameStartedDetails(player_count=2, starting_chips=ChipAmount(1000))
+        game = game_factory(players=players, current_phase=HandPhase.FLOP)
+        details = GameStartedDetails(
+            player_count=2, starting_chips=ChipAmount(1000)
+        )
 
         await publisher.on_game_started(game, details)
 
@@ -535,11 +654,17 @@ class TestEventPublisherGameState:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1500), name="Alice"),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(500), name="Bob"),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1500), name="Alice"
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(500), name="Bob"
+            ),
         ]
         game = game_factory(players=players)
-        details = GameStartedDetails(player_count=2, starting_chips=ChipAmount(1000))
+        details = GameStartedDetails(
+            player_count=2, starting_chips=ChipAmount(1000)
+        )
 
         await publisher.on_game_started(game, details)
 
@@ -556,20 +681,30 @@ class TestEventPublisherEdgeCases:
         transport = InMemoryTransport()
         publisher = EventPublisher(transport)
         players = [
-            sample_player_factory(PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p1"), Seat.SEAT_0, ChipAmount(1000)
+            ),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players)
 
-        await publisher.on_game_started(game, GameStartedDetails(2, ChipAmount(1000)))
+        await publisher.on_game_started(
+            game, GameStartedDetails(2, ChipAmount(1000))
+        )
         await publisher.on_hand_started(
             game,
             HandStartedDetails(1, Seat.SEAT_0, Seat.SEAT_1, Seat.SEAT_0),
         )
-        await publisher.on_round_started(game, RoundStartedDetails(GamePhase.PRE_FLOP, ()))
+        await publisher.on_round_started(
+            game, RoundStartedDetails(HandPhase.PRE_FLOP, ())
+        )
 
         assert transport.event_count == 3
-        assert all(event.metadata.game_id == "test-game" for event in transport.events)
+        assert all(
+            event.metadata.game_id == "test-game" for event in transport.events
+        )
 
     @pytest.mark.asyncio
     async def test_does_not_publish_player_to_act_when_player_id_is_none(
@@ -584,7 +719,9 @@ class TestEventPublisherEdgeCases:
                 ChipAmount(1000),
                 participation_status=HandParticipationStatus.FOLDED,
             ),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
         game = game_factory(players=players, position_to_act=-1)
         details = ActionAppliedDetails(
@@ -613,11 +750,16 @@ class TestEventPublisherEdgeCases:
                 ChipAmount(1000),
                 betting_status=BettingRoundActionStatus.NEEDS_ACTION,
             ),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
-        game = game_factory(players=players, current_phase=GamePhase.TURN, position_to_act=0)
+        game = game_factory(
+            players=players, current_phase=HandPhase.TURN, position_to_act=0
+        )
         details = RoundStartedDetails(
-            phase=GamePhase.TURN, new_cards=(Card(rank=Rank.TEN, suit=Suit.CLUBS),)
+            phase=HandPhase.TURN,
+            new_cards=(Card(rank=Rank.TEN, suit=Suit.CLUBS),),
         )
 
         await publisher.on_round_started(game, details)
@@ -639,11 +781,16 @@ class TestEventPublisherEdgeCases:
                 ChipAmount(1000),
                 betting_status=BettingRoundActionStatus.NEEDS_ACTION,
             ),
-            sample_player_factory(PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)),
+            sample_player_factory(
+                PlayerId("p2"), Seat.SEAT_1, ChipAmount(1000)
+            ),
         ]
-        game = game_factory(players=players, current_phase=GamePhase.RIVER, position_to_act=0)
+        game = game_factory(
+            players=players, current_phase=HandPhase.RIVER, position_to_act=0
+        )
         details = RoundStartedDetails(
-            phase=GamePhase.RIVER, new_cards=(Card(rank=Rank.TWO, suit=Suit.DIAMONDS),)
+            phase=HandPhase.RIVER,
+            new_cards=(Card(rank=Rank.TWO, suit=Suit.DIAMONDS),),
         )
 
         await publisher.on_round_started(game, details)

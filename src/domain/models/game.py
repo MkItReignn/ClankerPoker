@@ -25,7 +25,7 @@ class GameStatus(Enum):
     CANCELLED = "cancelled"
 
 
-class GamePhase(Enum):
+class HandPhase(Enum):
     PRE_FLOP = "pre_flop"
     FLOP = "flop"
     TURN = "turn"
@@ -36,16 +36,16 @@ class GamePhase(Enum):
     def card_count(self) -> int:
         """Number of community cards required for this phase."""
         mapping = {
-            GamePhase.PRE_FLOP: 0,
-            GamePhase.FLOP: 3,
-            GamePhase.TURN: 4,
-            GamePhase.RIVER: 5,
-            GamePhase.SHOWDOWN: 5,
+            HandPhase.PRE_FLOP: 0,
+            HandPhase.FLOP: 3,
+            HandPhase.TURN: 4,
+            HandPhase.RIVER: 5,
+            HandPhase.SHOWDOWN: 5,
         }
         return mapping[self]
 
     @classmethod
-    def get_phase_order(cls) -> tuple[GamePhase, ...]:
+    def get_phase_order(cls) -> tuple[HandPhase, ...]:
         """Returns phases in sequence order."""
         return (
             cls.PRE_FLOP,
@@ -56,7 +56,7 @@ class GamePhase(Enum):
         )
 
     @classmethod
-    def get_betting_phases(cls) -> tuple[GamePhase, ...]:
+    def get_betting_phases(cls) -> tuple[HandPhase, ...]:
         """Returns phases where betting occurs (excludes SHOWDOWN)."""
         return (
             cls.PRE_FLOP,
@@ -65,7 +65,7 @@ class GamePhase(Enum):
             cls.RIVER,
         )
 
-    def next_phase(self) -> GamePhase | None:
+    def next_phase(self) -> HandPhase | None:
         """Returns the next phase in sequence, or None if this is the last phase."""
         order = self.get_phase_order()
         try:
@@ -107,8 +107,12 @@ class GameIdentity:
             "id": self.id,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
-            "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "started_at": (
+                self.started_at.isoformat() if self.started_at else None
+            ),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "status": self.status.value,
             "seed": self.seed,
         }
@@ -117,13 +121,15 @@ class GameIdentity:
 @dataclass(slots=True)
 class HandState:
     hand_number: int
-    current_phase: GamePhase
+    current_phase: HandPhase
     community_cards: list[Card]
     is_initial_hand_setup: bool = False
 
     def __post_init__(self) -> None:
         if self.hand_number < 1:
-            raise ValueError(f"Hand number must be at least 1: {self.hand_number}")
+            raise ValueError(
+                f"Hand number must be at least 1: {self.hand_number}"
+            )
         if len(self.community_cards) > 5:
             raise ValueError(
                 f"Cannot have more than 5 community cards: {len(self.community_cards)}"
@@ -138,7 +144,9 @@ class HandState:
         return {
             "hand_number": self.hand_number,
             "current_phase": self.current_phase.value,
-            "community_cards": [card.to_dict() for card in self.community_cards],
+            "community_cards": [
+                card.to_dict() for card in self.community_cards
+            ],
         }
 
 
@@ -157,7 +165,10 @@ class BettingState:
             raise ValueError(
                 f"Last raise increment cannot be negative: {self.last_raise_increment.value}"
             )
-        if self.position_to_act != NO_POSITION_TO_ACT and self.position_to_act < 0:
+        if (
+            self.position_to_act != NO_POSITION_TO_ACT
+            and self.position_to_act < 0
+        ):
             raise ValueError(
                 f"Position to act must be non-negative or {NO_POSITION_TO_ACT}: {self.position_to_act}"
             )
@@ -181,12 +192,16 @@ class HandOutcome:
 
     def __post_init__(self) -> None:
         if self.hand_number < 1:
-            raise ValueError(f"Hand number must be at least 1: {self.hand_number}")
+            raise ValueError(
+                f"Hand number must be at least 1: {self.hand_number}"
+            )
         if not self.winners:
             return
         total_payout = sum(payout.value for _, payout in self.winners)
         if total_payout < 0:
-            raise ValueError(f"Total payout cannot be negative: {total_payout}")
+            raise ValueError(
+                f"Total payout cannot be negative: {total_payout}"
+            )
 
 
 @dataclass(slots=True)
@@ -204,13 +219,19 @@ class Game:
     def __post_init__(self) -> None:
         # Convert list[Player] to Players for backward compatibility
         if isinstance(self.players, list):
-            object.__setattr__(self, "players", Players.from_list(self.players))
+            object.__setattr__(
+                self, "players", Players.from_list(self.players)
+            )
 
         num_players = len(self.players)
         if num_players < 2:
-            raise ValueError(f"Game must have at least 2 players: {num_players}")
+            raise ValueError(
+                f"Game must have at least 2 players: {num_players}"
+            )
         if num_players > 6:
-            raise ValueError(f"Game cannot have more than 6 players: {num_players}")
+            raise ValueError(
+                f"Game cannot have more than 6 players: {num_players}"
+            )
 
         valid_seats = {player.seat.value for player in self.players}
         if len(valid_seats) != num_players:
@@ -221,7 +242,9 @@ class Game:
             )
 
         if self.button_seat.value < 0:
-            raise ValueError(f"Button seat must be non-negative: {self.button_seat.value}")
+            raise ValueError(
+                f"Button seat must be non-negative: {self.button_seat.value}"
+            )
         if self.button_seat.value >= num_players:
             raise ValueError(
                 f"Button seat {self.button_seat.value} is out of range for {num_players} players"
@@ -230,7 +253,10 @@ class Game:
         if self.identity.status == GameStatus.IN_PROGRESS:
             if self.betting_state.position_to_act == NO_POSITION_TO_ACT:
                 # Allow NO_POSITION_TO_ACT during initial setup (before first hand dealt)
-                if not self.hand_state.is_initial_hand_setup and not self.is_round_complete():
+                if (
+                    not self.hand_state.is_initial_hand_setup
+                    and not self.is_round_complete()
+                ):
                     raise ValueError(
                         "IN_PROGRESS game with NO_POSITION_TO_ACT must have a complete betting round"
                     )
@@ -243,7 +269,9 @@ class Game:
             if self.outcome is None:
                 raise ValueError("COMPLETED game must have outcome")
             if not self.outcome.winners:
-                raise ValueError("COMPLETED game must have at least one winner")
+                raise ValueError(
+                    "COMPLETED game must have at least one winner"
+                )
 
     @property
     def id(self) -> GameId:
@@ -258,7 +286,7 @@ class Game:
         return self.pot_state.main_pot.amount
 
     @property
-    def current_phase(self) -> GamePhase:
+    def current_phase(self) -> HandPhase:
         return self.hand_state.current_phase
 
     @property
@@ -284,7 +312,9 @@ class Game:
     def get_active_players(self) -> list[Player]:
         """Get list of all active (non-eliminated) players."""
         return [
-            p for p in self.players if p.participation_status != HandParticipationStatus.ELIMINATED
+            p
+            for p in self.players
+            if p.participation_status != HandParticipationStatus.ELIMINATED
         ]
 
     def get_active_player_ids(self) -> frozenset[PlayerId]:
@@ -295,7 +325,9 @@ class Game:
             if p.participation_status != HandParticipationStatus.ELIMINATED
         )
 
-    def players_in_hand(self, excluded_player_id: PlayerId | None = None) -> list[Player]:
+    def players_in_hand(
+        self, excluded_player_id: PlayerId | None = None
+    ) -> list[Player]:
         """Get all players currently in hand, optionally excluding a specific player."""
         players = [p for p in self.players if p.is_in_hand()]
         if excluded_player_id is not None:
@@ -316,7 +348,7 @@ class Game:
         1. We've reached showdown phase
         2. Only one player remains (all others folded)
         """
-        if self.current_phase == GamePhase.SHOWDOWN:
+        if self.current_phase == HandPhase.SHOWDOWN:
             return True
 
         return len(self.players_in_hand()) == 1
@@ -332,7 +364,7 @@ class Game:
         4. If all players in hand are all-in → round complete (no more betting)
         5. Otherwise → round continues
         """
-        if self.current_phase == GamePhase.SHOWDOWN:
+        if self.current_phase == HandPhase.SHOWDOWN:
             return True
 
         from src.domain.rules.betting_calculator import BettingCalculator
@@ -342,7 +374,9 @@ class Game:
         if len(players_in_hand) == 1:
             return True
 
-        max_invested: ChipAmount = BettingCalculator.get_max_invested_this_hand(players_in_hand)
+        max_invested: ChipAmount = (
+            BettingCalculator.get_max_invested_this_hand(players_in_hand)
+        )
         for player in players_in_hand:
             if player.is_all_in():
                 continue

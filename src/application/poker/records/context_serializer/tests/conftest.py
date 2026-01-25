@@ -29,7 +29,7 @@ from src.domain.models.actions import ActionType
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import GamePhase
+from src.domain.models.game import HandPhase
 from src.domain.models.hand import Hand
 from src.domain.models.llm_model import LlmModel
 from src.domain.models.player import HandParticipationStatus
@@ -40,7 +40,9 @@ from src.domain.rules.hand_evaluator import HandEvaluation, HandRank
 
 @pytest.fixture
 def default_blind_level() -> BlindLevel:
-    return BlindLevel(small_blind=ChipAmount(25), big_blind=ChipAmount(50), level=1)
+    return BlindLevel(
+        small_blind=ChipAmount(25), big_blind=ChipAmount(50), level=1
+    )
 
 
 @pytest.fixture
@@ -57,7 +59,9 @@ def default_blind_schedule(default_blind_level: BlindLevel) -> BlindSchedule:
 
 
 @pytest.fixture
-def default_game_metadata(default_blind_schedule: BlindSchedule) -> GameMetadata:
+def default_game_metadata(
+    default_blind_schedule: BlindSchedule,
+) -> GameMetadata:
     return GameMetadata(
         seed=42,
         buy_in_amount=ChipAmount(100),
@@ -117,7 +121,7 @@ def make_action_record(
     player_name: str,
     action_type: ActionType,
     amount: int | None = None,
-    phase: GamePhase = GamePhase.PRE_FLOP,
+    phase: HandPhase = HandPhase.PRE_FLOP,
 ) -> ActionRecord:
     """Create an ActionRecord for testing."""
     return ActionRecord(
@@ -135,12 +139,14 @@ def make_turn_record(
     player_name: str,
     action_type: ActionType,
     amount: int | None = None,
-    phase: GamePhase = GamePhase.PRE_FLOP,
+    phase: HandPhase = HandPhase.PRE_FLOP,
     turn_number: int = 1,
 ) -> TurnRecord:
     return TurnRecord(
         round_turn_number=turn_number,
-        action=make_action_record(player_id, player_name, action_type, amount, phase),
+        action=make_action_record(
+            player_id, player_name, action_type, amount, phase
+        ),
         timestamp=datetime.now(),
     )
 
@@ -170,7 +176,7 @@ def make_hand_record(
 
 
 def make_round_record(
-    phase: GamePhase,
+    phase: HandPhase,
     player_records: dict[str, RoundLevelPlayerRecord],
     turns: list[TurnRecord] | None = None,
 ) -> RoundRecord:
@@ -193,7 +199,9 @@ def make_hand_outcome(
     player_outcomes: tuple[PlayerOutcome, ...] | None = None,
     eliminated: tuple[EliminatedInfo, ...] = (),
 ) -> HandOutcomeDetails:
-    chips_per_winner = pot_amount // len(winner_ids) if winner_ids else pot_amount
+    chips_per_winner = (
+        pot_amount // len(winner_ids) if winner_ids else pot_amount
+    )
 
     if player_outcomes is None:
         player_outcomes = tuple(
@@ -221,7 +229,9 @@ def make_hand_outcome(
     return HandOutcomeDetails(
         winners=winners,
         eliminated=eliminated,
-        showdown=showdown_results if was_showdown and showdown_results else None,
+        showdown=(
+            showdown_results if was_showdown and showdown_results else None
+        ),
         pot_amount=ChipAmount(pot_amount),
         player_outcomes=player_outcomes,
     )

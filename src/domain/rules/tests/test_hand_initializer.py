@@ -21,9 +21,12 @@ from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.chips import ChipAmount
 from src.domain.models.deck import Deck
-from src.domain.models.game import Game, GamePhase, HandState
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player)
+from src.domain.models.game import Game, HandPhase, HandState
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    Player,
+)
 from src.domain.models.players import Players
 from src.domain.models.seat import Seat
 from src.domain.rules.hand_initializer import HandInitializer
@@ -95,7 +98,9 @@ class TestHandInitializationBasics:
         sb_player = new_game.players.get_by_seat(sb_seat)
         assert sb_player is not None
         assert sb_player.total_invested_this_hand == SMALL_BLIND
-        assert sb_player.remaining_chips == ChipAmount(STARTING_CHIPS.value - SMALL_BLIND.value)
+        assert sb_player.remaining_chips == ChipAmount(
+            STARTING_CHIPS.value - SMALL_BLIND.value
+        )
 
     def test_big_blind_posts_correct_amount(
         self,
@@ -125,7 +130,9 @@ class TestHandInitializationBasics:
         bb_player = new_game.players.get_by_seat(bb_seat)
         assert bb_player is not None
         assert bb_player.total_invested_this_hand == BIG_BLIND
-        assert bb_player.remaining_chips == ChipAmount(STARTING_CHIPS.value - BIG_BLIND.value)
+        assert bb_player.remaining_chips == ChipAmount(
+            STARTING_CHIPS.value - BIG_BLIND.value
+        )
 
     def test_advances_hand_number_after_first_hand(
         self,
@@ -141,7 +148,7 @@ class TestHandInitializationBasics:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.PRE_FLOP,
+                current_phase=HandPhase.PRE_FLOP,
                 community_cards=[],
                 is_initial_hand_setup=False,
             ),
@@ -187,7 +194,7 @@ class TestHandInitializationBasics:
         new_game, _ = HandInitializer.setup_hand(game, deck)
         new_game = HandInitializer.post_blinds(new_game)
 
-        assert new_game.hand_state.current_phase == GamePhase.PRE_FLOP
+        assert new_game.hand_state.current_phase == HandPhase.PRE_FLOP
 
     def test_clears_community_cards(
         self,
@@ -220,13 +227,17 @@ class TestPlayerResetBehavior:
                 "p1",
                 Seat.SEAT_0,
                 STARTING_CHIPS,
-                total_invested_this_hand=ChipAmount(1000),  # Previous hand investment
+                total_invested_this_hand=ChipAmount(
+                    1000
+                ),  # Previous hand investment
             ),
             sample_player_factory(
                 "p2",
                 Seat.SEAT_1,
                 STARTING_CHIPS,
-                total_invested_this_hand=ChipAmount(2000),  # Previous hand investment
+                total_invested_this_hand=ChipAmount(
+                    2000
+                ),  # Previous hand investment
             ),
         ]
         game = minimal_game_factory(players=Players.from_list(players))
@@ -268,7 +279,9 @@ class TestPlayerResetBehavior:
         new_game = HandInitializer.post_blinds(new_game)
 
         for player in new_game.players:
-            assert player.participation_status == HandParticipationStatus.IN_HAND
+            assert (
+                player.participation_status == HandParticipationStatus.IN_HAND
+            )
 
 
 class TestBlindPostingEdgeCases:
@@ -302,7 +315,9 @@ class TestBlindPostingEdgeCases:
         assert sb_player is not None
         assert sb_player.total_invested_this_hand == insufficient_chips
         assert sb_player.remaining_chips == ChipAmount(0)
-        assert sb_player.betting_status == BettingRoundActionStatus.ACTED  # All-in
+        assert (
+            sb_player.betting_status == BettingRoundActionStatus.ACTED
+        )  # All-in
 
     def test_big_blind_with_insufficient_chips_goes_all_in(
         self,
@@ -332,7 +347,9 @@ class TestBlindPostingEdgeCases:
         assert bb_player is not None
         assert bb_player.total_invested_this_hand == insufficient_chips
         assert bb_player.remaining_chips == ChipAmount(0)
-        assert bb_player.betting_status == BettingRoundActionStatus.ACTED  # All-in
+        assert (
+            bb_player.betting_status == BettingRoundActionStatus.ACTED
+        )  # All-in
 
     def test_player_with_exactly_blind_amount_goes_all_in(
         self,
@@ -362,7 +379,9 @@ class TestBlindPostingEdgeCases:
         assert bb_player is not None
         assert bb_player.total_invested_this_hand == BIG_BLIND
         assert bb_player.remaining_chips == ChipAmount(0)
-        assert bb_player.betting_status == BettingRoundActionStatus.ACTED  # All-in
+        assert (
+            bb_player.betting_status == BettingRoundActionStatus.ACTED
+        )  # All-in
 
     def test_non_all_in_blind_poster_needs_action(
         self,
@@ -381,7 +400,9 @@ class TestBlindPostingEdgeCases:
 
         sb_player = new_game.players.get_by_seat(Seat.SEAT_0)
         assert sb_player is not None
-        assert sb_player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        assert (
+            sb_player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+        )
 
 
 class TestEliminatedPlayers:
@@ -455,7 +476,9 @@ class TestEliminatedPlayers:
         new_game, _ = HandInitializer.setup_hand(game, deck)
         new_game = HandInitializer.post_blinds(new_game)
 
-        players_with_cards = [p for p in new_game.players if p.hole_cards is not None]
+        players_with_cards = [
+            p for p in new_game.players if p.hole_cards is not None
+        ]
         assert len(players_with_cards) == 2
 
     def test_eliminated_players_remain_eliminated(
@@ -481,7 +504,10 @@ class TestEliminatedPlayers:
 
         eliminated_player = new_game.players.get_by_id("p3")
         assert eliminated_player is not None
-        assert eliminated_player.participation_status == HandParticipationStatus.ELIMINATED
+        assert (
+            eliminated_player.participation_status
+            == HandParticipationStatus.ELIMINATED
+        )
 
 
 class TestDeckConsumption:
@@ -562,7 +588,9 @@ class TestBettingStateInitialization:
         players = [
             sample_player_factory("p1", Seat.SEAT_0, STARTING_CHIPS),
             sample_player_factory("p2", Seat.SEAT_1, STARTING_CHIPS),
-            sample_player_factory("p3", Seat.SEAT_2, BIG_BLIND),  # Exactly BB, will be all-in
+            sample_player_factory(
+                "p3", Seat.SEAT_2, BIG_BLIND
+            ),  # Exactly BB, will be all-in
         ]
         game = minimal_game_factory(players=Players.from_list(players))
         deck = Deck.create_shuffled(seed=42)
@@ -615,12 +643,20 @@ class TestBlindSchedule:
         blind_schedule = BlindSchedule(
             entries=(
                 BlindScheduleEntry(
-                    level=BlindLevel(small_blind=ChipAmount(10), big_blind=ChipAmount(20), level=1),
+                    level=BlindLevel(
+                        small_blind=ChipAmount(10),
+                        big_blind=ChipAmount(20),
+                        level=1,
+                    ),
                     start_hand=1,
                     duration_hands=2,
                 ),
                 BlindScheduleEntry(
-                    level=BlindLevel(small_blind=ChipAmount(25), big_blind=ChipAmount(50), level=2),
+                    level=BlindLevel(
+                        small_blind=ChipAmount(25),
+                        big_blind=ChipAmount(50),
+                        level=2,
+                    ),
                     start_hand=3,
                     duration_hands=2,
                 ),
@@ -633,10 +669,12 @@ class TestBlindSchedule:
         game = minimal_game_factory(players=Players.from_list(players))
         game = replace(
             game,
-            tournament_config=replace(game.tournament_config, blind_schedule=blind_schedule),
+            tournament_config=replace(
+                game.tournament_config, blind_schedule=blind_schedule
+            ),
             hand_state=HandState(
                 hand_number=2,  # Moving to hand 3, which should trigger level 2
-                current_phase=GamePhase.PRE_FLOP,
+                current_phase=HandPhase.PRE_FLOP,
                 community_cards=[],
                 is_initial_hand_setup=False,
             ),
@@ -646,8 +684,14 @@ class TestBlindSchedule:
         new_game, _ = HandInitializer.setup_hand(game, deck)
         new_game = HandInitializer.post_blinds(new_game)
 
-        assert new_game.blind_state.current_blind_level.small_blind == ChipAmount(25)
-        assert new_game.blind_state.current_blind_level.big_blind == ChipAmount(50)
+        assert (
+            new_game.blind_state.current_blind_level.small_blind
+            == ChipAmount(25)
+        )
+        assert (
+            new_game.blind_state.current_blind_level.big_blind
+            == ChipAmount(50)
+        )
         assert new_game.blind_state.current_blind_level.level == 2
 
     def test_uses_schedule_for_initial_hand(
@@ -659,7 +703,11 @@ class TestBlindSchedule:
         blind_schedule = BlindSchedule(
             entries=(
                 BlindScheduleEntry(
-                    level=BlindLevel(small_blind=ChipAmount(10), big_blind=ChipAmount(20), level=1),
+                    level=BlindLevel(
+                        small_blind=ChipAmount(10),
+                        big_blind=ChipAmount(20),
+                        level=1,
+                    ),
                     start_hand=1,
                     duration_hands=2,
                 ),
@@ -672,15 +720,23 @@ class TestBlindSchedule:
         game = minimal_game_factory(players=Players.from_list(players))
         game = replace(
             game,
-            tournament_config=replace(game.tournament_config, blind_schedule=blind_schedule),
+            tournament_config=replace(
+                game.tournament_config, blind_schedule=blind_schedule
+            ),
         )
         deck = Deck.create_shuffled(seed=42)
 
         new_game, _ = HandInitializer.setup_hand(game, deck)
         new_game = HandInitializer.post_blinds(new_game)
 
-        assert new_game.blind_state.current_blind_level.small_blind == ChipAmount(10)
-        assert new_game.blind_state.current_blind_level.big_blind == ChipAmount(20)
+        assert (
+            new_game.blind_state.current_blind_level.small_blind
+            == ChipAmount(10)
+        )
+        assert (
+            new_game.blind_state.current_blind_level.big_blind
+            == ChipAmount(20)
+        )
 
 
 class TestPotStateReset:

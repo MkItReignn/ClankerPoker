@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from src.domain.models.blinds import BlindLevel
 from src.domain.models.card import Card
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import GamePhase
+from src.domain.models.game import HandPhase
 from src.domain.models.hand import Hand
 from src.domain.models.player import PlayerId
 from src.domain.models.position import PositionName
@@ -23,7 +23,7 @@ class ActingPlayerState:
 
 @dataclass(frozen=True, slots=True)
 class HandState:
-    phase: GamePhase
+    phase: HandPhase
     community_cards: tuple[Card, ...]
     pot_total: ChipAmount
     hand_number: int
@@ -65,15 +65,22 @@ class PokerDecisionContext:
     def stack_in_bb(self) -> float:
         if self.hand_state.blinds.big_blind.value == 0:
             return 0.0
-        return self.acting_player.stack.value / self.hand_state.blinds.big_blind.value
+        return (
+            self.acting_player.stack.value
+            / self.hand_state.blinds.big_blind.value
+        )
 
     @property
     def pot_odds(self) -> float | None:
         if self.hand_state.current_bet.value == 0:
             return None
-        return self.hand_state.pot_total.value / self.hand_state.current_bet.value
+        return (
+            self.hand_state.pot_total.value / self.hand_state.current_bet.value
+        )
 
     @property
     def is_heads_up(self) -> bool:
-        active_opponents = sum(1 for o in self.opponents if not o.is_folded and not o.is_all_in)
+        active_opponents = sum(
+            1 for o in self.opponents if not o.is_folded and not o.is_all_in
+        )
         return active_opponents <= 1

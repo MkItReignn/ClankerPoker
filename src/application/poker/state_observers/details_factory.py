@@ -17,15 +17,18 @@ from src.application.poker.state_observers.details import (
     RoundCompletedDetails,
     RoundStartedDetails,
 )
+from src.application.poker.state_observers.hand_outcome_builder import (
+    HandOutcomeBuilder,
+)
 from src.domain.models.actions import ActionType
 from src.domain.models.available_action import AvailableActions
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game, GamePhase
+from src.domain.models.game import Game, HandPhase
 from src.domain.models.narration import Narration
-from src.domain.rules.available_action_calculator import AvailableActionCalculator
+from src.domain.rules.available_action_calculator import (
+    AvailableActionCalculator,
+)
 from src.domain.rules.position_manager import PositionManager
-
-from src.application.poker.state_observers.hand_outcome_builder import HandOutcomeBuilder
 
 
 class HasActionTypeAndAmount(Protocol):
@@ -168,7 +171,9 @@ class DetailsFactory:
         if player is None:
             raise ValueError(f"Player {player_id} not found")
 
-        available_actions = DetailsFactory._derive_available_actions(game, player_id)
+        available_actions = DetailsFactory._derive_available_actions(
+            game, player_id
+        )
         return PlayerToActDetails(
             player_id=player.id,
             player_name=player.name,
@@ -198,11 +203,11 @@ class DetailsFactory:
     @staticmethod
     def _derive_new_cards(game: Game) -> tuple:
         match game.current_phase:
-            case GamePhase.FLOP:
+            case HandPhase.FLOP:
                 return tuple(game.community_cards[0:3])
-            case GamePhase.TURN:
+            case HandPhase.TURN:
                 return (game.community_cards[3],)
-            case GamePhase.RIVER:
+            case HandPhase.RIVER:
                 return (game.community_cards[4],)
             case _:
                 return ()
@@ -228,7 +233,7 @@ class DetailsFactory:
         players_in_hand = list(game.players_in_hand())
         betting_order = PositionManager.get_betting_order(
             position_mapping=positions,
-            phase=GamePhase.PRE_FLOP,
+            phase=HandPhase.PRE_FLOP,
             players_in_hand=players_in_hand,
         )
 
@@ -241,7 +246,9 @@ class DetailsFactory:
         return deal_orders
 
     @staticmethod
-    def _derive_available_actions(game: Game, player_id: str) -> tuple[AvailableActions, ...]:
+    def _derive_available_actions(
+        game: Game, player_id: str
+    ) -> tuple[AvailableActions, ...]:
         available = AvailableActionCalculator.calculate_available_actions(
             game, player_id
         )

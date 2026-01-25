@@ -13,14 +13,23 @@ from src.domain.models.blinds import BlindLevel
 from src.domain.models.bot import Bot, BotId, BotType, Prompt
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import (BettingState, BlindState, Game,
-                                    GameIdentity, GamePhase, GameStatus,
-                                    HandState)
+from src.domain.models.game import (
+    BettingState,
+    BlindState,
+    Game,
+    GameIdentity,
+    GameStatus,
+    HandPhase,
+    HandState,
+)
 from src.domain.models.hand import Hand
 from src.domain.models.llm_model import LlmModel
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player,
-                                      PlayerId)
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    Player,
+    PlayerId,
+)
 from src.domain.models.players import Players
 from src.domain.models.pot import Pot, PotState
 from src.domain.models.seat import Seat
@@ -82,7 +91,7 @@ def sample_player_factory(sample_bot: Bot) -> Callable[..., Player]:
     return create_player
 
 
-def _create_community_cards_for_phase(phase: GamePhase) -> list[Card]:
+def _create_community_cards_for_phase(phase: HandPhase) -> list[Card]:
     """Create the required number of community cards for a given phase."""
     required_count = phase.card_count
     cards = []
@@ -101,13 +110,13 @@ def minimal_game_factory() -> Callable[..., Game]:
 
     def create_game(
         players: list[Player],
-        current_phase: GamePhase | None = None,
+        current_phase: HandPhase | None = None,
         last_raise_increment: ChipAmount | None = None,
     ) -> Game:
         if last_raise_increment is None:
             last_raise_increment = ChipAmount(0)
         if current_phase is None:
-            current_phase = GamePhase.PRE_FLOP
+            current_phase = HandPhase.PRE_FLOP
         now = datetime.now()
         community_cards = _create_community_cards_for_phase(current_phase)
         return Game(

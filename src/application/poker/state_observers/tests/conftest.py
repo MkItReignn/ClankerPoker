@@ -17,9 +17,9 @@ from src.domain.models.game import (
     BlindState,
     Game,
     GameIdentity,
-    GamePhase,
     GameStatus,
     HandOutcome,
+    HandPhase,
     HandState,
 )
 from src.domain.models.hand import Hand
@@ -71,8 +71,10 @@ def sample_player_factory(sample_bot: Bot) -> Callable[..., Player]:
             seat=seat,
             remaining_chips=remaining_chips,
             hole_cards=hole_cards,
-            betting_status=betting_status or BettingRoundActionStatus.NEEDS_ACTION,
-            participation_status=participation_status or HandParticipationStatus.IN_HAND,
+            betting_status=betting_status
+            or BettingRoundActionStatus.NEEDS_ACTION,
+            participation_status=participation_status
+            or HandParticipationStatus.IN_HAND,
             total_invested_this_hand=total_invested_this_hand or ChipAmount(0),
             elimination_hand_number=elimination_hand_number,
             table_finish_position=table_finish_position,
@@ -81,7 +83,7 @@ def sample_player_factory(sample_bot: Bot) -> Callable[..., Player]:
     return create_player
 
 
-def _create_community_cards_for_phase(phase: GamePhase) -> list[Card]:
+def _create_community_cards_for_phase(phase: HandPhase) -> list[Card]:
     required_count = phase.card_count
     cards = []
     ranks = [Rank.ACE, Rank.KING, Rank.QUEEN, Rank.JACK, Rank.TEN]
@@ -95,7 +97,7 @@ def _create_community_cards_for_phase(phase: GamePhase) -> list[Card]:
 def game_factory() -> Callable[..., Game]:
     def create_game(
         players: list[Player],
-        current_phase: GamePhase = GamePhase.PRE_FLOP,
+        current_phase: HandPhase = HandPhase.PRE_FLOP,
         button_seat: Seat = Seat.SEAT_0,
         hand_number: int = 1,
         outcome: HandOutcome | None = None,

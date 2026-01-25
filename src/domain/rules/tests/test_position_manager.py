@@ -16,7 +16,7 @@ from dataclasses import replace
 import pytest
 
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import GamePhase
+from src.domain.models.game import HandPhase
 from src.domain.models.player import HandParticipationStatus, Player
 from src.domain.models.position import PositionName, TablePositionMapping
 from src.domain.models.seat import Seat
@@ -31,10 +31,14 @@ class TestPositionAssignmentTwoPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -52,10 +56,14 @@ class TestPositionAssignmentTwoPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -73,10 +81,14 @@ class TestPositionAssignmentTwoPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -99,13 +111,19 @@ class TestPositionAssignmentThreePlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -124,13 +142,19 @@ class TestPositionAssignmentThreePlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -150,13 +174,19 @@ class TestPositionAssignmentThreePlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -177,16 +207,24 @@ class TestPositionAssignmentFourPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p4", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="p4",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -206,16 +244,24 @@ class TestPositionAssignmentFourPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p4", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="p4",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -237,19 +283,29 @@ class TestPositionAssignmentFivePlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p4", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="p4",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p5", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="p5",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -270,19 +326,29 @@ class TestPositionAssignmentFivePlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p4", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="p4",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p5", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="p5",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -294,22 +360,34 @@ class TestPositionAssignmentFivePlayers:
 
         assert mapping.utg_plus_one_seat is None
 
-    def test_cutoff_is_right_of_button(self, sample_player_factory: Callable[..., Player]) -> None:
+    def test_cutoff_is_right_of_button(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p4", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="p4",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p5", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="p5",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -331,22 +409,34 @@ class TestPositionAssignmentSixPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p4", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="p4",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p5", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="p5",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p6", seat=Seat.SEAT_5, remaining_chips=ChipAmount(1000)
+                player_id="p6",
+                seat=Seat.SEAT_5,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -368,22 +458,34 @@ class TestPositionAssignmentSixPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p4", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="p4",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p5", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="p5",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p6", seat=Seat.SEAT_5, remaining_chips=ChipAmount(1000)
+                player_id="p6",
+                seat=Seat.SEAT_5,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -409,22 +511,34 @@ class TestActionOrderPreflop:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="utg",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg1", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="utg1",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="co", seat=Seat.SEAT_5, remaining_chips=ChipAmount(1000)
+                player_id="co",
+                seat=Seat.SEAT_5,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -436,7 +550,7 @@ class TestActionOrderPreflop:
 
         betting_order = PositionManager.get_betting_order(
             position_mapping=mapping,
-            phase=GamePhase.PRE_FLOP,
+            phase=HandPhase.PRE_FLOP,
             players_in_hand=players,
         )
 
@@ -447,22 +561,34 @@ class TestActionOrderPreflop:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="utg",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg1", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="utg1",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="co", seat=Seat.SEAT_5, remaining_chips=ChipAmount(1000)
+                player_id="co",
+                seat=Seat.SEAT_5,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -474,7 +600,7 @@ class TestActionOrderPreflop:
 
         betting_order = PositionManager.get_betting_order(
             position_mapping=mapping,
-            phase=GamePhase.PRE_FLOP,
+            phase=HandPhase.PRE_FLOP,
             players_in_hand=players,
         )
 
@@ -485,22 +611,34 @@ class TestActionOrderPreflop:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="utg",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg1", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="utg1",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="co", seat=Seat.SEAT_5, remaining_chips=ChipAmount(1000)
+                player_id="co",
+                seat=Seat.SEAT_5,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -512,7 +650,7 @@ class TestActionOrderPreflop:
 
         betting_order = PositionManager.get_betting_order(
             position_mapping=mapping,
-            phase=GamePhase.PRE_FLOP,
+            phase=HandPhase.PRE_FLOP,
             players_in_hand=players,
         )
 
@@ -535,22 +673,34 @@ class TestActionOrderPostflop:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="utg",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg1", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="utg1",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="co", seat=Seat.SEAT_5, remaining_chips=ChipAmount(1000)
+                player_id="co",
+                seat=Seat.SEAT_5,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -562,7 +712,7 @@ class TestActionOrderPostflop:
 
         betting_order = PositionManager.get_betting_order(
             position_mapping=mapping,
-            phase=GamePhase.FLOP,
+            phase=HandPhase.FLOP,
             players_in_hand=players,
         )
 
@@ -573,22 +723,34 @@ class TestActionOrderPostflop:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="utg",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg1", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="utg1",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="co", seat=Seat.SEAT_5, remaining_chips=ChipAmount(1000)
+                player_id="co",
+                seat=Seat.SEAT_5,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -600,7 +762,7 @@ class TestActionOrderPostflop:
 
         betting_order = PositionManager.get_betting_order(
             position_mapping=mapping,
-            phase=GamePhase.FLOP,
+            phase=HandPhase.FLOP,
             players_in_hand=players,
         )
 
@@ -611,22 +773,34 @@ class TestActionOrderPostflop:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="utg",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg1", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="utg1",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="co", seat=Seat.SEAT_5, remaining_chips=ChipAmount(1000)
+                player_id="co",
+                seat=Seat.SEAT_5,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -638,7 +812,7 @@ class TestActionOrderPostflop:
 
         betting_order = PositionManager.get_betting_order(
             position_mapping=mapping,
-            phase=GamePhase.FLOP,
+            phase=HandPhase.FLOP,
             players_in_hand=players,
         )
 
@@ -657,16 +831,24 @@ class TestActionOrderPostflop:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="utg",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -676,9 +858,15 @@ class TestActionOrderPostflop:
             advance_button=False,
         )
 
-        flop_order = PositionManager.get_betting_order(mapping, GamePhase.FLOP, players)
-        turn_order = PositionManager.get_betting_order(mapping, GamePhase.TURN, players)
-        river_order = PositionManager.get_betting_order(mapping, GamePhase.RIVER, players)
+        flop_order = PositionManager.get_betting_order(
+            mapping, HandPhase.FLOP, players
+        )
+        turn_order = PositionManager.get_betting_order(
+            mapping, HandPhase.TURN, players
+        )
+        river_order = PositionManager.get_betting_order(
+            mapping, HandPhase.RIVER, players
+        )
 
         assert flop_order == turn_order == river_order
 
@@ -691,10 +879,14 @@ class TestHeadsUpActionOrder:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn_sb", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn_sb",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -706,7 +898,7 @@ class TestHeadsUpActionOrder:
 
         betting_order = PositionManager.get_betting_order(
             position_mapping=mapping,
-            phase=GamePhase.PRE_FLOP,
+            phase=HandPhase.PRE_FLOP,
             players_in_hand=players,
         )
 
@@ -718,10 +910,14 @@ class TestHeadsUpActionOrder:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn_sb", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn_sb",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -733,7 +929,7 @@ class TestHeadsUpActionOrder:
 
         betting_order = PositionManager.get_betting_order(
             position_mapping=mapping,
-            phase=GamePhase.FLOP,
+            phase=HandPhase.FLOP,
             players_in_hand=players,
         )
 
@@ -745,10 +941,14 @@ class TestHeadsUpActionOrder:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn_sb", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn_sb",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -758,9 +958,13 @@ class TestHeadsUpActionOrder:
             advance_button=False,
         )
 
-        for phase in [GamePhase.FLOP, GamePhase.TURN, GamePhase.RIVER]:
-            betting_order = PositionManager.get_betting_order(mapping, phase, players)
-            assert betting_order[-1] == Seat.SEAT_0  # BTN/SB always last postflop
+        for phase in [HandPhase.FLOP, HandPhase.TURN, HandPhase.RIVER]:
+            betting_order = PositionManager.get_betting_order(
+                mapping, phase, players
+            )
+            assert (
+                betting_order[-1] == Seat.SEAT_0
+            )  # BTN/SB always last postflop
 
 
 class TestButtonRotation:
@@ -771,13 +975,19 @@ class TestButtonRotation:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -788,16 +998,24 @@ class TestButtonRotation:
 
         assert new_button == Seat.SEAT_1
 
-    def test_button_wraps_around_table(self, sample_player_factory: Callable[..., Player]) -> None:
+    def test_button_wraps_around_table(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -813,10 +1031,14 @@ class TestButtonRotation:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -833,10 +1055,14 @@ class TestButtonRotation:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -857,7 +1083,9 @@ class TestSkipEliminatedPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="p2",
@@ -866,7 +1094,9 @@ class TestSkipEliminatedPlayers:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -882,7 +1112,9 @@ class TestSkipEliminatedPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="eliminated",
@@ -891,10 +1123,14 @@ class TestSkipEliminatedPlayers:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -911,10 +1147,14 @@ class TestSkipEliminatedPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="eliminated",
@@ -923,7 +1163,9 @@ class TestSkipEliminatedPlayers:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -940,7 +1182,9 @@ class TestSkipEliminatedPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="eliminated",
@@ -949,7 +1193,9 @@ class TestSkipEliminatedPlayers:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -961,7 +1207,7 @@ class TestSkipEliminatedPlayers:
 
         players_in_hand = [p for p in players if p.is_in_hand()]
         betting_order = PositionManager.get_betting_order(
-            mapping, GamePhase.PRE_FLOP, players_in_hand
+            mapping, HandPhase.PRE_FLOP, players_in_hand
         )
 
         assert Seat.SEAT_1 not in betting_order
@@ -972,7 +1218,9 @@ class TestSkipEliminatedPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="e1",
@@ -999,7 +1247,9 @@ class TestSkipEliminatedPlayers:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="p6", seat=Seat.SEAT_5, remaining_chips=ChipAmount(1000)
+                player_id="p6",
+                seat=Seat.SEAT_5,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1021,7 +1271,9 @@ class TestFoldedPlayersInBettingOrder:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="folded",
@@ -1030,7 +1282,9 @@ class TestFoldedPlayersInBettingOrder:
                 participation_status=HandParticipationStatus.FOLDED,
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1041,7 +1295,9 @@ class TestFoldedPlayersInBettingOrder:
         )
 
         players_in_hand = [p for p in players if p.is_in_hand()]
-        betting_order = PositionManager.get_betting_order(mapping, GamePhase.FLOP, players_in_hand)
+        betting_order = PositionManager.get_betting_order(
+            mapping, HandPhase.FLOP, players_in_hand
+        )
 
         assert Seat.SEAT_1 not in betting_order
 
@@ -1050,7 +1306,9 @@ class TestTablePositionMappingValidation:
     """TablePositionMapping validates its invariants."""
 
     def test_heads_up_requires_button_equals_small_blind(self) -> None:
-        with pytest.raises(ValueError, match="button_seat must equal small_blind_seat"):
+        with pytest.raises(
+            ValueError, match="button_seat must equal small_blind_seat"
+        ):
             _ = TablePositionMapping(
                 button_seat=Seat.SEAT_0,
                 small_blind_seat=Seat.SEAT_1,  # Different from button
@@ -1064,7 +1322,9 @@ class TestTablePositionMappingValidation:
             )
 
     def test_heads_up_requires_exactly_two_active_players(self) -> None:
-        with pytest.raises(ValueError, match="Heads-up requires 2 active players"):
+        with pytest.raises(
+            ValueError, match="Heads-up requires 2 active players"
+        ):
             _ = TablePositionMapping(
                 button_seat=Seat.SEAT_0,
                 small_blind_seat=Seat.SEAT_0,
@@ -1078,7 +1338,9 @@ class TestTablePositionMappingValidation:
             )
 
     def test_active_players_must_be_at_least_two(self) -> None:
-        with pytest.raises(ValueError, match="Active players count must be at least 2"):
+        with pytest.raises(
+            ValueError, match="Active players count must be at least 2"
+        ):
             _ = TablePositionMapping(
                 button_seat=Seat.SEAT_0,
                 small_blind_seat=Seat.SEAT_1,
@@ -1100,7 +1362,9 @@ class TestPositionManagerValidation:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1116,7 +1380,9 @@ class TestPositionManagerValidation:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="eliminated",
@@ -1137,19 +1403,29 @@ class TestPositionManagerValidation:
 class TestGetSeatForPosition:
     """TablePositionMapping.get_seat_for_position returns correct seat or None."""
 
-    def test_returns_button_seat(self, sample_player_factory: Callable[..., Player]) -> None:
+    def test_returns_button_seat(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p4", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="p4",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1159,21 +1435,33 @@ class TestGetSeatForPosition:
             advance_button=False,
         )
 
-        assert mapping.get_seat_for_position(PositionName.BUTTON) == Seat.SEAT_0
+        assert (
+            mapping.get_seat_for_position(PositionName.BUTTON) == Seat.SEAT_0
+        )
 
-    def test_returns_small_blind_seat(self, sample_player_factory: Callable[..., Player]) -> None:
+    def test_returns_small_blind_seat(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p4", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="p4",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1183,21 +1471,34 @@ class TestGetSeatForPosition:
             advance_button=False,
         )
 
-        assert mapping.get_seat_for_position(PositionName.SMALL_BLIND) == Seat.SEAT_1
+        assert (
+            mapping.get_seat_for_position(PositionName.SMALL_BLIND)
+            == Seat.SEAT_1
+        )
 
-    def test_returns_big_blind_seat(self, sample_player_factory: Callable[..., Player]) -> None:
+    def test_returns_big_blind_seat(
+        self, sample_player_factory: Callable[..., Player]
+    ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p4", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="p4",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1207,20 +1508,29 @@ class TestGetSeatForPosition:
             advance_button=False,
         )
 
-        assert mapping.get_seat_for_position(PositionName.BIG_BLIND) == Seat.SEAT_2
+        assert (
+            mapping.get_seat_for_position(PositionName.BIG_BLIND)
+            == Seat.SEAT_2
+        )
 
     def test_returns_none_for_missing_position(
         self, sample_player_factory: Callable[..., Player]
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1230,7 +1540,9 @@ class TestGetSeatForPosition:
             advance_button=False,
         )
 
-        assert mapping.get_seat_for_position(PositionName.UNDER_THE_GUN) is None
+        assert (
+            mapping.get_seat_for_position(PositionName.UNDER_THE_GUN) is None
+        )
         assert mapping.get_seat_for_position(PositionName.UTG_PLUS_ONE) is None
         assert mapping.get_seat_for_position(PositionName.CUTOFF) is None
 
@@ -1243,7 +1555,9 @@ class TestPositionMappingWithNonContiguousSeats:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="eliminated",
@@ -1252,10 +1566,14 @@ class TestPositionMappingWithNonContiguousSeats:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p4", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="p4",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1266,7 +1584,9 @@ class TestPositionMappingWithNonContiguousSeats:
         )
 
         assert mapping.button_seat == Seat.SEAT_0
-        assert mapping.small_blind_seat == Seat.SEAT_2  # Skips eliminated seat 1
+        assert (
+            mapping.small_blind_seat == Seat.SEAT_2
+        )  # Skips eliminated seat 1
         assert mapping.big_blind_seat == Seat.SEAT_3
         assert mapping.active_players_count == 3
 
@@ -1275,7 +1595,9 @@ class TestPositionMappingWithNonContiguousSeats:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="e1",
@@ -1284,7 +1606,9 @@ class TestPositionMappingWithNonContiguousSeats:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="e2",
@@ -1293,10 +1617,14 @@ class TestPositionMappingWithNonContiguousSeats:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="p5", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="p5",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p6", seat=Seat.SEAT_5, remaining_chips=ChipAmount(1000)
+                player_id="p6",
+                seat=Seat.SEAT_5,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1321,7 +1649,9 @@ class TestButtonRotationWithEliminations:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="e1",
@@ -1330,7 +1660,9 @@ class TestButtonRotationWithEliminations:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="e2",
@@ -1339,7 +1671,9 @@ class TestButtonRotationWithEliminations:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="p5", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="p5",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1360,7 +1694,9 @@ class TestButtonRotationWithEliminations:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="e1",
@@ -1381,7 +1717,9 @@ class TestButtonRotationWithEliminations:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="p5", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="p5",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1398,13 +1736,19 @@ class TestActionOrderWithFewPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1414,7 +1758,9 @@ class TestActionOrderWithFewPlayers:
             advance_button=False,
         )
 
-        betting_order = PositionManager.get_betting_order(mapping, GamePhase.PRE_FLOP, players)
+        betting_order = PositionManager.get_betting_order(
+            mapping, HandPhase.PRE_FLOP, players
+        )
 
         # In 3-player, btn acts first preflop, then sb, then bb
         assert betting_order == [Seat.SEAT_0, Seat.SEAT_1, Seat.SEAT_2]
@@ -1424,13 +1770,19 @@ class TestActionOrderWithFewPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1440,7 +1792,9 @@ class TestActionOrderWithFewPlayers:
             advance_button=False,
         )
 
-        betting_order = PositionManager.get_betting_order(mapping, GamePhase.FLOP, players)
+        betting_order = PositionManager.get_betting_order(
+            mapping, HandPhase.FLOP, players
+        )
 
         assert betting_order == [Seat.SEAT_1, Seat.SEAT_2, Seat.SEAT_0]
 
@@ -1449,16 +1803,24 @@ class TestActionOrderWithFewPlayers:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="utg",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1468,7 +1830,9 @@ class TestActionOrderWithFewPlayers:
             advance_button=False,
         )
 
-        betting_order = PositionManager.get_betting_order(mapping, GamePhase.PRE_FLOP, players)
+        betting_order = PositionManager.get_betting_order(
+            mapping, HandPhase.PRE_FLOP, players
+        )
 
         # UTG acts first preflop in 4+ player game
         assert betting_order[0] == Seat.SEAT_3
@@ -1483,7 +1847,9 @@ class TestTransitionToHeadsUp:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="eliminated",
@@ -1492,7 +1858,9 @@ class TestTransitionToHeadsUp:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1510,7 +1878,9 @@ class TestTransitionToHeadsUp:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="btn_sb", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn_sb",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="eliminated",
@@ -1519,7 +1889,9 @@ class TestTransitionToHeadsUp:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1532,9 +1904,11 @@ class TestTransitionToHeadsUp:
         active_players = [p for p in players if p.is_in_hand()]
 
         preflop_order = PositionManager.get_betting_order(
-            mapping, GamePhase.PRE_FLOP, active_players
+            mapping, HandPhase.PRE_FLOP, active_players
         )
-        postflop_order = PositionManager.get_betting_order(mapping, GamePhase.FLOP, active_players)
+        postflop_order = PositionManager.get_betting_order(
+            mapping, HandPhase.FLOP, active_players
+        )
 
         assert preflop_order == [Seat.SEAT_0, Seat.SEAT_2]  # BTN/SB first
         assert postflop_order == [Seat.SEAT_2, Seat.SEAT_0]  # BB first
@@ -1548,10 +1922,14 @@ class TestBettingOrderPhaseValidity:
     ) -> None:
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1562,7 +1940,9 @@ class TestBettingOrderPhaseValidity:
         )
 
         with pytest.raises(ValueError, match="No betting order rule"):
-            _ = PositionManager.get_betting_order(mapping, GamePhase.SHOWDOWN, players)
+            _ = PositionManager.get_betting_order(
+                mapping, HandPhase.SHOWDOWN, players
+            )
 
 
 class TestHeadsUpTransitionButtonEliminated:
@@ -1580,10 +1960,14 @@ class TestHeadsUpTransitionButtonEliminated:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1608,10 +1992,14 @@ class TestHeadsUpTransitionButtonEliminated:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="new_btn_sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="new_btn_sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1636,10 +2024,14 @@ class TestHeadsUpTransitionButtonEliminated:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="new_btn_sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="new_btn_sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1652,12 +2044,20 @@ class TestHeadsUpTransitionButtonEliminated:
         active_players = [p for p in players if p.is_in_hand()]
 
         preflop_order = PositionManager.get_betting_order(
-            mapping, GamePhase.PRE_FLOP, active_players
+            mapping, HandPhase.PRE_FLOP, active_players
         )
-        postflop_order = PositionManager.get_betting_order(mapping, GamePhase.FLOP, active_players)
+        postflop_order = PositionManager.get_betting_order(
+            mapping, HandPhase.FLOP, active_players
+        )
 
-        assert preflop_order == [Seat.SEAT_1, Seat.SEAT_2]  # BTN/SB first preflop
-        assert postflop_order == [Seat.SEAT_2, Seat.SEAT_1]  # BB first postflop
+        assert preflop_order == [
+            Seat.SEAT_1,
+            Seat.SEAT_2,
+        ]  # BTN/SB first preflop
+        assert postflop_order == [
+            Seat.SEAT_2,
+            Seat.SEAT_1,
+        ]  # BB first postflop
 
 
 class TestBettingOrderWithMidHandFolds:
@@ -1669,7 +2069,9 @@ class TestBettingOrderWithMidHandFolds:
         """SB folds preflop; postflop order starts with BB."""
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="sb_folded",
@@ -1678,10 +2080,14 @@ class TestBettingOrderWithMidHandFolds:
                 participation_status=HandParticipationStatus.FOLDED,
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="utg", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="utg",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1692,7 +2098,9 @@ class TestBettingOrderWithMidHandFolds:
         )
 
         players_in_hand = [p for p in players if p.is_in_hand()]
-        betting_order = PositionManager.get_betting_order(mapping, GamePhase.FLOP, players_in_hand)
+        betting_order = PositionManager.get_betting_order(
+            mapping, HandPhase.FLOP, players_in_hand
+        )
 
         assert betting_order[0] == Seat.SEAT_2  # BB is first (SB folded)
         assert Seat.SEAT_1 not in betting_order
@@ -1703,10 +2111,14 @@ class TestBettingOrderWithMidHandFolds:
         """BB folds preflop; postflop order starts with UTG."""
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="bb_folded",
@@ -1715,7 +2127,9 @@ class TestBettingOrderWithMidHandFolds:
                 participation_status=HandParticipationStatus.FOLDED,
             ),
             sample_player_factory(
-                player_id="utg", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="utg",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1726,7 +2140,9 @@ class TestBettingOrderWithMidHandFolds:
         )
 
         players_in_hand = [p for p in players if p.is_in_hand()]
-        betting_order = PositionManager.get_betting_order(mapping, GamePhase.FLOP, players_in_hand)
+        betting_order = PositionManager.get_betting_order(
+            mapping, HandPhase.FLOP, players_in_hand
+        )
 
         assert betting_order[0] == Seat.SEAT_1  # SB is first
         assert betting_order[1] == Seat.SEAT_3  # UTG is second (BB folded)
@@ -1738,13 +2154,19 @@ class TestBettingOrderWithMidHandFolds:
         """If UTG folds during preflop action, they're excluded from order."""
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="sb", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="sb",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="utg_folded",
@@ -1762,7 +2184,7 @@ class TestBettingOrderWithMidHandFolds:
 
         players_in_hand = [p for p in players if p.is_in_hand()]
         betting_order = PositionManager.get_betting_order(
-            mapping, GamePhase.PRE_FLOP, players_in_hand
+            mapping, HandPhase.PRE_FLOP, players_in_hand
         )
 
         assert Seat.SEAT_3 not in betting_order
@@ -1774,7 +2196,9 @@ class TestBettingOrderWithMidHandFolds:
         """Four players start, two fold preflop; postflop order is correct."""
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="sb_folded",
@@ -1783,7 +2207,9 @@ class TestBettingOrderWithMidHandFolds:
                 participation_status=HandParticipationStatus.FOLDED,
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="utg_folded",
@@ -1800,7 +2226,9 @@ class TestBettingOrderWithMidHandFolds:
         )
 
         players_in_hand = [p for p in players if p.is_in_hand()]
-        betting_order = PositionManager.get_betting_order(mapping, GamePhase.FLOP, players_in_hand)
+        betting_order = PositionManager.get_betting_order(
+            mapping, HandPhase.FLOP, players_in_hand
+        )
 
         # Note: mapping.is_heads_up is False (4 active players at hand start)
         # But betting order correctly filters to only players still in hand
@@ -1816,7 +2244,9 @@ class TestAllInPlayersInBettingOrder:
         """All-in player appears in order when included in players_in_hand."""
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="sb_all_in",
@@ -1825,7 +2255,9 @@ class TestAllInPlayersInBettingOrder:
                 total_invested_this_hand=ChipAmount(500),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1837,7 +2269,9 @@ class TestAllInPlayersInBettingOrder:
 
         # Caller includes all-in player (is_in_hand() returns True for all-in)
         players_in_hand = [p for p in players if p.is_in_hand()]
-        betting_order = PositionManager.get_betting_order(mapping, GamePhase.FLOP, players_in_hand)
+        betting_order = PositionManager.get_betting_order(
+            mapping, HandPhase.FLOP, players_in_hand
+        )
 
         assert Seat.SEAT_1 in betting_order
 
@@ -1847,7 +2281,9 @@ class TestAllInPlayersInBettingOrder:
         """All-in player excluded when caller filters them out."""
         players = [
             sample_player_factory(
-                player_id="btn", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="btn",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="sb_all_in",
@@ -1856,7 +2292,9 @@ class TestAllInPlayersInBettingOrder:
                 total_invested_this_hand=ChipAmount(500),
             ),
             sample_player_factory(
-                player_id="bb", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="bb",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1867,9 +2305,11 @@ class TestAllInPlayersInBettingOrder:
         )
 
         # Caller explicitly excludes all-in players
-        players_who_can_act = [p for p in players if p.is_in_hand() and p.has_chips()]
+        players_who_can_act = [
+            p for p in players if p.is_in_hand() and p.has_chips()
+        ]
         betting_order = PositionManager.get_betting_order(
-            mapping, GamePhase.FLOP, players_who_can_act
+            mapping, HandPhase.FLOP, players_who_can_act
         )
 
         assert Seat.SEAT_1 not in betting_order
@@ -1885,13 +2325,19 @@ class TestButtonRotationEdgeCases:
         """Button advances through all players and returns to start."""
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1907,7 +2353,9 @@ class TestButtonRotationEdgeCases:
         """Button correctly skips all eliminated players to find next active."""
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="e1",
@@ -1934,7 +2382,9 @@ class TestButtonRotationEdgeCases:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="p6", seat=Seat.SEAT_5, remaining_chips=ChipAmount(1000)
+                player_id="p6",
+                seat=Seat.SEAT_5,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -1948,7 +2398,9 @@ class TestButtonRotationEdgeCases:
         """Button wraps from end of table to beginning, skipping eliminated."""
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="e1",
@@ -1957,7 +2409,9 @@ class TestButtonRotationEdgeCases:
                 participation_status=HandParticipationStatus.ELIMINATED,
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
                 player_id="e2",
@@ -1982,16 +2436,24 @@ class TestPositionAssignmentWithWraparound:
         """Positions wrap correctly when button is near end of table."""
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p4", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="p4",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -2012,13 +2474,19 @@ class TestPositionAssignmentWithWraparound:
         """Three player positions wrap correctly."""
         players = [
             sample_player_factory(
-                player_id="p1", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="p1",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p2", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="p2",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="p3", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="p3",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
@@ -2053,28 +2521,42 @@ class TestMultiHandTournamentScenario:
         # === SETUP: 6 players at seats 0-5 ===
         players = [
             sample_player_factory(
-                player_id="alice", seat=Seat.SEAT_0, remaining_chips=ChipAmount(1000)
+                player_id="alice",
+                seat=Seat.SEAT_0,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="bob", seat=Seat.SEAT_1, remaining_chips=ChipAmount(1000)
+                player_id="bob",
+                seat=Seat.SEAT_1,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="carol", seat=Seat.SEAT_2, remaining_chips=ChipAmount(1000)
+                player_id="carol",
+                seat=Seat.SEAT_2,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="dan", seat=Seat.SEAT_3, remaining_chips=ChipAmount(1000)
+                player_id="dan",
+                seat=Seat.SEAT_3,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="eve", seat=Seat.SEAT_4, remaining_chips=ChipAmount(1000)
+                player_id="eve",
+                seat=Seat.SEAT_4,
+                remaining_chips=ChipAmount(1000),
             ),
             sample_player_factory(
-                player_id="frank", seat=Seat.SEAT_5, remaining_chips=ChipAmount(1000)
+                player_id="frank",
+                seat=Seat.SEAT_5,
+                remaining_chips=ChipAmount(1000),
             ),
         ]
 
         def get_active_players() -> list[Player]:
             return [
-                p for p in players if p.participation_status != HandParticipationStatus.ELIMINATED
+                p
+                for p in players
+                if p.participation_status != HandParticipationStatus.ELIMINATED
             ]
 
         def eliminate_player(player_id: str) -> None:
@@ -2099,18 +2581,30 @@ class TestMultiHandTournamentScenario:
             advance_button=False,
         )
 
-        assert mapping.button_seat == Seat.SEAT_0, "Hand 1: Button should be at seat 0"
-        assert mapping.small_blind_seat == Seat.SEAT_1, "Hand 1: SB should be at seat 1"
-        assert mapping.big_blind_seat == Seat.SEAT_2, "Hand 1: BB should be at seat 2"
-        assert mapping.utg_seat == Seat.SEAT_3, "Hand 1: UTG should be at seat 3"
-        assert mapping.utg_plus_one_seat == Seat.SEAT_4, "Hand 1: UTG+1 should be at seat 4"
-        assert mapping.cutoff_seat == Seat.SEAT_5, "Hand 1: CO should be at seat 5"
+        assert (
+            mapping.button_seat == Seat.SEAT_0
+        ), "Hand 1: Button should be at seat 0"
+        assert (
+            mapping.small_blind_seat == Seat.SEAT_1
+        ), "Hand 1: SB should be at seat 1"
+        assert (
+            mapping.big_blind_seat == Seat.SEAT_2
+        ), "Hand 1: BB should be at seat 2"
+        assert (
+            mapping.utg_seat == Seat.SEAT_3
+        ), "Hand 1: UTG should be at seat 3"
+        assert (
+            mapping.utg_plus_one_seat == Seat.SEAT_4
+        ), "Hand 1: UTG+1 should be at seat 4"
+        assert (
+            mapping.cutoff_seat == Seat.SEAT_5
+        ), "Hand 1: CO should be at seat 5"
         assert mapping.active_players_count == 6
         assert mapping.is_heads_up is False
 
         # Verify preflop order: UTG → UTG+1 → CO → BTN → SB → BB
         preflop_order = PositionManager.get_betting_order(
-            mapping, GamePhase.PRE_FLOP, get_active_players()
+            mapping, HandPhase.PRE_FLOP, get_active_players()
         )
         assert preflop_order == [
             Seat.SEAT_3,
@@ -2123,7 +2617,7 @@ class TestMultiHandTournamentScenario:
 
         # Verify postflop order: SB → BB → UTG → UTG+1 → CO → BTN
         postflop_order = PositionManager.get_betting_order(
-            mapping, GamePhase.FLOP, get_active_players()
+            mapping, HandPhase.FLOP, get_active_players()
         )
         assert postflop_order == [
             Seat.SEAT_1,
@@ -2145,12 +2639,24 @@ class TestMultiHandTournamentScenario:
             advance_button=True,
         )
 
-        assert mapping.button_seat == Seat.SEAT_1, "Hand 2: Button should advance to seat 1"
-        assert mapping.small_blind_seat == Seat.SEAT_2, "Hand 2: SB should be at seat 2"
-        assert mapping.big_blind_seat == Seat.SEAT_3, "Hand 2: BB should be at seat 3"
-        assert mapping.utg_seat == Seat.SEAT_4, "Hand 2: UTG should be at seat 4"
-        assert mapping.utg_plus_one_seat == Seat.SEAT_5, "Hand 2: UTG+1 should be at seat 5"
-        assert mapping.cutoff_seat == Seat.SEAT_0, "Hand 2: CO should wrap to seat 0"
+        assert (
+            mapping.button_seat == Seat.SEAT_1
+        ), "Hand 2: Button should advance to seat 1"
+        assert (
+            mapping.small_blind_seat == Seat.SEAT_2
+        ), "Hand 2: SB should be at seat 2"
+        assert (
+            mapping.big_blind_seat == Seat.SEAT_3
+        ), "Hand 2: BB should be at seat 3"
+        assert (
+            mapping.utg_seat == Seat.SEAT_4
+        ), "Hand 2: UTG should be at seat 4"
+        assert (
+            mapping.utg_plus_one_seat == Seat.SEAT_5
+        ), "Hand 2: UTG+1 should be at seat 5"
+        assert (
+            mapping.cutoff_seat == Seat.SEAT_0
+        ), "Hand 2: CO should wrap to seat 0"
 
         current_button_seat = mapping.button_seat
 
@@ -2166,17 +2672,29 @@ class TestMultiHandTournamentScenario:
             advance_button=True,
         )
 
-        assert mapping.button_seat == Seat.SEAT_2, "Hand 3: Button should advance to seat 2"
-        assert mapping.small_blind_seat == Seat.SEAT_4, "Hand 3: SB skips eliminated seat 3"
-        assert mapping.big_blind_seat == Seat.SEAT_5, "Hand 3: BB should be at seat 5"
+        assert (
+            mapping.button_seat == Seat.SEAT_2
+        ), "Hand 3: Button should advance to seat 2"
+        assert (
+            mapping.small_blind_seat == Seat.SEAT_4
+        ), "Hand 3: SB skips eliminated seat 3"
+        assert (
+            mapping.big_blind_seat == Seat.SEAT_5
+        ), "Hand 3: BB should be at seat 5"
         assert mapping.active_players_count == 5
-        assert mapping.utg_seat == Seat.SEAT_0, "Hand 3: UTG should be at seat 0"
-        assert mapping.utg_plus_one_seat is None, "Hand 3: No UTG+1 with 5 players"
-        assert mapping.cutoff_seat == Seat.SEAT_1, "Hand 3: CO should be at seat 1"
+        assert (
+            mapping.utg_seat == Seat.SEAT_0
+        ), "Hand 3: UTG should be at seat 0"
+        assert (
+            mapping.utg_plus_one_seat is None
+        ), "Hand 3: No UTG+1 with 5 players"
+        assert (
+            mapping.cutoff_seat == Seat.SEAT_1
+        ), "Hand 3: CO should be at seat 1"
 
         # Verify preflop order with 5 players: UTG → CO → BTN → SB → BB
         preflop_order = PositionManager.get_betting_order(
-            mapping, GamePhase.PRE_FLOP, get_active_players()
+            mapping, HandPhase.PRE_FLOP, get_active_players()
         )
         assert preflop_order == [
             Seat.SEAT_0,
@@ -2214,7 +2732,7 @@ class TestMultiHandTournamentScenario:
 
         # 3-player preflop: BTN → SB → BB
         preflop_order = PositionManager.get_betting_order(
-            mapping, GamePhase.PRE_FLOP, get_active_players()
+            mapping, HandPhase.PRE_FLOP, get_active_players()
         )
         assert preflop_order == [
             Seat.SEAT_0,
@@ -2224,7 +2742,7 @@ class TestMultiHandTournamentScenario:
 
         # 3-player postflop: SB → BB → BTN
         postflop_order = PositionManager.get_betting_order(
-            mapping, GamePhase.FLOP, get_active_players()
+            mapping, HandPhase.FLOP, get_active_players()
         )
         assert postflop_order == [
             Seat.SEAT_1,
@@ -2243,9 +2761,13 @@ class TestMultiHandTournamentScenario:
             advance_button=True,
         )
 
-        assert mapping.button_seat == Seat.SEAT_1, "Hand 5: Button advances to seat 1"
+        assert (
+            mapping.button_seat == Seat.SEAT_1
+        ), "Hand 5: Button advances to seat 1"
         assert mapping.small_blind_seat == Seat.SEAT_2, "Hand 5: SB at seat 2"
-        assert mapping.big_blind_seat == Seat.SEAT_0, "Hand 5: BB wraps to seat 0"
+        assert (
+            mapping.big_blind_seat == Seat.SEAT_0
+        ), "Hand 5: BB wraps to seat 0"
 
         current_button_seat = mapping.button_seat
 
@@ -2262,23 +2784,35 @@ class TestMultiHandTournamentScenario:
         )
 
         # Button advances, skipping eliminated seat 2
-        assert mapping.button_seat == Seat.SEAT_0, "Hand 6: Button skips seat 2, lands on seat 0"
+        assert (
+            mapping.button_seat == Seat.SEAT_0
+        ), "Hand 6: Button skips seat 2, lands on seat 0"
         assert mapping.is_heads_up is True, "Hand 6: Should be heads-up"
-        assert mapping.button_seat == mapping.small_blind_seat, "Hand 6: Button is SB in heads-up"
-        assert mapping.big_blind_seat == Seat.SEAT_1, "Hand 6: BB is the other player"
+        assert (
+            mapping.button_seat == mapping.small_blind_seat
+        ), "Hand 6: Button is SB in heads-up"
+        assert (
+            mapping.big_blind_seat == Seat.SEAT_1
+        ), "Hand 6: BB is the other player"
         assert mapping.active_players_count == 2
 
         # Heads-up preflop: BTN/SB acts first
         preflop_order = PositionManager.get_betting_order(
-            mapping, GamePhase.PRE_FLOP, get_active_players()
+            mapping, HandPhase.PRE_FLOP, get_active_players()
         )
-        assert preflop_order == [Seat.SEAT_0, Seat.SEAT_1], "Hand 6: Heads-up preflop BTN/SB first"
+        assert preflop_order == [
+            Seat.SEAT_0,
+            Seat.SEAT_1,
+        ], "Hand 6: Heads-up preflop BTN/SB first"
 
         # Heads-up postflop: BB acts first
         postflop_order = PositionManager.get_betting_order(
-            mapping, GamePhase.FLOP, get_active_players()
+            mapping, HandPhase.FLOP, get_active_players()
         )
-        assert postflop_order == [Seat.SEAT_1, Seat.SEAT_0], "Hand 6: Heads-up postflop BB first"
+        assert postflop_order == [
+            Seat.SEAT_1,
+            Seat.SEAT_0,
+        ], "Hand 6: Heads-up postflop BB first"
 
         current_button_seat = mapping.button_seat
 
@@ -2291,13 +2825,19 @@ class TestMultiHandTournamentScenario:
             advance_button=True,
         )
 
-        assert mapping.button_seat == Seat.SEAT_1, "Hand 7: Button alternates to seat 1"
-        assert mapping.button_seat == mapping.small_blind_seat, "Hand 7: Button is still SB"
-        assert mapping.big_blind_seat == Seat.SEAT_0, "Hand 7: BB is now seat 0"
+        assert (
+            mapping.button_seat == Seat.SEAT_1
+        ), "Hand 7: Button alternates to seat 1"
+        assert (
+            mapping.button_seat == mapping.small_blind_seat
+        ), "Hand 7: Button is still SB"
+        assert (
+            mapping.big_blind_seat == Seat.SEAT_0
+        ), "Hand 7: BB is now seat 0"
 
         # Verify heads-up action order flipped
         preflop_order = PositionManager.get_betting_order(
-            mapping, GamePhase.PRE_FLOP, get_active_players()
+            mapping, HandPhase.PRE_FLOP, get_active_players()
         )
         assert preflop_order == [
             Seat.SEAT_1,
@@ -2305,7 +2845,7 @@ class TestMultiHandTournamentScenario:
         ], "Hand 7: BTN/SB (seat 1) acts first preflop"
 
         postflop_order = PositionManager.get_betting_order(
-            mapping, GamePhase.TURN, get_active_players()
+            mapping, HandPhase.TURN, get_active_players()
         )
         assert postflop_order == [
             Seat.SEAT_0,
@@ -2322,7 +2862,9 @@ class TestMultiHandTournamentScenario:
 
         # Tournament is over - only Alice remains
         final_player = get_active_players()[0]
-        assert final_player.id == "alice", "Alice should be the tournament winner"
+        assert (
+            final_player.id == "alice"
+        ), "Alice should be the tournament winner"
         assert final_player.seat == Seat.SEAT_0
 
         # Verify we cannot start a new hand with only 1 player

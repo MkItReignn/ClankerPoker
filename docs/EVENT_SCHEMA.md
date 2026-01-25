@@ -321,7 +321,7 @@ Every event includes the full `game_state` dict:
 | Diamonds | `"diamonds"` | ♦ | Red |
 | Clubs | `"clubs"` | ♣ | White |
 
-### GamePhase
+### HandPhase
 
 | Phase | Value | Community Cards |
 |-------|-------|-----------------|

@@ -1,17 +1,27 @@
 from __future__ import annotations
 
 import secrets
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 from src.config.poker.config import PokerPlayerConfig
 from src.config.tournament.config import TournamentConfig
 from src.domain.models.bot import BotId
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import (NO_POSITION_TO_ACT, BettingState,
-                                    BlindState, Game, GameIdentity, GamePhase,
-                                    GameStatus, HandState)
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player)
+from src.domain.models.game import (
+    NO_POSITION_TO_ACT,
+    BettingState,
+    BlindState,
+    Game,
+    GameIdentity,
+    GameStatus,
+    HandPhase,
+    HandState,
+)
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    Player,
+)
 from src.domain.models.players import Players
 from src.domain.models.pot import Pot, PotState
 from src.domain.models.seat import Seat
@@ -44,9 +54,13 @@ class GameInitializer:
         StateManager should call _init_new_hand to deal the first hand.
         """
         if len(player_configs) < 2:
-            raise ValueError(f"Tournament requires at least 2 players, got {len(player_configs)}")
+            raise ValueError(
+                f"Tournament requires at least 2 players, got {len(player_configs)}"
+            )
         if len(player_configs) > 6:
-            raise ValueError(f"Tournament allows at most 6 players, got {len(player_configs)}")
+            raise ValueError(
+                f"Tournament allows at most 6 players, got {len(player_configs)}"
+            )
 
         if game_id is None:
             game_id = generate_game_id()
@@ -54,8 +68,12 @@ class GameInitializer:
         if seed is None:
             seed = secrets.randbits(64)
 
-        players = GameInitializer._create_players(player_configs, tournament_config)
-        game = GameInitializer._create_base_game(players, tournament_config, game_id, seed)
+        players = GameInitializer._create_players(
+            player_configs, tournament_config
+        )
+        game = GameInitializer._create_base_game(
+            players, tournament_config, game_id, seed
+        )
         game = ButtonAssigner.assign_button(game)
 
         return game
@@ -112,14 +130,16 @@ class GameInitializer:
 
         hand_state = HandState(
             hand_number=1,
-            current_phase=GamePhase.PRE_FLOP,
+            current_phase=HandPhase.PRE_FLOP,
             community_cards=[],
             is_initial_hand_setup=True,
         )
 
         all_player_ids = frozenset(p.id for p in players)
         pot_state = PotState(
-            main_pot=Pot(amount=ChipAmount(0), eligible_player_ids=all_player_ids),
+            main_pot=Pot(
+                amount=ChipAmount(0), eligible_player_ids=all_player_ids
+            ),
             side_pots=[],
         )
 
@@ -128,7 +148,9 @@ class GameInitializer:
             position_to_act=NO_POSITION_TO_ACT,
         )
 
-        initial_blind_level = tournament_config.blind_schedule.get_blind_level_for_hand(1)
+        initial_blind_level = (
+            tournament_config.blind_schedule.get_blind_level_for_hand(1)
+        )
         blind_state = BlindState(current_blind_level=initial_blind_level)
 
         return Game(

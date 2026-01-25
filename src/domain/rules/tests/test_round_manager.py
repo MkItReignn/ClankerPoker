@@ -18,9 +18,12 @@ import pytest
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
 from src.domain.models.deck import Deck
-from src.domain.models.game import Game, GamePhase, HandState
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player)
+from src.domain.models.game import Game, HandPhase, HandState
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    Player,
+)
 from src.domain.models.players import Players
 from src.domain.models.pot import Pot, PotState
 from src.domain.models.seat import Seat
@@ -59,11 +62,11 @@ class TestRoundAdvancement:
             players=Players.from_list(players),
         )
 
-        assert game.hand_state.current_phase == GamePhase.PRE_FLOP
+        assert game.hand_state.current_phase == HandPhase.PRE_FLOP
 
         advanced_game = RoundManager.advance(game)
 
-        assert advanced_game.hand_state.current_phase == GamePhase.FLOP
+        assert advanced_game.hand_state.current_phase == HandPhase.FLOP
 
     def test_advances_from_flop_to_turn(
         self,
@@ -92,7 +95,7 @@ class TestRoundAdvancement:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.FLOP,
+                current_phase=HandPhase.FLOP,
                 community_cards=[
                     Card(rank=Rank.ACE, suit=Suit.SPADES),
                     Card(rank=Rank.KING, suit=Suit.HEARTS),
@@ -102,11 +105,11 @@ class TestRoundAdvancement:
             ),
         )
 
-        assert game.hand_state.current_phase == GamePhase.FLOP
+        assert game.hand_state.current_phase == HandPhase.FLOP
 
         advanced_game = RoundManager.advance(game)
 
-        assert advanced_game.hand_state.current_phase == GamePhase.TURN
+        assert advanced_game.hand_state.current_phase == HandPhase.TURN
 
     def test_advances_from_turn_to_river(
         self,
@@ -135,7 +138,7 @@ class TestRoundAdvancement:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.TURN,
+                current_phase=HandPhase.TURN,
                 community_cards=[
                     Card(rank=Rank.ACE, suit=Suit.SPADES),
                     Card(rank=Rank.KING, suit=Suit.HEARTS),
@@ -146,11 +149,11 @@ class TestRoundAdvancement:
             ),
         )
 
-        assert game.hand_state.current_phase == GamePhase.TURN
+        assert game.hand_state.current_phase == HandPhase.TURN
 
         advanced_game = RoundManager.advance(game)
 
-        assert advanced_game.hand_state.current_phase == GamePhase.RIVER
+        assert advanced_game.hand_state.current_phase == HandPhase.RIVER
 
     def test_cannot_advance_from_river(
         self,
@@ -183,7 +186,7 @@ class TestRoundAdvancement:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.RIVER,
+                current_phase=HandPhase.RIVER,
                 community_cards=[
                     Card(rank=Rank.ACE, suit=Suit.SPADES),
                     Card(rank=Rank.KING, suit=Suit.HEARTS),
@@ -195,11 +198,13 @@ class TestRoundAdvancement:
             ),
         )
 
-        assert game.hand_state.current_phase == GamePhase.RIVER
+        assert game.hand_state.current_phase == HandPhase.RIVER
 
         # RoundManager should not advance from RIVER to SHOWDOWN
         # SHOWDOWN is handled by the hand completer, not RoundManager
-        with pytest.raises(ValueError, match="Cannot advance beyond|No betting order rule"):
+        with pytest.raises(
+            ValueError, match="Cannot advance beyond|No betting order rule"
+        ):
             RoundManager.advance(game)
 
     def test_cannot_advance_beyond_showdown(
@@ -229,7 +234,7 @@ class TestRoundAdvancement:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=[
                     Card(rank=Rank.ACE, suit=Suit.SPADES),
                     Card(rank=Rank.KING, suit=Suit.HEARTS),
@@ -268,7 +273,10 @@ class TestRoundAdvancement:
             players=Players.from_list(players),
         )
 
-        with pytest.raises(ValueError, match="Cannot advance betting round: no players in hand"):
+        with pytest.raises(
+            ValueError,
+            match="Cannot advance betting round: no players in hand",
+        ):
             RoundManager.advance(game)
 
 
@@ -311,7 +319,9 @@ class TestPlayerStateResetBetweenRounds:
 
         # All players should need action in the new round
         for player in advanced_game.players:
-            assert player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+            assert (
+                player.betting_status == BettingRoundActionStatus.NEEDS_ACTION
+            )
 
     def test_players_maintain_chip_counts_between_rounds(
         self,
@@ -389,7 +399,9 @@ class TestBettingStateResetBetweenRounds:
 
         advanced_game = RoundManager.advance(game)
 
-        assert advanced_game.betting_state.last_raise_increment == ChipAmount(0)
+        assert advanced_game.betting_state.last_raise_increment == ChipAmount(
+            0
+        )
 
     def test_position_to_act_recalculated_for_new_round(
         self,
@@ -517,7 +529,7 @@ class TestCommunityCardsPreservedDuringAdvancement:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.FLOP,
+                current_phase=HandPhase.FLOP,
                 community_cards=flop_cards,
                 is_initial_hand_setup=False,
             ),
@@ -564,10 +576,11 @@ class TestDealCommunityCardsValidation:
         )
         deck = Deck.create_shuffled(seed=42)
 
-        assert game.hand_state.current_phase == GamePhase.PRE_FLOP
+        assert game.hand_state.current_phase == HandPhase.PRE_FLOP
 
         with pytest.raises(
-            ValueError, match="Cannot deal community cards: preflop has no community cards"
+            ValueError,
+            match="Cannot deal community cards: preflop has no community cards",
         ):
             RoundManager.deal_community_cards(game, deck)
 
@@ -596,7 +609,7 @@ class TestDealCommunityCardsValidation:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.SHOWDOWN,
+                current_phase=HandPhase.SHOWDOWN,
                 community_cards=[
                     Card(rank=Rank.ACE, suit=Suit.SPADES),
                     Card(rank=Rank.KING, suit=Suit.HEARTS),
@@ -609,7 +622,10 @@ class TestDealCommunityCardsValidation:
         )
         deck = Deck.create_shuffled(seed=42)
 
-        with pytest.raises(ValueError, match="Cannot deal community cards: already at showdown"):
+        with pytest.raises(
+            ValueError,
+            match="Cannot deal community cards: already at showdown",
+        ):
             RoundManager.deal_community_cards(game, deck)
 
     def test_cannot_deal_if_already_have_cards_for_current_phase(
@@ -638,7 +654,7 @@ class TestDealCommunityCardsValidation:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.FLOP,
+                current_phase=HandPhase.FLOP,
                 community_cards=[
                     Card(rank=Rank.ACE, suit=Suit.SPADES),
                     Card(rank=Rank.KING, suit=Suit.HEARTS),
@@ -649,7 +665,9 @@ class TestDealCommunityCardsValidation:
         )
         deck = Deck.create_shuffled(seed=42)
 
-        with pytest.raises(ValueError, match="Cannot deal community cards: already have"):
+        with pytest.raises(
+            ValueError, match="Cannot deal community cards: already have"
+        ):
             RoundManager.deal_community_cards(game, deck)
 
 
@@ -689,7 +707,7 @@ class TestDealFlopCards:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.FLOP,
+                current_phase=HandPhase.FLOP,
                 community_cards=[],
                 is_initial_hand_setup=False,
             ),
@@ -697,7 +715,9 @@ class TestDealFlopCards:
         deck = Deck.create_shuffled(seed=42)
         initial_deck_size = deck.cards_remaining()
 
-        updated_game, updated_deck = RoundManager.deal_community_cards(game, deck)
+        updated_game, updated_deck = RoundManager.deal_community_cards(
+            game, deck
+        )
 
         assert len(updated_game.hand_state.community_cards) == 3
         # 4 cards consumed: 1 burn + 3 dealt
@@ -728,7 +748,7 @@ class TestDealFlopCards:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.FLOP,
+                current_phase=HandPhase.FLOP,
                 community_cards=[],
                 is_initial_hand_setup=False,
             ),
@@ -766,7 +786,7 @@ class TestDealFlopCards:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.FLOP,
+                current_phase=HandPhase.FLOP,
                 community_cards=[],
                 is_initial_hand_setup=False,
             ),
@@ -822,7 +842,7 @@ class TestDealTurnCard:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.TURN,
+                current_phase=HandPhase.TURN,
                 community_cards=flop_cards,
                 is_initial_hand_setup=False,
             ),
@@ -830,7 +850,9 @@ class TestDealTurnCard:
         deck = Deck.create_shuffled(seed=42)
         initial_deck_size = deck.cards_remaining()
 
-        updated_game, updated_deck = RoundManager.deal_community_cards(game, deck)
+        updated_game, updated_deck = RoundManager.deal_community_cards(
+            game, deck
+        )
 
         assert len(updated_game.hand_state.community_cards) == 4
         # 2 cards consumed: 1 burn + 1 turn
@@ -866,7 +888,7 @@ class TestDealTurnCard:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.TURN,
+                current_phase=HandPhase.TURN,
                 community_cards=flop_cards,
                 is_initial_hand_setup=False,
             ),
@@ -924,7 +946,7 @@ class TestDealRiverCard:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.RIVER,
+                current_phase=HandPhase.RIVER,
                 community_cards=turn_cards,
                 is_initial_hand_setup=False,
             ),
@@ -932,7 +954,9 @@ class TestDealRiverCard:
         deck = Deck.create_shuffled(seed=42)
         initial_deck_size = deck.cards_remaining()
 
-        updated_game, updated_deck = RoundManager.deal_community_cards(game, deck)
+        updated_game, updated_deck = RoundManager.deal_community_cards(
+            game, deck
+        )
 
         assert len(updated_game.hand_state.community_cards) == 5
         # 2 cards consumed: 1 burn + 1 river
@@ -969,7 +993,7 @@ class TestDealRiverCard:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.RIVER,
+                current_phase=HandPhase.RIVER,
                 community_cards=turn_cards,
                 is_initial_hand_setup=False,
             ),
@@ -1015,7 +1039,7 @@ class TestDealRiverCard:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.RIVER,
+                current_phase=HandPhase.RIVER,
                 community_cards=turn_cards,
                 is_initial_hand_setup=False,
             ),
@@ -1062,7 +1086,7 @@ class TestDeckMutation:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.FLOP,
+                current_phase=HandPhase.FLOP,
                 community_cards=[],
                 is_initial_hand_setup=False,
             ),
@@ -1070,7 +1094,9 @@ class TestDeckMutation:
         original_deck = Deck.create_shuffled(seed=42)
         original_remaining = original_deck.cards_remaining()
 
-        _, updated_deck = RoundManager.deal_community_cards(game, original_deck)
+        _, updated_deck = RoundManager.deal_community_cards(
+            game, original_deck
+        )
 
         # Updated deck should have fewer cards
         assert updated_deck.cards_remaining() < original_remaining
@@ -1106,12 +1132,14 @@ class TestDeckMutation:
             game,
             hand_state=HandState(
                 hand_number=1,
-                current_phase=GamePhase.FLOP,
+                current_phase=HandPhase.FLOP,
                 community_cards=[],
                 is_initial_hand_setup=False,
             ),
         )
-        game_after_flop, deck = RoundManager.deal_community_cards(game_at_flop, deck)
+        game_after_flop, deck = RoundManager.deal_community_cards(
+            game_at_flop, deck
+        )
         assert deck.cards_remaining() == initial_cards - 4
 
         # Deal turn: burn 1 + deal 1 = 2 cards
@@ -1119,10 +1147,12 @@ class TestDeckMutation:
             game_after_flop,
             hand_state=replace(
                 game_after_flop.hand_state,
-                current_phase=GamePhase.TURN,
+                current_phase=HandPhase.TURN,
             ),
         )
-        game_after_turn, deck = RoundManager.deal_community_cards(game_at_turn, deck)
+        game_after_turn, deck = RoundManager.deal_community_cards(
+            game_at_turn, deck
+        )
         assert deck.cards_remaining() == initial_cards - 6
 
         # Deal river: burn 1 + deal 1 = 2 cards
@@ -1130,10 +1160,12 @@ class TestDeckMutation:
             game_after_turn,
             hand_state=replace(
                 game_after_turn.hand_state,
-                current_phase=GamePhase.RIVER,
+                current_phase=HandPhase.RIVER,
             ),
         )
-        game_after_river, deck = RoundManager.deal_community_cards(game_at_river, deck)
+        game_after_river, deck = RoundManager.deal_community_cards(
+            game_at_river, deck
+        )
         # Total: 4 + 2 + 2 = 8 cards consumed
         assert deck.cards_remaining() == initial_cards - 8
 

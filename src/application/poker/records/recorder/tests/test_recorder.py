@@ -29,19 +29,23 @@ from src.application.poker.state_observers.details import (
     RoundStartedDetails,
     WinnerInfo,
 )
-from src.domain.rules.position_manager import PositionManager
-from src.application.poker.state_observers.details_factory import DetailsFactory
+from src.application.poker.state_observers.details_factory import (
+    DetailsFactory,
+)
 from src.config.poker.config import PokerPlayerConfig
 from src.domain.models.actions import ActionType
 from src.domain.models.card import Rank
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import Game, GamePhase, HandOutcome as GameHandOutcome
+from src.domain.models.game import Game
+from src.domain.models.game import HandOutcome as GameHandOutcome
+from src.domain.models.game import HandPhase
 from src.domain.models.player import (
     BettingRoundActionStatus,
     HandParticipationStatus,
     Player,
 )
 from src.domain.models.seat import Seat
+from src.domain.rules.position_manager import PositionManager
 
 from .conftest import BIG_BLIND, SMALL_BLIND, STARTING_CHIPS, make_hole_cards
 
@@ -80,7 +84,11 @@ def make_mock_hand_outcome(game: Game) -> HandOutcomeDetails:
     pot = game.pot if game.pot.value > 0 else ChipAmount(100)
 
     return HandOutcomeDetails(
-        winners=(WinnerInfo(player_id=winner_id, player_name=winner_name, amount=pot),),
+        winners=(
+            WinnerInfo(
+                player_id=winner_id, player_name=winner_name, amount=pot
+            ),
+        ),
         eliminated=(),
         showdown=None,
         pot_amount=pot,
@@ -98,7 +106,9 @@ class TestGameLifecycle:
         two_player_game: Game,
     ) -> None:
         """All players are registered with correct initial chips and seat."""
-        await recorder.on_game_started(two_player_game, make_game_started_details(two_player_game))
+        await recorder.on_game_started(
+            two_player_game, make_game_started_details(two_player_game)
+        )
 
         assert recorder.record is not None
         assert len(recorder.record.player_records) == 2
@@ -118,7 +128,9 @@ class TestGameLifecycle:
         two_player_game: Game,
     ) -> None:
         """Game ID is captured from the game state."""
-        await recorder.on_game_started(two_player_game, make_game_started_details(two_player_game))
+        await recorder.on_game_started(
+            two_player_game, make_game_started_details(two_player_game)
+        )
 
         assert recorder.record is not None
         assert recorder.record.game_id == two_player_game.id
@@ -130,7 +142,9 @@ class TestGameLifecycle:
         two_player_game: Game,
     ) -> None:
         """Tournament configuration metadata is captured."""
-        await recorder.on_game_started(two_player_game, make_game_started_details(two_player_game))
+        await recorder.on_game_started(
+            two_player_game, make_game_started_details(two_player_game)
+        )
 
         assert recorder.record is not None
         assert recorder.record.metadata.seed == 42
@@ -147,17 +161,29 @@ class TestGameLifecycle:
         from src.domain.models.game import GameStatus
 
         players = [
-            player_factory(player_id="player-1", seat=Seat.SEAT_0, stack_at_hand_start=STARTING_CHIPS),
-            player_factory(player_id="player-2", seat=Seat.SEAT_1, stack_at_hand_start=STARTING_CHIPS),
+            player_factory(
+                player_id="player-1",
+                seat=Seat.SEAT_0,
+                stack_at_hand_start=STARTING_CHIPS,
+            ),
+            player_factory(
+                player_id="player-2",
+                seat=Seat.SEAT_1,
+                stack_at_hand_start=STARTING_CHIPS,
+            ),
         ]
         # Create a completed game with completed_at timestamp and required outcome
         completed_game = game_factory(
             players=players,
             status=GameStatus.COMPLETED,
-            outcome=GameHandOutcome(hand_number=5, winners=[("player-1", ChipAmount(100))]),
+            outcome=GameHandOutcome(
+                hand_number=5, winners=[("player-1", ChipAmount(100))]
+            ),
         )
 
-        await recorder.on_game_started(completed_game, make_game_started_details(completed_game))
+        await recorder.on_game_started(
+            completed_game, make_game_started_details(completed_game)
+        )
 
         details = GameCompletedDetails(
             winner_id="player-1",
@@ -201,7 +227,9 @@ class TestGameLifecycle:
         recorder = Recorder(player_configs=incomplete_configs)
 
         with pytest.raises(KeyError, match="player-2"):
-            await recorder.on_game_started(two_player_game, make_game_started_details(two_player_game))
+            await recorder.on_game_started(
+                two_player_game, make_game_started_details(two_player_game)
+            )
 
 
 class TestHandLifecycle:
@@ -214,14 +242,20 @@ class TestHandLifecycle:
         three_player_game: Game,
     ) -> None:
         """Each player's position (BTN, SB, BB) is recorded at hand start."""
-        await recorder.on_game_started(three_player_game, make_game_started_details(three_player_game))
-        await recorder.on_hand_started(three_player_game, make_hand_started_details(three_player_game))
+        await recorder.on_game_started(
+            three_player_game, make_game_started_details(three_player_game)
+        )
+        await recorder.on_hand_started(
+            three_player_game, make_hand_started_details(three_player_game)
+        )
 
         assert recorder.record is not None
         assert recorder.record.current_hand is not None
 
         hand = recorder.record.current_hand
-        positions_recorded = {pid: state.position for pid, state in hand.player_records.items()}
+        positions_recorded = {
+            pid: state.position for pid, state in hand.player_records.items()
+        }
 
         # At least one position should be assigned
         assert any(pos is not None for pos in positions_recorded.values())
@@ -233,8 +267,12 @@ class TestHandLifecycle:
         two_player_game: Game,
     ) -> None:
         """Hole cards are captured for each player at hand start."""
-        await recorder.on_game_started(two_player_game, make_game_started_details(two_player_game))
-        await recorder.on_hand_started(two_player_game, make_hand_started_details(two_player_game))
+        await recorder.on_game_started(
+            two_player_game, make_game_started_details(two_player_game)
+        )
+        await recorder.on_hand_started(
+            two_player_game, make_hand_started_details(two_player_game)
+        )
 
         assert recorder.record is not None
         hand = recorder.record.current_hand
@@ -251,8 +289,12 @@ class TestHandLifecycle:
         two_player_game: Game,
     ) -> None:
         """Button seat and blind levels are recorded at hand start."""
-        await recorder.on_game_started(two_player_game, make_game_started_details(two_player_game))
-        await recorder.on_hand_started(two_player_game, make_hand_started_details(two_player_game))
+        await recorder.on_game_started(
+            two_player_game, make_game_started_details(two_player_game)
+        )
+        await recorder.on_hand_started(
+            two_player_game, make_hand_started_details(two_player_game)
+        )
 
         assert recorder.record is not None
         hand = recorder.record.current_hand
@@ -402,7 +444,7 @@ class TestHandOutcome:
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
             ),
-            current_phase=GamePhase.PRE_FLOP,
+            current_phase=HandPhase.PRE_FLOP,
         )
 
         await recorder.on_game_started(game, make_game_started_details(game))
@@ -415,7 +457,9 @@ class TestHandOutcome:
 
         completed_hand = recorder.record.completed_hands[0]
         assert completed_hand.outcome is not None
-        assert any(w.player_id == "player-1" for w in completed_hand.outcome.winners)
+        assert any(
+            w.player_id == "player-1" for w in completed_hand.outcome.winners
+        )
         assert completed_hand.outcome.showdown is None
 
     @pytest.mark.asyncio
@@ -447,7 +491,7 @@ class TestHandOutcome:
         game = game_factory(
             players=players,
             pot_amount=pot_amount,
-            current_phase=GamePhase.SHOWDOWN,
+            current_phase=HandPhase.SHOWDOWN,
             outcome=GameHandOutcome(
                 hand_number=1,
                 winners=[("player-1", pot_amount)],
@@ -497,7 +541,7 @@ class TestRoundLifecycle:
         ]
         game = game_factory(
             players=players,
-            current_phase=GamePhase.FLOP,
+            current_phase=HandPhase.FLOP,
         )
 
         await recorder.on_game_started(game, make_game_started_details(game))
@@ -510,7 +554,7 @@ class TestRoundLifecycle:
         assert len(hand.rounds) == 1
 
         round_record = hand.rounds[0]
-        assert round_record.phase == GamePhase.FLOP
+        assert round_record.phase == HandPhase.FLOP
 
     @pytest.mark.asyncio
     async def test_tracks_player_participation_status(
@@ -606,9 +650,15 @@ class TestRoundLifecycle:
         two_player_game: Game,
     ) -> None:
         """Completing a round sets the completion timestamp."""
-        await recorder.on_game_started(two_player_game, make_game_started_details(two_player_game))
-        await recorder.on_hand_started(two_player_game, make_hand_started_details(two_player_game))
-        await recorder.on_round_started(two_player_game, make_round_started_details(two_player_game))
+        await recorder.on_game_started(
+            two_player_game, make_game_started_details(two_player_game)
+        )
+        await recorder.on_hand_started(
+            two_player_game, make_hand_started_details(two_player_game)
+        )
+        await recorder.on_round_started(
+            two_player_game, make_round_started_details(two_player_game)
+        )
 
         assert recorder.record is not None
         hand = recorder.record.current_hand
@@ -616,7 +666,9 @@ class TestRoundLifecycle:
         round_record = hand.rounds[0]
         assert round_record.is_complete is False
 
-        await recorder.on_round_completed(two_player_game, RoundCompletedDetails())
+        await recorder.on_round_completed(
+            two_player_game, RoundCompletedDetails()
+        )
 
         assert round_record.is_complete is True
         assert round_record.completed_at is not None
@@ -794,11 +846,19 @@ class TestEdgeCases:
     ) -> None:
         """All recording operations are no-ops when record not initialized."""
         # These should not raise exceptions
-        await recorder.on_hand_started(two_player_game, make_hand_started_details(two_player_game))
-        await recorder.on_round_started(two_player_game, make_round_started_details(two_player_game))
-        await recorder.on_round_completed(two_player_game, RoundCompletedDetails())
+        await recorder.on_hand_started(
+            two_player_game, make_hand_started_details(two_player_game)
+        )
+        await recorder.on_round_started(
+            two_player_game, make_round_started_details(two_player_game)
+        )
+        await recorder.on_round_completed(
+            two_player_game, RoundCompletedDetails()
+        )
 
-        await recorder.on_hand_completed(two_player_game, make_mock_hand_outcome(two_player_game))
+        await recorder.on_hand_completed(
+            two_player_game, make_mock_hand_outcome(two_player_game)
+        )
 
         game_details = GameCompletedDetails(
             winner_id="player-1",
@@ -830,12 +890,18 @@ class TestEdgeCases:
         two_player_game: Game,
     ) -> None:
         """Round/action operations are no-ops when no current hand exists."""
-        await recorder.on_game_started(two_player_game, make_game_started_details(two_player_game))
+        await recorder.on_game_started(
+            two_player_game, make_game_started_details(two_player_game)
+        )
         # Don't start a hand
 
         # These should not raise exceptions
-        await recorder.on_round_started(two_player_game, make_round_started_details(two_player_game))
-        await recorder.on_round_completed(two_player_game, RoundCompletedDetails())
+        await recorder.on_round_started(
+            two_player_game, make_round_started_details(two_player_game)
+        )
+        await recorder.on_round_completed(
+            two_player_game, RoundCompletedDetails()
+        )
 
         assert recorder.record is not None
         assert recorder.record.current_hand is None
@@ -848,8 +914,12 @@ class TestEdgeCases:
         player_names: dict[str, str],
     ) -> None:
         """Action recording is a no-op when no current round exists."""
-        await recorder.on_game_started(two_player_game, make_game_started_details(two_player_game))
-        await recorder.on_hand_started(two_player_game, make_hand_started_details(two_player_game))
+        await recorder.on_game_started(
+            two_player_game, make_game_started_details(two_player_game)
+        )
+        await recorder.on_hand_started(
+            two_player_game, make_hand_started_details(two_player_game)
+        )
         # Don't start a round
 
         details = ActionAppliedDetails(

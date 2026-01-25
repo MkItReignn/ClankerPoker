@@ -16,14 +16,24 @@ from src.domain.models.blinds import BlindLevel
 from src.domain.models.bot import Bot, BotId, BotType, Prompt
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
-from src.domain.models.game import (BettingState, BlindState, Game,
-                                    GameIdentity, GamePhase, GameStatus,
-                                    HandOutcome, HandState)
+from src.domain.models.game import (
+    BettingState,
+    BlindState,
+    Game,
+    GameIdentity,
+    GameStatus,
+    HandOutcome,
+    HandPhase,
+    HandState,
+)
 from src.domain.models.hand import Hand
 from src.domain.models.llm_model import LlmModel
-from src.domain.models.player import (BettingRoundActionStatus,
-                                      HandParticipationStatus, Player,
-                                      PlayerId)
+from src.domain.models.player import (
+    BettingRoundActionStatus,
+    HandParticipationStatus,
+    Player,
+    PlayerId,
+)
 from src.domain.models.players import Players
 from src.domain.models.pot import Pot, PotState
 from src.domain.models.seat import Seat
@@ -97,7 +107,9 @@ def player_names() -> dict[str, str]:
 
 
 @pytest.fixture
-def player_configs(player_names: dict[str, str]) -> dict[str, PokerPlayerConfig]:
+def player_configs(
+    player_names: dict[str, str]
+) -> dict[str, PokerPlayerConfig]:
     """Create player configs from player names for game recorder tests."""
     return {
         player_id: PokerPlayerConfig(
@@ -157,7 +169,7 @@ def tournament_config() -> TournamentConfig:
     )
 
 
-def make_community_cards(phase: GamePhase) -> list[Card]:
+def make_community_cards(phase: HandPhase) -> list[Card]:
     """Create community cards for testing based on phase.
 
     Returns the correct number of cards for each phase:
@@ -200,7 +212,7 @@ def game_factory(
 
     def create_game(
         players: list[Player],
-        current_phase: GamePhase = GamePhase.PRE_FLOP,
+        current_phase: HandPhase = HandPhase.PRE_FLOP,
         hand_number: int = 1,
         button_seat: Seat = Seat.SEAT_0,
         pot_amount: ChipAmount | None = None,
