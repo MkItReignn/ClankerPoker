@@ -1,7 +1,0 @@
-{
-    "player_configs": {
-        "player1": {"name": "Grok-Player-1", "model_id": "x-ai/grok-4.1-fast"},
-        "player2": {"name": "Grok-Player-2", "model_id": "x-ai/grok-4.1-fast"},
-        "player3": {"name": "Deepseek-Player-3", "model_id": "deepseek/deepseek-v3.2"}
-    }
-}
