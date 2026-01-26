@@ -177,9 +177,9 @@ ACTION: fold
         result = parser.parse(response)
 
         assert isinstance(result, Narration)
-        # Should be trimmed to within 600 word limit
+        # Should be trimmed to within word limit
         word_count = len(result.thought_process.split())
-        assert word_count <= 550
+        assert word_count <= 1000
 
     def test_single_long_sentence_trimmed_to_empty_returns_error(self, parser):
         # A single sentence with 700+ words that exceeds limit

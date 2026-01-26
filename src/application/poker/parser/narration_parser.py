@@ -29,8 +29,8 @@ class ThoughtProcessNarrationParser:
     Returns ParseError if the field is missing or empty.
     """
 
-    # Word count limit for thought_process (500 target + 10% tolerance = 550)
-    MAX_WORDS: ClassVar[int] = 550
+    # Word count limit for thought_process
+    MAX_WORDS: ClassVar[int] = 1000
 
     # Pattern to extract THOUGHT_PROCESS content
     # - [ \t]* matches only horizontal whitespace after colon (not newlines)
