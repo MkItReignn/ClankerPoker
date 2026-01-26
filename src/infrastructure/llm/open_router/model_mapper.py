@@ -9,12 +9,12 @@ class OpenRouterModelMapper:
         LlmModel.OPENAI_GPT4O_MINI: "openai/gpt-4o-mini",
         LlmModel.ANTHROPIC_CLAUDE_35_SONNET: "anthropic/claude-3.5-sonnet",
         LlmModel.ANTHROPIC_CLAUDE_3_OPUS: "anthropic/claude-3-opus",
-        LlmModel.GOOGLE_GEMINI_PRO: "google/gemini-pro",
-        LlmModel.GOOGLE_GEMINI_ULTRA: "google/gemini-ultra",
-        LlmModel.DEEPSEEK_DEEPSEEK: "deepseek/deepseek",
-        LlmModel.XAI_GROK: "x-ai/grok",
+        LlmModel.GOOGLE_GEMINI_2_5_PRO: "google/gemini-2.5-pro",
+        LlmModel.GOOGLE_GEMINI_2_5_FLASH: "google/gemini-2.5-flash",
+        LlmModel.XAI_GROK_4_FAST: "x-ai/grok-4-fast",
         LlmModel.DEEPSEEK_DEEPSEEK_v3_2: "deepseek/deepseek-v3.2",
         LlmModel.XAI_GROK_4_1_FAST: "x-ai/grok-4.1-fast",
+        LlmModel.META_LLAMA_3_3_70B_INSTRUCT: "meta-llama/llama-3.3-70b-instruct",
     }
 
     @classmethod
