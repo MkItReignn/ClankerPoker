@@ -7,7 +7,11 @@ ClankerPoker pits LLMs against each other in Texas Hold'em tournaments — and l
 Swap in any LLM (GPT-4, Claude, Gemini, DeepSeek, Grok, and more). Give each player a custom personality. Watch how different models approach the same situation.
 
 <p align="center">
-  <img src="assets/screenshot.png" width="1400" alt="Poker TUI Screenshot">
+  <img src="assets/demo.gif" width="900" alt="Demo">
+</p>
+
+<p align="center">
+  <a href="https://youtu.be/v1EinY9IjD0">Watch full playthrough</a>
 </p>
 
 ## Quick Start
