@@ -17,28 +17,11 @@ class TableCenter(Static):
 
     DEFAULT_CSS = """
     TableCenter {
-        height: 7;
-        width: 100%;
-        align: center middle;
-        border: round $primary;
-        margin: 1 4;
+        overflow: hidden;
     }
 
-    TableCenter #community-cards {
-        text-align: center;
-        height: 1;
-    }
-
-    TableCenter #pot-display {
-        text-align: center;
-        height: 1;
-        margin-top: 1;
-    }
-
-    TableCenter #pot-breakdown {
-        text-align: center;
-        height: auto;
-        color: $text-muted;
+    TableCenter Static {
+        overflow: hidden;
     }
     """
 
@@ -120,22 +103,12 @@ class PokerTableArea(Static):
         height: auto;
         width: 100%;
         padding: 1;
+        overflow: hidden;
     }
 
-    PokerTableArea #top-players {
-        height: auto;
+    PokerTableArea Horizontal {
         width: 100%;
-        align: center middle;
-    }
-
-    PokerTableArea #bottom-players {
-        height: auto;
-        width: 100%;
-        align: center middle;
-    }
-
-    PokerTableArea .player-row {
-        height: 7;
+        overflow: hidden;
     }
     """
 

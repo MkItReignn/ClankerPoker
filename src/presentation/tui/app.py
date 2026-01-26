@@ -21,10 +21,10 @@ if TYPE_CHECKING:
 
 
 class ColumnLayoutConfig:
-    LEFT_MAX_WIDTH = 110
-    RIGHT_MAX_WIDTH = 80
-    PHASE_1_THRESHOLD = 165  # 2:1 ratio until left would hit max (110 * 3/2)
-    PHASE_2_THRESHOLD = 190  # LEFT_MAX + RIGHT_MAX
+    LEFT_MAX_WIDTH: int = 120
+    RIGHT_MAX_WIDTH: int = 80
+    PHASE_1_THRESHOLD: int = 180  # 2:1 ratio until left would hit max (120 * 3/2)
+    PHASE_2_THRESHOLD: int = 200  # LEFT_MAX + RIGHT_MAX
 
 
 class PokerViewerApp(App[None]):

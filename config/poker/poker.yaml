@@ -22,7 +22,7 @@ player_configs:
       You prioritize feeling alive over perfect play.
 
   player2:
-    name: "️Zero Kelvin"
+    name: "Zero Kelvin"
     llm_model: "x-ai/grok-4.1-fast"
     personality: |
       Cold, hyper-rational executioner. No emotion, no ego. Treats poker as a

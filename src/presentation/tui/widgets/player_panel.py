@@ -79,45 +79,11 @@ class PlayerPanel(Static):
 
     DEFAULT_CSS = """
     PlayerPanel {
-        width: 22;
-        height: 6;
-        border: solid $primary;
-        padding: 0 1;
+        overflow: hidden;
     }
 
-    PlayerPanel.player-active {
-        border: heavy $warning;
-    }
-
-    PlayerPanel.player-folded {
-        opacity: 0.7;
-        border: round #5588bb;
-        background: #5588bb 70%;
-    }
-
-    PlayerPanel.player-eliminated {
-        opacity: 0.3;
-        border: dashed $error;
-    }
-
-    PlayerPanel.player-all-in {
-        border: solid $accent;
-    }
-
-    PlayerPanel.player-winner {
-        border: double $success;
-    }
-
-    PlayerPanel .player-name {
-        text-style: bold;
-    }
-
-    PlayerPanel .dealer-badge {
-        color: $warning;
-    }
-
-    PlayerPanel .active-indicator {
-        color: $warning;
+    PlayerPanel Static {
+        overflow: hidden;
     }
     """
 

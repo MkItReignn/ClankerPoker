@@ -12,10 +12,12 @@ Screen {
 
 #left-column {
     height: 100%;
+    overflow: hidden;
 }
 
 #right-column {
     height: 100%;
+    overflow: hidden;
 }
 
 /* Header Bar */
@@ -26,39 +28,54 @@ HeaderBar {
     border: solid $primary;
     padding: 0 1;
     background: $surface-darken-1;
+    overflow: hidden;
 }
 
 HeaderBar #header-content {
     text-align: center;
     width: 100%;
+    overflow: hidden;
 }
 
 /* Poker Table Area */
 PokerTableArea {
     height: auto;
     min-height: 20;
+    overflow: hidden;
+    width: 100%;
 }
 
 #top-players {
     align: center top;
     height: 6;
     padding: 0 2;
+    width: 100%;
+    overflow: hidden;
 }
 
 #bottom-players {
     align: center bottom;
     height: 6;
     padding: 0 2;
+    width: 100%;
+    overflow: hidden;
 }
 
 /* Player Panel */
 PlayerPanel {
-    width: 28;
+    width: 26;
+    max-width: 26;
     height: 5;
     margin: 0 1;
     border: solid $primary;
     padding: 0 1;
     background: $surface-darken-1;
+    overflow: hidden;
+}
+
+PlayerPanel Static {
+    overflow: hidden;
+    width: 100%;
 }
 
 PlayerPanel.player-active {
@@ -92,20 +109,26 @@ TableCenter {
     border: round $primary-lighten-2;
     background: $primary 5%;
     padding: 1 2;
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
 }
 
 #community-cards {
     text-align: center;
+    overflow: hidden;
 }
 
 #pot-display {
     text-align: center;
     margin-top: 1;
+    overflow: hidden;
 }
 
 #pot-breakdown {
     text-align: center;
     color: $text-muted;
+    overflow: hidden;
 }
 
 /* Action Log */
@@ -113,6 +136,7 @@ ActionLog {
     height: 100%;
     border: solid $primary;
     background: $surface-darken-1;
+    overflow: hidden;
 }
 
 ActionLog #action-log-title {
@@ -126,6 +150,7 @@ ActionLog #action-log-title {
 ActionLog #log-scroll {
     height: 100%;
     padding: 0 1;
+    overflow-x: hidden;
 }
 
 ActionLog .log-entry {
@@ -161,6 +186,7 @@ NarrationPanel {
     height: 1fr;
     border: solid $primary;
     background: $surface-darken-1;
+    overflow: hidden;
 }
 
 NarrationPanel #narration-title {
@@ -174,6 +200,7 @@ NarrationPanel #narration-title {
 NarrationPanel #narration-scroll {
     height: 100%;
     padding: 0 1;
+    overflow-x: hidden;
 }
 
 NarrationPanel .phase-header {
