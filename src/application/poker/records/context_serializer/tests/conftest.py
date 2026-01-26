@@ -9,6 +9,7 @@ from src.application.poker.records.models import (
     GameMetadata,
     GameRecord,
     HandLevelPlayerRecord,
+    HandOutcomeRecord,
     HandRecord,
     RoundLevelPlayerRecord,
     RoundRecord,
@@ -169,7 +170,7 @@ def make_hand_record(
     if rounds:
         hand.rounds = rounds
     if outcome:
-        hand.outcome = outcome
+        hand.outcome = HandOutcomeRecord.from_details(outcome)
     return hand
 
 

@@ -126,6 +126,7 @@ class TestEventPublisherGameEvents:
 
         assert transport.event_count == 1
         event = transport.get_last_event()
+        assert event is not None
         assert event.event_type == EventType.GAME_STARTED
         assert event.details["player_count"] == 2
         assert event.details["starting_chips"] == 1000
@@ -172,6 +173,7 @@ class TestEventPublisherGameEvents:
 
         assert transport.event_count == 1
         event = transport.get_last_event()
+        assert event is not None
         assert event.event_type == EventType.GAME_COMPLETED
         assert event.details["winner_id"] == "p1"
         assert event.details["total_hands"] == 5
@@ -203,6 +205,7 @@ class TestEventPublisherHandEvents:
         await publisher.on_hand_started(game, details)
 
         event = transport.get_last_event()
+        assert event is not None
         assert event.event_type == EventType.HAND_STARTED
         assert event.details["hand_number"] == 3
         assert event.details["button_seat"] == 0
@@ -248,6 +251,7 @@ class TestEventPublisherHandEvents:
         await publisher.on_hand_completed(game, details)
 
         event = transport.get_last_event()
+        assert event is not None
         assert event.event_type == EventType.HAND_COMPLETED
         assert len(event.details["winners"]) == 1
         assert event.details["pot_amount"] == 100
@@ -284,6 +288,7 @@ class TestEventPublisherHandEvents:
         await publisher.on_hole_cards_dealt(game, details)
 
         event = transport.get_last_event()
+        assert event is not None
         assert event.event_type == EventType.HOLE_CARDS_DEALT
         assert "p1" in event.details
 
@@ -404,6 +409,7 @@ class TestEventPublisherRoundEvents:
         await publisher.on_round_completed(game, details)
 
         event = transport.get_last_event()
+        assert event is not None
         assert event.event_type == EventType.ROUND_COMPLETED
         assert event.details == {}
 
@@ -567,6 +573,7 @@ class TestEventPublisherMetadata:
         await publisher.on_game_started(game, details)
 
         event = transport.get_last_event()
+        assert event is not None
         assert event.metadata.game_id == "test-game"
 
     @pytest.mark.asyncio
@@ -591,6 +598,7 @@ class TestEventPublisherMetadata:
         await publisher.on_game_started(game, details)
 
         event = transport.get_last_event()
+        assert event is not None
         assert event.metadata.hand_number == 7
 
     @pytest.mark.asyncio
@@ -615,6 +623,7 @@ class TestEventPublisherMetadata:
         await publisher.on_game_started(game, details)
 
         event = transport.get_last_event()
+        assert event is not None
         assert event.metadata.timestamp is not None
 
 
@@ -641,6 +650,7 @@ class TestEventPublisherGameState:
         await publisher.on_game_started(game, details)
 
         event = transport.get_last_event()
+        assert event is not None
         assert event.game_state is not None
         assert "hand_state" in event.game_state
         assert event.game_state["hand_state"]["current_phase"] == "flop"
@@ -667,6 +677,7 @@ class TestEventPublisherGameState:
         await publisher.on_game_started(game, details)
 
         event = transport.get_last_event()
+        assert event is not None
         assert "players" in event.game_state
         assert len(event.game_state["players"]) == 2
 

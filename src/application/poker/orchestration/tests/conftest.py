@@ -176,7 +176,7 @@ class ScriptedActionProvider:
             self._per_player_actions = {
                 pid: list(acts) for pid, acts in actions.items()
             }
-            self._per_player_indices: dict[str, int] = {
+            self._per_player_indices: dict[str, int] | None = {
                 pid: 0 for pid in actions.keys()
             }
             self._actions: list[Action] | None = None
@@ -185,12 +185,12 @@ class ScriptedActionProvider:
             self._actions = list(actions)
             self._index = 0
             self._per_player_actions: dict[str, list[Action]] | None = None
-            self._per_player_indices: dict[str, int] | None = None
+            self._per_player_indices = None
 
     @property
     def actions_taken(self) -> int:
         """Number of actions consumed from the script."""
-        if self._per_player_actions is not None:
+        if self._per_player_actions is not None and self._per_player_indices is not None:
             return sum(self._per_player_indices.values())
         return self._index
 
@@ -202,6 +202,7 @@ class ScriptedActionProvider:
                 len(acts) for acts in self._per_player_actions.values()
             )
             return total - self.actions_taken
+        assert self._actions is not None
         return len(self._actions) - self._index
 
     async def __aenter__(self) -> "ScriptedActionProvider":
@@ -220,7 +221,7 @@ class ScriptedActionProvider:
         context: Any,
         available_actions: list[AvailableActions],
         config: PlayerConfig,
-    ) -> ActionResponse[Action, None]:
+    ) -> ActionResponse[Action, Narration]:
         return await self(context, available_actions, config)
 
     async def __call__(
@@ -228,7 +229,7 @@ class ScriptedActionProvider:
         context: Any,
         available_actions: list[AvailableActions],
         config: PlayerConfig,
-    ) -> ActionResponse[Action, None]:
+    ) -> ActionResponse[Action, Narration]:
         """Return the next scripted action for the requesting player."""
         if self._per_player_actions is not None:
             player_actions = self._per_player_actions.get(config.player_id)
@@ -238,6 +239,7 @@ class ScriptedActionProvider:
                     f"Available players: {list(self._per_player_actions.keys())}"
                 )
 
+            assert self._per_player_indices is not None
             player_index = self._per_player_indices[config.player_id]
             if player_index >= len(player_actions):
                 raise RuntimeError(
@@ -256,6 +258,7 @@ class ScriptedActionProvider:
             self._per_player_indices[config.player_id] = player_index + 1
             return ActionResponse(action=action, narration=None)
 
+        assert self._actions is not None
         if self._index >= len(self._actions):
             raise RuntimeError(
                 f"Script exhausted after {self._index} actions. "
