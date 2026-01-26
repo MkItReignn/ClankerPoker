@@ -64,9 +64,9 @@ class Rank(Enum):
         }[self]
 
     @classmethod
-    def from_short_string(cls, s: str) -> Self:
+    def from_short_string(cls, s: str) -> "Rank":
         """Parse rank from short string representation."""
-        mapping = {
+        mapping: dict[str, Rank] = {
             "A": Rank.ACE,
             "K": Rank.KING,
             "Q": Rank.QUEEN,

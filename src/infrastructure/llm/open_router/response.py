@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from enum import StrEnum
+from typing import Any
 
 
 class FinishReason(StrEnum):
@@ -59,4 +60,4 @@ class OpenRouterApiResponse:
     model: str
     object: str = "chat.completion"
     usage: OpenRouterResponseUsage | None = None
-    raw_data: dict[str, object] = field(default_factory=dict)
+    raw_data: dict[str, Any] = field(default_factory=dict)
