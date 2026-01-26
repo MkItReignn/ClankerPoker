@@ -32,6 +32,9 @@ from src.logger.config import configure_logging
 from src.presentation.tui import PokerViewerApp
 
 DEFAULT_REPLAY_PATH: Path = Path("replay/default.json")
+DEFAULT_EVENT_DELAY: float = 0.3
+DEFAULT_WEB_HOST: str = "localhost"
+DEFAULT_WEB_PORT: int = 8000
 
 
 async def run_with_tui(
@@ -161,13 +164,13 @@ def main() -> None:
     parser.add_argument(
         "--max-hands",
         type=int,
-        help="Maximum number of hands (safety limit)",
+        help="Maximum number of hands to run (useful for development/testing)",
     )
     parser.add_argument(
         "--delay",
         type=float,
-        default=0.3,
-        help="Delay between events in seconds (default: 0.3)",
+        default=DEFAULT_EVENT_DELAY,
+        help=f"Delay between events in seconds (default: {DEFAULT_EVENT_DELAY})",
     )
     parser.add_argument(
         "--bot",
@@ -189,14 +192,14 @@ def main() -> None:
     parser.add_argument(
         "--host",
         type=str,
-        default="localhost",
-        help="Host for web server (default: localhost)",
+        default=DEFAULT_WEB_HOST,
+        help=f"Host for web server (default: {DEFAULT_WEB_HOST})",
     )
     parser.add_argument(
         "--port",
         type=int,
-        default=8000,
-        help="Port for web server (default: 8000)",
+        default=DEFAULT_WEB_PORT,
+        help=f"Port for web server (default: {DEFAULT_WEB_PORT})",
     )
 
     args: argparse.Namespace = parser.parse_args()
