@@ -164,7 +164,10 @@ class LlmActionProvider(
                     self._logger.warning(
                         "Parse attempt failed",
                         player_id=config.player_id,
+                        player_name=config.name,
+                        llm_model=config.llm_model.value,
                         attempt=attempt + 1,
+                        max_retries=self._config.max_retries + 1,
                         error_type=result.error.error_type,
                         error_message=result.error.message,
                         error_context=result.error.context,
@@ -180,9 +183,13 @@ class LlmActionProvider(
                 narration: TNarration | None = None
                 if isinstance(result.narration, ParseError):
                     self._logger.warning(
-                        f"Narration parse failed for player {config.player_id}: "
-                        f"[{result.narration.error_type}] {result.narration.message}",
-                        context=result.narration.context,
+                        "Narration parse failed",
+                        player_id=config.player_id,
+                        player_name=config.name,
+                        llm_model=config.llm_model.value,
+                        error_type=result.narration.error_type,
+                        error_message=result.narration.message,
+                        error_context=result.narration.context,
                     )
                 else:
                     narration = result.narration
@@ -194,21 +201,32 @@ class LlmActionProvider(
                 self._logger.warning(
                     "LLM request failed",
                     player_id=config.player_id,
+                    player_name=config.name,
+                    llm_model=config.llm_model.value,
                     attempt=attempt + 1,
+                    max_retries=self._config.max_retries + 1,
                     error_type=type(e).__name__,
                     error_message=last_error,
                 )
 
         # All retries exhausted, try fallback
         self._logger.warning(
-            f"All {self._config.max_retries + 1} attempts failed for player {config.player_id}"
+            "All retry attempts exhausted",
+            player_id=config.player_id,
+            player_name=config.name,
+            llm_model=config.llm_model.value,
+            total_attempts=self._config.max_retries + 1,
+            last_error=last_error,
         )
 
         if self._fallback_selector is not None:
             fallback = self._fallback_selector(available_actions)
             if fallback is not None:
                 self._logger.warning(
-                    f"Using fallback action for player {config.player_id}"
+                    "Using fallback action",
+                    player_id=config.player_id,
+                    player_name=config.name,
+                    llm_model=config.llm_model.value,
                 )
                 return ActionResponse(action=fallback)
 

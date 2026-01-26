@@ -109,8 +109,13 @@ user_prompt:
       talk yourself into it or out of it. Short spots get short thoughts. Tough spots get
       the full internal debate.
 
-      NO numbered lists, NO headings, NO labels. Just your brain doing its thing.
+      Write your thoughts as natural inner dialogue - NO numbered lists, NO section headings
+      like "Hand Analysis:" or "Assessment:", NO bullet points. Just your brain doing its thing.
       "Okay so..." "Hmm, but if he has..." "Screw it..." - let it breathe.
+
+      CRITICAL: You MUST use the structural markers (THOUGHT_PROCESS: and ACTION:) shown in
+      the response format below. These are required parsing delimiters, not style choices.
+      Your thoughts go AFTER the "THOUGHT_PROCESS:" marker.
 
     action_guidelines: |
       === ACTION GUIDELINES ===
@@ -131,6 +136,9 @@ user_prompt:
 
   response_format: |
     === RESPONSE FORMAT ===
+
+    You MUST use this exact structure. The markers "THOUGHT_PROCESS:" and "ACTION:" are
+    REQUIRED for parsing - without them, your response will fail.
 
     THOUGHT_PROCESS:
     [Write your natural, conversational thoughts here - like you're talking to someone
