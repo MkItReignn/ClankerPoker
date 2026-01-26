@@ -25,7 +25,7 @@ class PlayerConfig:
 
     player_id: str
     name: str
-    model_id: LlmModel
+    llm_model: LlmModel
     personality: str | None = None
     addon_prompt: str | None = None
 
@@ -71,7 +71,7 @@ class AsyncActionProvider(
         Args:
             context: All information needed to make a decision.
             available_actions: The set of legal actions.
-            config: Configuration for this player's behavior (includes model_id).
+            config: Configuration for this player's behavior (includes llm_model).
 
         Returns:
             ActionResponse containing the chosen action and optional narration.

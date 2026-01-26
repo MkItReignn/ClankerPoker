@@ -102,13 +102,13 @@ class OpenRouterResponseParser:
         completion_tokens = (
             api_response.usage.completion_tokens if api_response.usage else 0
         )
-        model_id = OpenRouterModelMapper.from_openrouter_model(
+        llm_model = OpenRouterModelMapper.from_openrouter_model(
             api_response.model
         )
 
         return LlmResponse(
             content=content,
-            model_id=model_id,
+            llm_model=llm_model,
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
             finish_reason=finish_reason,

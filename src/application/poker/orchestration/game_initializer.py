@@ -92,7 +92,7 @@ class GameInitializer:
             player = Player(
                 id=config.player_id,
                 name=config.name,
-                llm_model=config.model_id,
+                llm_model=config.llm_model,
                 seat=Seat.from_int(i),
                 remaining_chips=ChipAmount(starting_chips),
                 hole_cards=None,

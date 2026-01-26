@@ -73,7 +73,7 @@ class Recorder:
                 player_id=player.id,
                 name=poker_config.name,
                 seat=player.seat,
-                model_id=poker_config.model_id,
+                llm_model=poker_config.llm_model,
                 player_config=player_config,
             )
 

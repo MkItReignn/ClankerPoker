@@ -102,20 +102,20 @@ class LlmActionProvider(
         Args:
             context: The decision context.
             available_actions: The available actions.
-            config: The player configuration (includes model_id).
+            config: The player configuration (includes llm_model).
 
         Returns:
             ActionResponse with the chosen action.
 
         Raises:
             LlmError: If all retries fail and no fallback available.
-            ValueError: If config.model_id is LlmModel.NONE.
+            ValueError: If config.llm_model is LlmModel.NONE.
         """
         # Validate that a valid LLM model is configured
-        if config.model_id == LlmModel.NONE:
+        if config.llm_model == LlmModel.NONE:
             raise ValueError(
                 f"LlmActionProvider requires a valid LLM model, but player {config.player_id} "
-                f"has model_id={LlmModel.NONE}. Use a non-LLM provider for this player."
+                f"has llm_model={LlmModel.NONE}. Use a non-LLM provider for this player."
             )
 
         # Get both prompts from the formatter, passing PlayerConfig directly
@@ -139,13 +139,13 @@ class LlmActionProvider(
                 else:
                     retry_prompt = user_prompt
 
-                # Use model_id from config (already LlmModel enum)
-                model = config.model_id
+                # Use llm_model from config (already LlmModel enum)
+                llm_model = config.llm_model
 
                 request = LlmRequest(
                     system_prompt=system_prompt,
                     user_prompt=retry_prompt,
-                    model_id=model,
+                    llm_model=llm_model,
                     max_tokens=self._config.max_output_tokens,
                     temperature=self._config.temperature,
                 )

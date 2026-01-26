@@ -13,7 +13,7 @@ class LlmRequest:
     Attributes:
         system_prompt: The system prompt setting context and behavior.
         user_prompt: The user prompt containing the actual request.
-        model_id: The model identifier to use.
+        llm_model: The model identifier to use.
         max_tokens: Maximum tokens in the response.
         temperature: Sampling temperature (0.0-2.0). Controls randomness in output:
             - 0.0: Most deterministic, always selects the most likely token.
@@ -25,7 +25,7 @@ class LlmRequest:
 
     system_prompt: str
     user_prompt: str
-    model_id: LlmModel
+    llm_model: LlmModel
     max_tokens: int = 2048
     temperature: float = 0.7
 
@@ -48,7 +48,7 @@ class LlmResponse:
 
     Attributes:
         content: The text content of the response.
-        model_id: The model that generated this response.
+        llm_model: The model that generated this response.
         prompt_tokens: Number of tokens in the prompt.
         completion_tokens: Number of tokens in the completion.
         finish_reason: Why the response ended (stop, length, etc.).
@@ -56,7 +56,7 @@ class LlmResponse:
     """
 
     content: str
-    model_id: LlmModel
+    llm_model: LlmModel
     prompt_tokens: int
     completion_tokens: int
     finish_reason: str

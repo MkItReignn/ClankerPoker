@@ -2,13 +2,13 @@
     "player_configs": {
         "player1": {
             "name": "Alice",
-            "model_id": "openai/gpt-4o",
+            "llm_model": "openai/gpt-4o",
             "personality": "Conservative and calculated, rarely bluffs",
             "addon_prompt": ""
         },
         "player2": {
             "name": "Bob",
-            "model_id": "anthropic/claude-3.5-sonnet",
+            "llm_model": "anthropic/claude-3.5-sonnet",
             "personality": "Aggressive and unpredictable, frequently bluffs",
             "addon_prompt": ""
         }

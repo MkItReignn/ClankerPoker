@@ -47,7 +47,7 @@ def poker_game_config(player_names: dict[str, str]) -> PokerGameConfig:
         player_id: PokerPlayerConfig(
             player_id=player_id,
             name=name,
-            model_id=LlmModel.OPENAI_GPT4O_MINI,
+            llm_model=LlmModel.OPENAI_GPT4O_MINI,
         )
         for player_id, name in player_names.items()
     }
@@ -83,12 +83,12 @@ def create_two_player_config() -> PokerGameConfig:
         "player-1": PokerPlayerConfig(
             player_id="player-1",
             name="Alice",
-            model_id=LlmModel.OPENAI_GPT4O_MINI,
+            llm_model=LlmModel.OPENAI_GPT4O_MINI,
         ),
         "player-2": PokerPlayerConfig(
             player_id="player-2",
             name="Bob",
-            model_id=LlmModel.OPENAI_GPT4O_MINI,
+            llm_model=LlmModel.OPENAI_GPT4O_MINI,
         ),
     }
     return PokerGameConfig(player_configs=player_configs)
@@ -100,17 +100,17 @@ def create_three_player_config() -> PokerGameConfig:
         "player-1": PokerPlayerConfig(
             player_id="player-1",
             name="Alice",
-            model_id=LlmModel.OPENAI_GPT4O_MINI,
+            llm_model=LlmModel.OPENAI_GPT4O_MINI,
         ),
         "player-2": PokerPlayerConfig(
             player_id="player-2",
             name="Bob",
-            model_id=LlmModel.OPENAI_GPT4O_MINI,
+            llm_model=LlmModel.OPENAI_GPT4O_MINI,
         ),
         "player-3": PokerPlayerConfig(
             player_id="player-3",
             name="Charlie",
-            model_id=LlmModel.OPENAI_GPT4O_MINI,
+            llm_model=LlmModel.OPENAI_GPT4O_MINI,
         ),
     }
     return PokerGameConfig(player_configs=player_configs)

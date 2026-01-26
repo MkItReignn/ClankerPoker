@@ -18,19 +18,19 @@ class OpenRouterModelMapper:
     }
 
     @classmethod
-    def to_openrouter_model(cls, model: LlmModel) -> str:
-        if model == LlmModel.NONE:
+    def to_openrouter_model(cls, llm_model: LlmModel) -> str:
+        if llm_model == LlmModel.NONE:
             raise ValueError(
                 f"Cannot map LlmModel.NONE to OpenRouter model. "
                 f"Use a valid LLM model or a non-LLM provider."
             )
-        if model not in cls._MODEL_MAP:
+        if llm_model not in cls._MODEL_MAP:
             raise ValueError(
-                f"Model {model.value} is not mapped to an OpenRouter model. "
+                f"Model {llm_model.value} is not mapped to an OpenRouter model. "
                 f"Please add it to OpenRouterModelMapper._MODEL_MAP"
             )
 
-        return cls._MODEL_MAP[model]
+        return cls._MODEL_MAP[llm_model]
 
     @classmethod
     def from_openrouter_model(cls, openrouter_model: str) -> LlmModel:
@@ -49,9 +49,9 @@ class OpenRouterModelMapper:
         return reverse_map[openrouter_model]
 
     @classmethod
-    def is_valid_model(cls, model_id: str) -> bool:
+    def is_valid_model(cls, llm_model_str: str) -> bool:
         try:
-            model = LlmModel(model_id)
-            return model != LlmModel.NONE and model in cls._MODEL_MAP
+            llm_model = LlmModel(llm_model_str)
+            return llm_model != LlmModel.NONE and llm_model in cls._MODEL_MAP
         except ValueError:
             return False

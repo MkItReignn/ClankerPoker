@@ -23,7 +23,7 @@ class RecordLogger:
                 "name": player_record.player_name,
                 "seat": player_record.seat.value,
                 "chips": player_record.chips.value,
-                "model": player_record.model_id.value,
+                "model": player_record.llm_model.value,
             }
             for pid, player_record in record.player_records.items()
         ]
@@ -44,7 +44,7 @@ class RecordLogger:
         players_info = [
             {
                 "name": player_record.player_name,
-                "model": player_record.model_id.value,
+                "model": player_record.llm_model.value,
                 "seat": player_record.seat.value,
                 "position": (
                     player_record.position.value

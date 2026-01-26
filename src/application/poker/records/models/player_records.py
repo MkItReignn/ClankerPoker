@@ -17,7 +17,7 @@ class PlayerRecordSnapshot:
     player_name: str
     seat: Seat
     chips: ChipAmount
-    model_id: LlmModel
+    llm_model: LlmModel
 
     def __post_init__(self) -> None:
         if not self.player_id:
@@ -26,9 +26,9 @@ class PlayerRecordSnapshot:
             raise ValueError("player_name cannot be empty")
         if self.chips.value < 0:
             raise ValueError(f"chips cannot be negative: {self.chips.value}")
-        if not isinstance(self.model_id, LlmModel):
+        if not isinstance(self.llm_model, LlmModel):
             raise ValueError(
-                f"model_id must be an LlmModel enum, got {type(self.model_id)}"
+                f"llm_model must be an LlmModel enum, got {type(self.llm_model)}"
             )
 
     def to_dict(self) -> dict[str, Any]:
@@ -38,7 +38,7 @@ class PlayerRecordSnapshot:
             "player_name": self.player_name,
             "seat": self.seat.value,
             "chips": self.chips.value,
-            "model_id": self.model_id.value,
+            "llm_model": self.llm_model.value,
         }
 
     @classmethod
@@ -49,7 +49,7 @@ class PlayerRecordSnapshot:
             player_name=data["player_name"],
             seat=Seat.from_int(data["seat"]),
             chips=ChipAmount(data["chips"]),
-            model_id=LlmModel(data["model_id"]),
+            llm_model=LlmModel(data["llm_model"]),
         )
 
 
@@ -98,7 +98,7 @@ class GameLevelPlayerRecord(PlayerRecordSnapshot):
             "player_name": self.player_name,
             "seat": self.seat.value,
             "chips": self.chips.value,
-            "model_id": self.model_id.value,
+            "llm_model": self.llm_model.value,
             "hands_played": self.hands_played,
             "is_eliminated": self.is_eliminated,
             "elimination_hand_number": self.elimination_hand_number,
@@ -114,7 +114,7 @@ class GameLevelPlayerRecord(PlayerRecordSnapshot):
             player_name=data["player_name"],
             seat=Seat.from_int(data["seat"]),
             chips=ChipAmount(data["chips"]),
-            model_id=LlmModel(data["model_id"]),
+            llm_model=LlmModel(data["llm_model"]),
             player_config=PlayerConfig.from_dict(data["player_config"]),
             hands_played=data.get("hands_played", 0),
             is_eliminated=data.get("is_eliminated", False),
@@ -139,7 +139,7 @@ class HandLevelPlayerRecord(PlayerRecordSnapshot):
             "player_name": self.player_name,
             "seat": self.seat.value,
             "chips": self.chips.value,
-            "model_id": self.model_id.value,
+            "llm_model": self.llm_model.value,
             "hole_cards": (
                 [
                     self.hole_cards.card1.to_dict(),
@@ -173,7 +173,7 @@ class HandLevelPlayerRecord(PlayerRecordSnapshot):
             player_name=data["player_name"],
             seat=Seat.from_int(data["seat"]),
             chips=ChipAmount(data["chips"]),
-            model_id=LlmModel(data["model_id"]),
+            llm_model=LlmModel(data["llm_model"]),
             hole_cards=hole_cards,
             position=position,
             starting_chips=ChipAmount(data["starting_chips"]),
@@ -205,7 +205,7 @@ class RoundLevelPlayerRecord(PlayerRecordSnapshot):
             "player_name": self.player_name,
             "seat": self.seat.value,
             "chips": self.chips.value,
-            "model_id": self.model_id.value,
+            "llm_model": self.llm_model.value,
             "chips_at_round_start": self.chips_at_round_start.value,
             "total_invested_in_hand_at_round_start": self.total_invested_in_hand_at_round_start.value,
             "participation_status": self.participation_status.name,
@@ -224,7 +224,7 @@ class RoundLevelPlayerRecord(PlayerRecordSnapshot):
             player_name=data["player_name"],
             seat=Seat.from_int(data["seat"]),
             chips=ChipAmount(data["chips"]),
-            model_id=LlmModel(data["model_id"]),
+            llm_model=LlmModel(data["llm_model"]),
             chips_at_round_start=ChipAmount(data["chips_at_round_start"]),
             total_invested_in_hand_at_round_start=ChipAmount(
                 data["total_invested_in_hand_at_round_start"]

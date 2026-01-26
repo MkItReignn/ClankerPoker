@@ -21,14 +21,14 @@ class PokerPlayerConfig:
     Attributes:
         player_id: Unique identifier for the player in the game.
         name: Display name for the player (used in prompts and records).
-        model_id: The LLM model to use for this player.
+        llm_model: The LLM model to use for this player.
         personality: Optional personality description used in system prompt generation.
         addon_prompt: Optional additional prompt text for future customization.
     """
 
     player_id: str
     name: str
-    model_id: LlmModel
+    llm_model: LlmModel
     personality: str | None = None
     addon_prompt: str | None = None
 
@@ -42,14 +42,14 @@ class PokerPlayerConfig:
         """Convert to generic PlayerConfig for use with action providers.
 
         Returns:
-            PlayerConfig instance with all player configuration including model_id.
+            PlayerConfig instance with all player configuration including llm_model.
         """
         from src.application.protocols.player import PlayerConfig
 
         return PlayerConfig(
             player_id=self.player_id,
             name=self.name,
-            model_id=self.model_id,
+            llm_model=self.llm_model,
             personality=self.personality,
             addon_prompt=self.addon_prompt,
         )

@@ -1,7 +1,7 @@
 player_configs:
   player1:
     name: "Captain Jack Pot"
-    model_id: "x-ai/grok-4.1-fast"
+    llm_model: "x-ai/grok-4.1-fast"
     personality: |
       Drunken, overconfident sailor. Loud internal monologue, emotionally volatile.
       Romanticizes bad decisions. Forgets logic mid-hand but doubles down anyway.
@@ -23,7 +23,7 @@ player_configs:
 
   player2:
     name: "❄️ Zero Kelvin"
-    model_id: "x-ai/grok-4.1-fast"
+    llm_model: "x-ai/grok-4.1-fast"
     personality: |
       Cold, hyper-rational executioner. No emotion, no ego. Treats poker as a
       solved optimization problem. Clinical precision in everything.
@@ -43,7 +43,7 @@ player_configs:
 
   player3:
     name: "All-In Andy"
-    model_id: "x-ai/grok-4.1-fast"
+    llm_model: "x-ai/grok-4.1-fast"
     personality: |
       Hyper-aggressive ego-driven bully. Believes confidence and pressure win games.
       Interprets folds as submission. Never admits mistakes - losses are always variance.
@@ -64,7 +64,7 @@ player_configs:
 
   player4:
     name: "Sweat Sally"
-    model_id: "x-ai/grok-4.1-fast"
+    llm_model: "x-ai/grok-4.1-fast"
     personality: |
       Anxious, overly analytical statistician. Obsessed with odds, ranges, and expected value.
       Terrified of variance and large pots. Second-guesses everything constantly.
@@ -85,7 +85,7 @@ player_configs:
 
   player5:
     name: "Luca Smoothstack"
-    model_id: "x-ai/grok-4.1-fast"
+    llm_model: "x-ai/grok-4.1-fast"
     personality: |
       Charming psychological hustler. Smooth, confident, socially intelligent.
       Manipulates perception more than cards. Enjoys planting false narratives
@@ -106,7 +106,7 @@ player_configs:
 
   player6:
     name: "Monk Foldem"
-    model_id: "x-ai/grok-4.1-fast"
+    llm_model: "x-ai/grok-4.1-fast"
     personality: |
       Calm, philosophical poker monk. Emotionally detached, serene. Sees poker as
       impermanent flow. Accepts all outcomes with equanimity.

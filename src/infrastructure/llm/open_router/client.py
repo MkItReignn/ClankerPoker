@@ -184,7 +184,7 @@ class OpenRouterClient:
         client = await self._ensure_connected()
 
         openrouter_model = OpenRouterModelMapper.to_openrouter_model(
-            request.model_id
+            request.llm_model
         )
 
         headers = OpenRouterRequestHeaders(api_key=self._config.api_key)

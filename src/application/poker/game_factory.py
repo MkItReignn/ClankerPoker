@@ -36,7 +36,7 @@ def create_bot_dependencies(seed: int | None = None) -> GameDependencies:
         player_id: PokerPlayerConfig(
             player_id=player_id,
             name=bot_cfg.name,
-            model_id=LlmModel.NONE,
+            llm_model=LlmModel.NONE,
         )
         for player_id, bot_cfg in bot_config.player_configs.items()
     }

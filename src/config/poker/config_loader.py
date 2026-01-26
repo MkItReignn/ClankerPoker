@@ -79,18 +79,18 @@ class PokerGameConfigLoader(BaseConfigLoader[PokerGameConfig]):
             name = extractor.get_required_string(
                 player_data, "name", context=f"player_configs['{player_id}']"
             )
-            model_id_str = extractor.get_required_string(
+            llm_model_str = extractor.get_required_string(
                 player_data,
-                "model_id",
+                "llm_model",
                 context=f"player_configs['{player_id}']",
             )
 
             try:
-                model_id = LlmModel(model_id_str)
+                llm_model = LlmModel(llm_model_str)
             except ValueError:
                 valid_values = [e.value for e in LlmModel]
                 raise ValueError(
-                    f"Invalid model_id for player '{player_id}': {model_id_str}. "
+                    f"Invalid llm_model for player '{player_id}': {llm_model_str}. "
                     f"Valid values: {valid_values}"
                 ) from None
 
@@ -108,7 +108,7 @@ class PokerGameConfigLoader(BaseConfigLoader[PokerGameConfig]):
             player_config = PokerPlayerConfig(
                 player_id=player_id,
                 name=name,
-                model_id=model_id,
+                llm_model=llm_model,
                 personality=personality,
                 addon_prompt=addon_prompt,
             )

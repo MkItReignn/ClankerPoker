@@ -25,12 +25,12 @@ class PlayerRecordFactory:
             )
         return self._player_configs[player_id].name
 
-    def _get_player_model_id(self, player_id: str) -> LlmModel:
+    def _get_player_llm_model(self, player_id: str) -> LlmModel:
         if player_id not in self._player_configs:
             raise KeyError(
                 f"Player ID '{player_id}' not found in player_configs"
             )
-        return self._player_configs[player_id].model_id
+        return self._player_configs[player_id].llm_model
 
     def create_hand_level_player_records(
         self, state: Game
@@ -58,7 +58,7 @@ class PlayerRecordFactory:
                     player_name=self._get_player_name(player.id),
                     seat=player.seat,
                     chips=player.remaining_chips,
-                    model_id=self._get_player_model_id(player.id),
+                    llm_model=self._get_player_llm_model(player.id),
                     hole_cards=player.hole_cards,
                     position=position_name,
                     starting_chips=player.remaining_chips,
@@ -80,7 +80,7 @@ class PlayerRecordFactory:
                 player_name=self._get_player_name(player.id),
                 seat=player.seat,
                 chips=player.remaining_chips,
-                model_id=self._get_player_model_id(player.id),
+                llm_model=self._get_player_llm_model(player.id),
                 chips_at_round_start=player.remaining_chips,
                 total_invested_in_hand_at_round_start=total_invested,
                 participation_status=participation_status,

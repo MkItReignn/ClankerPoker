@@ -131,7 +131,7 @@ class GameRecord:
         player_id: str,
         name: str,
         seat: Seat,
-        model_id: LlmModel,
+        llm_model: LlmModel,
         player_config: PlayerConfig,
     ) -> None:
         self.player_records[player_id] = GameLevelPlayerRecord(
@@ -139,7 +139,7 @@ class GameRecord:
             player_name=name,
             seat=seat,
             chips=self.metadata.starting_chip_stack,
-            model_id=model_id,
+            llm_model=llm_model,
             player_config=player_config,
             hands_played=0,
             is_eliminated=False,
@@ -191,7 +191,7 @@ class GameRecord:
                         player_name=old_record.player_name,
                         seat=old_record.seat,
                         chips=player_outcome.final_stack,
-                        model_id=old_record.model_id,
+                        llm_model=old_record.llm_model,
                         player_config=old_record.player_config,
                         hands_played=old_record.hands_played + 1,
                         is_eliminated=was_eliminated,

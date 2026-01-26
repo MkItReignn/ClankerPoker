@@ -100,7 +100,7 @@ def player_configs(
         player_id: PokerPlayerConfig(
             player_id=player_id,
             name=name,
-            model_id=LlmModel.OPENAI_GPT4O_MINI,
+            llm_model=LlmModel.OPENAI_GPT4O_MINI,
         )
         for player_id, name in player_names.items()
     }

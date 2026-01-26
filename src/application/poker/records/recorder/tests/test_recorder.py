@@ -219,7 +219,7 @@ class TestGameLifecycle:
             "player-1": PokerPlayerConfig(
                 player_id="player-1",
                 name="Alice",
-                model_id=LlmModel.OPENAI_GPT4O_MINI,
+                llm_model=LlmModel.OPENAI_GPT4O_MINI,
             )
         }  # Missing player-2
         recorder = Recorder(player_configs=incomplete_configs)
