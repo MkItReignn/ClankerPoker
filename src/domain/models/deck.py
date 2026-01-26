@@ -11,8 +11,6 @@ STANDARD_DECK: list[Card] = [
 
 @dataclass(slots=True)
 class Deck:
-    """A pre-shuffled deck of 52 cards. Cards are dealt in sequence."""
-
     cards: list[Card]
     _deal_index: int = 0
 
@@ -26,7 +24,6 @@ class Deck:
 
     @classmethod
     def create_shuffled(cls, seed: int | None = None) -> Self:
-        """Create a new shuffled deck. If seed is provided, deck is deterministic."""
         rng = Random(seed) if seed is not None else Random()
         shuffled = STANDARD_DECK.copy()
         rng.shuffle(shuffled)
@@ -34,7 +31,6 @@ class Deck:
         return cls(cards=shuffled, _deal_index=0)
 
     def deal_card(self) -> Card:
-        """Deal the next card from the deck."""
         if self._deal_index >= len(self.cards):
             raise ValueError("Cannot deal card: deck is empty")
 
@@ -43,7 +39,6 @@ class Deck:
         return card
 
     def deal_cards(self, count: int) -> list[Card]:
-        """Deal multiple cards."""
         if self._deal_index + count > len(self.cards):
             raise ValueError(
                 f"Cannot deal {count} cards: only {len(self.cards) - self._deal_index} remaining"
@@ -54,16 +49,13 @@ class Deck:
         return cards
 
     def burn_card(self) -> None:
-        """Burn the top card of the deck (remove it from play)."""
         if self._deal_index >= len(self.cards):
             raise ValueError("Cannot burn card: deck is empty")
 
         self._deal_index += 1
 
     def cards_remaining(self) -> int:
-        """Return number of cards remaining in deck."""
         return len(self.cards) - self._deal_index
 
     def is_empty(self) -> bool:
-        """Check if deck is empty."""
         return self._deal_index >= len(self.cards)

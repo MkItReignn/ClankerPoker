@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, override
 
 from src.domain.models.card import Card
 
@@ -17,6 +17,7 @@ class Hand:
     def cards(self) -> tuple[Card, Card]:
         return (self.card1, self.card2)
 
+    @override
     def __str__(self) -> str:
         return f"{self.card1} {self.card2}"
 

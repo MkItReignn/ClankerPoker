@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Self
+from typing import override
 
 
 class Suit(Enum):
@@ -113,16 +113,11 @@ class Card:
     suit: Suit
     rank: Rank
 
-    def __post_init__(self) -> None:
-        if not isinstance(self.suit, Suit):
-            raise ValueError(f"Invalid suit: {self.suit}")
-        if not isinstance(self.rank, Rank):
-            raise ValueError(f"Invalid rank: {self.rank}")
-
+    @override
     def __str__(self) -> str:
         return f"{self.rank.to_short_string()}{self.suit.symbol}"
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, str]:
         """Convert card to dictionary for JSON serialization."""
         return {
             "suit": self.suit.value,
@@ -130,7 +125,7 @@ class Card:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Self:
+    def from_dict(cls, data: dict[str, str]) -> "Card":
         """Reconstruct card from dictionary."""
         return cls(
             suit=Suit(data["suit"]),

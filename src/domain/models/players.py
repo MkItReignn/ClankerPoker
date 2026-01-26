@@ -10,14 +10,6 @@ from src.domain.models.seat import Seat
 
 @dataclass(frozen=True, slots=True)
 class Players:
-    """Immutable collection of players keyed by player_id.
-
-    Provides O(1) lookup by player_id (most common operation).
-    Python 3.7+ dicts maintain insertion order (preserves seat ordering).
-
-    All update operations return new Players instances.
-    """
-
     _players: dict[str, Player]
 
     def __post_init__(self) -> None:
@@ -49,10 +41,6 @@ class Players:
         """Create Players collection from a list of players."""
         return cls(_players={p.id: p for p in players})
 
-    def to_list(self) -> list[Player]:
-        """Convert to list for compatibility. Returns a new list each time."""
-        return list(self._players.values())
-
     def get_by_id(self, player_id: PlayerId) -> Player | None:
         """Get player by ID. O(1) lookup."""
         return self._players.get(player_id)
@@ -68,14 +56,6 @@ class Players:
         """Get all active (non-eliminated) players."""
         return tuple(
             p
-            for p in self._players.values()
-            if p.participation_status != HandParticipationStatus.ELIMINATED
-        )
-
-    def active_ids(self) -> frozenset[PlayerId]:
-        """Get IDs of all active (non-eliminated) players."""
-        return frozenset(
-            p.id
             for p in self._players.values()
             if p.participation_status != HandParticipationStatus.ELIMINATED
         )
@@ -126,26 +106,15 @@ class Players:
         if player_id not in self._players:
             raise ValueError(f"Player {player_id} not found in collection")
 
-        return Players(_players={**self._players, player_id: updated_player})
-
-    def replace_at_index(self, index: int, updated_player: Player) -> Self:
-        """Replace player at index. Returns new Players instance."""
-        if index < 0 or index >= len(self._players):
-            raise IndexError(
-                f"Index {index} out of range for {len(self._players)} players"
-            )
-
-        keys = list(self._players.keys())
-        player_id = keys[index]
-        return Players(_players={**self._players, player_id: updated_player})
+        return type(self)(_players={**self._players, player_id: updated_player})
 
     def replace_all(self, updates: dict[PlayerId, Player]) -> Self:
         """Replace multiple players at once. Returns new Players instance."""
-        return Players(_players={**self._players, **updates})
+        return type(self)(_players={**self._players, **updates})
 
     def transform_all(self, transform: Callable[[Player], Player]) -> Self:
         """Apply transformation to all players. Returns new Players instance."""
-        return Players(
+        return type(self)(
             _players={pid: transform(p) for pid, p in self._players.items()}
         )
 
@@ -155,7 +124,7 @@ class Players:
         transform: Callable[[Player], Player],
     ) -> Self:
         """Apply transformation to players matching predicate. Returns new Players instance."""
-        return Players(
+        return type(self)(
             _players={
                 pid: transform(p) if predicate(p) else p
                 for pid, p in self._players.items()

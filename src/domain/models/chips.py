@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import override
 
 
 @dataclass(frozen=True, slots=True)
@@ -40,23 +40,19 @@ class ChipAmount:
     def __ge__(self, other: ChipAmount) -> bool:
         return self.value >= other.value
 
+    @override
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ChipAmount):
             return NotImplemented
         return self.value == other.value
 
+    @override
     def __hash__(self) -> int:
         return hash(self.value)
 
-    def to_dict(self) -> dict[str, Any]:
-        """Convert chip amount to dictionary for JSON serialization.
-
-        Note: ChipAmount is typically serialized directly as int in event metadata.
-        This method exists for consistency with other domain models.
-        """
+    def to_dict(self) -> dict[str, int]:
         return {"value": self.value}
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> ChipAmount:
-        """Reconstruct chip amount from dictionary."""
+    def from_dict(cls, data: dict[str, int]) -> "ChipAmount":
         return cls(value=data["value"])

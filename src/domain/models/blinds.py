@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Any
 
 from src.domain.models.chips import ChipAmount
 
@@ -22,7 +21,7 @@ class BlindLevel:
                 f"Big blind must be exactly 2x small blind: {self.big_blind.value} != {self.small_blind.value * 2}"
             )
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, int]:
         return {
             "small_blind": self.small_blind.value,
             "big_blind": self.big_blind.value,

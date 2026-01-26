@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, NewType, Self
+from typing import NewType
 
 NarrationText = NewType("NarrationText", str)
 
@@ -18,14 +18,14 @@ class Narration:
         if not self.thought_process.strip():
             raise ValueError("thought_process cannot be empty")
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, str]:
         """Convert narration to dictionary for JSON serialization."""
         return {
             "thought_process": self.thought_process,
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Self:
+    def from_dict(cls, data: dict[str, str]) -> "Narration":
         """Reconstruct narration from dictionary."""
         return cls(
             thought_process=NarrationText(data["thought_process"]),

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Any
 
 from src.domain.models.actions import ActionType
 from src.domain.models.chips import ChipAmount

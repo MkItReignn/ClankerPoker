@@ -16,7 +16,6 @@ class ActionType(Enum):
     POST_BIG_BLIND = "post_big_blind"
 
     def to_short_string(self) -> str:
-        """Convert action type to shorthand notation (F, X, C, B, R, AI, PSB, PBB)."""
         return {
             ActionType.FOLD: "F",
             ActionType.CHECK: "X",
@@ -63,21 +62,20 @@ class Action:
                     f"{self.action_type.value} cannot have an amount"
                 )
 
-    def to_dict(self) -> dict[str, Any]:
-        """Convert action to dictionary for JSON serialization."""
+    def to_dict(self) -> dict[str, str | int | None]:
         return {
             "action_type": self.action_type.value,
             "amount": self.amount.value if self.amount else None,
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Self:
+    def from_dict(cls, data: dict[str, str | int | None]) -> "Action":
         """Reconstruct action from dictionary."""
         return cls(
             action_type=ActionType(data["action_type"]),
             amount=(
                 ChipAmount(data["amount"])
-                if data["amount"] is not None
+                if data["amount"] is not None and isinstance(data["amount"], int)
                 else None
             ),
         )

@@ -55,16 +55,6 @@ class HandPhase(Enum):
             cls.SHOWDOWN,
         )
 
-    @classmethod
-    def get_betting_phases(cls) -> tuple[HandPhase, ...]:
-        """Returns phases where betting occurs (excludes SHOWDOWN)."""
-        return (
-            cls.PRE_FLOP,
-            cls.FLOP,
-            cls.TURN,
-            cls.RIVER,
-        )
-
     def next_phase(self) -> HandPhase | None:
         """Returns the next phase in sequence, or None if this is the last phase."""
         order = self.get_phase_order()
@@ -217,12 +207,6 @@ class Game:
     outcome: HandOutcome | None
 
     def __post_init__(self) -> None:
-        # Convert list[Player] to Players for backward compatibility
-        if isinstance(self.players, list):
-            object.__setattr__(
-                self, "players", Players.from_list(self.players)
-            )
-
         num_players = len(self.players)
         if num_players < 2:
             raise ValueError(
