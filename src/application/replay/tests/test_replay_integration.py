@@ -12,7 +12,10 @@ from src.application.poker.records.models import GameRecord
 from src.application.poker.state_observers.details import HandOutcomeDetails
 from src.application.protocols.player import PlayerConfig
 from src.application.replay import ReplayActionProvider
-from src.application.replay.tests.conftest import StubGameObserver
+from src.application.replay.tests.conftest import (
+    RecordComparator,
+    StubGameObserver,
+)
 from src.domain.models.game import Game
 
 
@@ -191,6 +194,35 @@ class TestReplayDeterminism:
             f"Not all actions consumed. "
             f"Started with {initial_actions}, {provider.remaining_actions} remaining"
         )
+
+    @pytest.mark.asyncio
+    async def test_replay_produces_identical_record(
+        self,
+        default_record: GameRecord,
+        default_runtime_config: RuntimeConfig,
+    ) -> None:
+        state = PokerStateManager(
+            config=default_runtime_config.poker_config,
+            tournament_config=default_runtime_config.tournament_config,
+            game_id=default_runtime_config.game_id,
+            seed=default_runtime_config.seed,
+            repository=None,
+        )
+
+        orchestrator = PokerOrchestrator(
+            state=state,
+            action_provider=default_runtime_config.action_provider,
+        )
+
+        await orchestrator.run_game()
+
+        replayed_record = state.record
+        assert replayed_record is not None
+
+        result = RecordComparator.compare_games(
+            default_record, replayed_record
+        )
+        assert result.equal, result.message
 
 
 class TestReplayActionProvider:
