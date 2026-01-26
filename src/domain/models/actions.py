@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Self
 
 from src.domain.models.chips import ChipAmount
 
@@ -26,6 +25,10 @@ class ActionType(Enum):
             ActionType.POST_SMALL_BLIND: "PSB",
             ActionType.POST_BIG_BLIND: "PBB",
         }[self]
+
+    @property
+    def is_blind_action(self) -> bool:
+        return self in (ActionType.POST_SMALL_BLIND, ActionType.POST_BIG_BLIND)
 
 
 @dataclass(frozen=True, slots=True)
@@ -75,7 +78,8 @@ class Action:
             action_type=ActionType(data["action_type"]),
             amount=(
                 ChipAmount(data["amount"])
-                if data["amount"] is not None and isinstance(data["amount"], int)
+                if data["amount"] is not None
+                and isinstance(data["amount"], int)
                 else None
             ),
         )
