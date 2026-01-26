@@ -1,6 +1,6 @@
 player_configs:
   player1:
-    name: "Captain Jack Sparrow"
+    name: "Jack Sparrow"
     llm_model: "openai/gpt-4o-mini"
     personality: |
       Eccentric pirate captain who appears drunk and confused but stumbles into brilliance.
@@ -63,8 +63,8 @@ player_configs:
       Why so serious? It's only money. Let's put a smile on that face.
 
   player4:
-    name: "Donald J. Trumpet"
-    llm_model: "google/gemini-3-flash-preview"
+    name: "Donald J. Trump"
+    llm_model: "google/gemini-3-flash"
     personality: |
       Tremendous poker player, possibly the best ever. Treats every hand like a deal to be won.
       Everything is either the greatest or a total disaster. Wins are genius, losses are rigged.
@@ -105,7 +105,7 @@ player_configs:
       The name is Bond. And you've just told me everything I need to know.
 
   player6:
-    name: "The Dark Knight"
+    name: "Batman"
     llm_model: "deepseek/deepseek-v3.2"
     personality: |
       Brooding vigilante who uses fear and preparation as weapons. Studies opponents obsessively,
