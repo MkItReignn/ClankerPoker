@@ -31,7 +31,7 @@ from src.infrastructure.realtime import TuiEventTransport
 from src.logger.config import configure_logging
 from src.presentation.tui import PokerViewerApp
 
-DEFAULT_REPLAY_PATH: Path = Path("replay/default.json")
+DEFAULT_REPLAY_PATH: Path = Path("replay/llm_default.json")
 DEFAULT_EVENT_DELAY: float = 0.3
 DEFAULT_WEB_HOST: str = "localhost"
 DEFAULT_WEB_PORT: int = 8000
