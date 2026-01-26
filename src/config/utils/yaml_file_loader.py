@@ -11,11 +11,7 @@ from src.config.utils.json_file_loader import DefaultFileReader, FileReader
 
 @final
 class YamlFileLoader:
-    """Loads YAML files with caching, error handling, and environment section extraction.
-
-    Follows the same pattern as JsonFileLoader for consistency.
-    Supports loading entire YAML files or extracting environment-specific sections.
-    """
+    """Loads YAML files with caching and error handling."""
 
     def __init__(
         self,
@@ -136,58 +132,3 @@ class YamlFileLoader:
             )
 
         return template_value
-
-    def get_environment_section(
-        self,
-        environment: Any,
-        *,
-        required: bool = True,
-    ) -> dict[str, Any] | None:
-        """Extract environment-specific section from loaded config.
-
-        Args:
-            environment: Application environment object with a 'value' attribute,
-                or a string representing the environment name.
-            required: If True, raise error when environment section is missing.
-                If False, return None when missing.
-
-        Returns:
-            Environment-specific config dictionary, or None if not found and required=False.
-
-        Raises:
-            ValueError: If environment section is missing and required=True,
-                or if environment section is not a YAML mapping.
-        """
-        config = self.load()
-
-        # Extract environment key
-        if hasattr(environment, "value"):
-            env_key = environment.value
-        elif isinstance(environment, str):
-            env_key = environment
-        else:
-            raise TypeError(
-                f"environment must have a 'value' attribute or be a string, "
-                f"got {type(environment).__name__}"
-            )
-
-        env_section_raw = config.get(env_key)
-
-        if env_section_raw is None:
-            if required:
-                self._logger.error(
-                    "config_environment_not_found",
-                    environment=env_key,
-                    config_path=str(self._config_path),
-                )
-                raise ValueError(
-                    f"Environment '{env_key}' not found in config: {self._config_path}"
-                )
-            return None
-
-        if not isinstance(env_section_raw, dict):
-            raise ValueError(
-                f"Environment '{env_key}' config must be a YAML mapping"
-            )
-
-        return env_section_raw

@@ -18,7 +18,7 @@ from src.config.poker.prompt.config import (
 )
 from src.config.utils.type_extractors import ConfigTypeExtractor
 from src.config.utils.yaml_file_loader import YamlFileLoader
-from src.constants.config import POKER_PROMPTS_CONFIG_PATH
+from src.config.file_paths import POKER_PROMPTS_CONFIG_PATH
 from src.logger.factories import get_generic_logger
 
 

@@ -43,7 +43,7 @@ class BlindScheduleRegistryLoader(BaseConfigLoader[BlindScheduleRegistry]):
             json_loader: Optional JSON loader (for testing).
             schedule_config_loader: Optional schedule config loader class (for testing).
         """
-        from src.constants.config import BLIND_SCHEDULE_CONFIG_PATH
+        from src.config.file_paths import BLIND_SCHEDULE_CONFIG_PATH
 
         resolved_path = config_path or BLIND_SCHEDULE_CONFIG_PATH
         resolved_logger = logger or get_generic_logger(

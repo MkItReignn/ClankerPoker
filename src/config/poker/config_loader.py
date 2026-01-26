@@ -13,7 +13,7 @@ from src.config.base.config_loader import BaseConfigLoader
 from src.config.poker.config import PokerGameConfig, PokerPlayerConfig
 from src.config.utils.type_extractors import ConfigTypeExtractor
 from src.config.utils.yaml_file_loader import YamlFileLoader
-from src.constants.config import POKER_CONFIG_PATH
+from src.config.file_paths import POKER_CONFIG_PATH
 from src.domain.models.llm_model import LlmModel
 from src.logger.factories import get_generic_logger
 

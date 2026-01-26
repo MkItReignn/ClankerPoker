@@ -16,7 +16,7 @@ from src.config.poker.bot_config import (
 )
 from src.config.poker.bot_personality import BotPersonality
 from src.config.utils.type_extractors import ConfigTypeExtractor
-from src.constants.config import BOT_PLAYERS_CONFIG_PATH
+from src.config.file_paths import BOT_PLAYERS_CONFIG_PATH
 from src.logger.factories import get_generic_logger
 
 

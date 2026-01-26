@@ -11,7 +11,7 @@ import structlog
 from src.config.base.config_loader import BaseConfigLoader
 from src.config.poker.action_provider.config import ActionProviderConfig
 from src.config.utils.type_extractors import ConfigTypeExtractor
-from src.constants.config import ACTION_PROVIDER_CONFIG_PATH
+from src.config.file_paths import ACTION_PROVIDER_CONFIG_PATH
 from src.logger.factories import get_generic_logger
 
 

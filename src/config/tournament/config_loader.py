@@ -15,7 +15,7 @@ from src.config.blind_schedule.registry_loader import (
 )
 from src.config.tournament.config import PayoutStructure, TournamentConfig
 from src.config.utils.type_extractors import ConfigTypeExtractor
-from src.constants.config import (
+from src.config.file_paths import (
     BLIND_SCHEDULE_CONFIG_PATH,
     TOURNAMENT_CONFIG_PATH,
 )

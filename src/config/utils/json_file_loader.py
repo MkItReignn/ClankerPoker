@@ -2,12 +2,9 @@
 
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Protocol, final
+from typing import Protocol, final
 
 import structlog
-
-if TYPE_CHECKING:
-    from src.core.enums import ApplicationEnvironment
 
 
 class FileReader(Protocol):
@@ -53,7 +50,7 @@ class DefaultFileReader:
 
 @final
 class JsonFileLoader:
-    """Loads JSON files with caching, error handling, and environment section extraction."""
+    """Loads JSON files with caching and error handling."""
 
     def __init__(
         self,
@@ -127,50 +124,3 @@ class JsonFileLoader:
             config_path=str(self._config_path),
         )
         return self._cached
-
-    def get_environment_section(
-        self,
-        environment: "ApplicationEnvironment",
-        *,
-        required: bool = True,
-    ) -> dict[str, object] | None:
-        """Extract environment-specific section from loaded config.
-
-        Args:
-            environment: Application environment enum to extract.
-            required: If True, raise error when environment section is missing.
-                If False, return None when missing.
-
-        Returns:
-            Environment-specific config dictionary, or None if not found and required=False.
-
-        Raises:
-            ValueError: If environment section is missing and required=True,
-                or if environment section is not a JSON object.
-        """
-        config = self.load()
-        if not hasattr(environment, "value"):
-            raise TypeError(
-                f"environment must have a 'value' attribute, got {type(environment).__name__}"
-            )
-        env_key = environment.value
-        env_section_raw = config.get(env_key)
-
-        if env_section_raw is None:
-            if required:
-                self._logger.error(
-                    "config_environment_not_found",
-                    environment=env_key,
-                    config_path=str(self._config_path),
-                )
-                raise ValueError(
-                    f"Environment '{env_key}' not found in config: {self._config_path}"
-                )
-            return None
-
-        if not isinstance(env_section_raw, dict):
-            raise ValueError(
-                f"Environment '{env_key}' config must be a JSON object"
-            )
-
-        return env_section_raw

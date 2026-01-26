@@ -17,7 +17,7 @@ import structlog
 from src.config.base.config_loader import BaseConfigLoader
 from src.config.llm.config import OpenRouterConfig
 from src.config.utils.type_extractors import ConfigTypeExtractor
-from src.constants.config import LLM_CONFIG_PATH
+from src.config.file_paths import LLM_CONFIG_PATH
 from src.logger.factories import get_generic_logger
 
 

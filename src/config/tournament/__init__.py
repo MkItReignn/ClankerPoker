@@ -6,7 +6,7 @@ from src.config.tournament.config import (
     calculate_prize_pool,
 )
 from src.config.tournament.config_loader import TournamentConfigLoader
-from src.constants.config import TOURNAMENT_CONFIG_PATH
+from src.config.file_paths import TOURNAMENT_CONFIG_PATH
 
 __all__ = [
     "PayoutStructure",

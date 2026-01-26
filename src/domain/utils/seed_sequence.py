@@ -24,7 +24,7 @@ class SeedSequence:
         Args:
             base_seed: The base seed value for generating the sequence.
         """
-        self._base_seed = base_seed
+        self._base_seed: int = base_seed
         # Pre-generate a cache of seeds for efficiency
         # We'll generate on-demand but cache for performance
         self._cache: dict[int, int] = {}
