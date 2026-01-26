@@ -1,5 +1,5 @@
 {
-  "default_mode": "turbo",
+  "default_mode": "fast",
   "modes": {
     "standard": {
       "description": "Balanced tournament structure with 100 big blind starting stack. Early levels allow deep play, mid-game increases pressure, late game forces action.",
@@ -8,6 +8,10 @@
     "turbo": {
       "description": "Fast-paced tournament with aggressive blind increases. High action, shorter game duration. Ideal for quick games and side events.",
       "file": "turbo.json"
+    },
+    "fast": {
+      "description": "Hyper-aggressive blind structure designed for games under 20 hands. Starts at 6% of stack, doubles rapidly. Maximum action and fast eliminations.",
+      "file": "fast.json"
     },
     "marathon": {
       "description": "Deep stack tournament with slow blind progression. Allows for deep strategic play, longer game duration. Ideal for serious tournaments with large fields.",

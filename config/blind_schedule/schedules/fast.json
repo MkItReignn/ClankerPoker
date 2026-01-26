@@ -1,0 +1,85 @@
+{
+  "entries": [
+    {
+      "level": {
+        "level": 1,
+        "small_blind": 300,
+        "big_blind": 600
+      },
+      "start_hand": 1,
+      "duration_hands": 4
+    },
+    {
+      "level": {
+        "level": 2,
+        "small_blind": 500,
+        "big_blind": 1000
+      },
+      "start_hand": 5,
+      "duration_hands": 4
+    },
+    {
+      "level": {
+        "level": 3,
+        "small_blind": 800,
+        "big_blind": 1600
+      },
+      "start_hand": 9,
+      "duration_hands": 3
+    },
+    {
+      "level": {
+        "level": 4,
+        "small_blind": 1200,
+        "big_blind": 2400
+      },
+      "start_hand": 12,
+      "duration_hands": 3
+    },
+    {
+      "level": {
+        "level": 5,
+        "small_blind": 2000,
+        "big_blind": 4000
+      },
+      "start_hand": 15,
+      "duration_hands": 3
+    },
+    {
+      "level": {
+        "level": 6,
+        "small_blind": 3000,
+        "big_blind": 6000
+      },
+      "start_hand": 18,
+      "duration_hands": 3
+    },
+    {
+      "level": {
+        "level": 7,
+        "small_blind": 5000,
+        "big_blind": 10000
+      },
+      "start_hand": 21,
+      "duration_hands": 2
+    },
+    {
+      "level": {
+        "level": 8,
+        "small_blind": 8000,
+        "big_blind": 16000
+      },
+      "start_hand": 23,
+      "duration_hands": 2
+    },
+    {
+      "level": {
+        "level": 9,
+        "small_blind": 15000,
+        "big_blind": 30000
+      },
+      "start_hand": 25,
+      "duration_hands": 99999
+    }
+  ]
+}
