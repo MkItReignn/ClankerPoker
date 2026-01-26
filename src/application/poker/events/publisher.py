@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Protocol
+from typing import Any, Protocol
 
 from src.application.poker.events.published_event import (
     EventType,
@@ -35,8 +35,8 @@ class EventPublisher:
     """
 
     def __init__(self, transport: EventTransport) -> None:
-        self._transport = transport
-        self._sequence = 0
+        self._transport: EventTransport = transport
+        self._sequence: int = 0
 
     def _next_sequence(self) -> int:
         self._sequence += 1
@@ -46,7 +46,7 @@ class EventPublisher:
         self,
         event_type: EventType,
         game: Game,
-        details: dict,
+        details: dict[str, Any],
     ) -> PublishedEvent:
         metadata = PublishedEventMetadata(
             game_id=game.id,
@@ -65,7 +65,7 @@ class EventPublisher:
         self,
         event_type: EventType,
         game: Game,
-        details: dict,
+        details: dict[str, Any],
     ) -> None:
         event = self._create_event(event_type, game, details)
         await self._transport.publish(event)
@@ -126,6 +126,8 @@ class EventPublisher:
         )
 
     async def _maybe_publish_player_to_act(self, game: Game) -> None:
+        if game.is_round_complete():
+            return
         if game.get_player_to_act_id() is None:
             return
         details = DetailsFactory.player_to_act(game)
