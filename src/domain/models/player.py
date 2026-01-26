@@ -2,7 +2,6 @@ from dataclasses import dataclass, field, replace
 from enum import Enum
 from typing import Any, Self
 
-from src.domain.models.bot import BotId
 from src.domain.models.chips import ChipAmount
 from src.domain.models.hand import Hand
 from src.domain.models.llm_model import LlmModel
@@ -30,7 +29,6 @@ class HandParticipationStatus(Enum):
 class Player:
     id: PlayerId
     name: str
-    bot_id: BotId
     llm_model: LlmModel
     seat: Seat
     remaining_chips: ChipAmount
@@ -151,7 +149,6 @@ class Player:
         return {
             "id": self.id,
             "name": self.name,
-            "bot_id": self.bot_id,
             "llm_model": self.llm_model.value,
             "model_display_name": self.llm_model.display_name,
             "seat": self.seat.value,

@@ -38,8 +38,7 @@ class PokerContextBuilder:
         """Get display name for a player."""
         if player.id in self._player_names:
             return self._player_names[player.id]
-        # Fall back to bot_id or player_id
-        return str(player.bot_id) if player.bot_id else player.id
+        return player.name
 
     def build_context(
         self,

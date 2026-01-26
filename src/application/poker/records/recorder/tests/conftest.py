@@ -11,7 +11,6 @@ from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.config.poker.config import PokerPlayerConfig
 from src.config.tournament.config import PayoutStructure, TournamentConfig
 from src.domain.models.blinds import BlindLevel
-from src.domain.models.bot import Bot, BotId, BotType, Prompt
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import (
@@ -42,19 +41,7 @@ STARTING_CHIPS = ChipAmount(1000)
 
 
 @pytest.fixture
-def sample_bot() -> Bot:
-    """A sample bot for creating players."""
-    return Bot(
-        id=BotId("test-bot-1"),
-        name="Test Bot",
-        bot_type=BotType.HOUSE,
-        llm_model=LlmModel.OPENAI_GPT4O_MINI,
-        system_prompt=Prompt("You are a test bot."),
-    )
-
-
-@pytest.fixture
-def player_factory(sample_bot: Bot) -> Callable[..., Player]:
+def player_factory() -> Callable[..., Player]:
     """Factory to create players with configurable properties."""
 
     def create_player(
@@ -77,7 +64,7 @@ def player_factory(sample_bot: Bot) -> Callable[..., Player]:
         return Player(
             id=player_id,
             name=name,
-            bot_id=sample_bot.id,
+            llm_model=LlmModel.OPENAI_GPT4O_MINI,
             seat=seat,
             remaining_chips=remaining_chips,
             hole_cards=hole_cards,

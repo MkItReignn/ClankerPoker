@@ -17,6 +17,7 @@ import pytest
 from src.domain.models.card import Rank, Suit
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game, HandPhase
+from src.domain.models.llm_model import LlmModel
 from src.domain.models.player import HandParticipationStatus, Player, PlayerId
 from src.domain.models.players import Players
 from src.domain.models.pot import Pot, PotState
@@ -1003,7 +1004,6 @@ class TestPlayerElimination:
         self,
         sample_player_factory: Callable[..., Player],
         minimal_game_factory: Callable[..., Game],
-        sample_bot: callable,
     ) -> None:
         """Players already marked ELIMINATED from previous hands remain unchanged."""
         # Arrange: P1 wins, P2 eliminated this hand, P3 was already eliminated
@@ -1035,7 +1035,7 @@ class TestPlayerElimination:
         p3 = Player(
             id=PlayerId("p3"),
             name="Player p3",
-            bot_id=sample_bot.id,
+            llm_model=LlmModel.OPENAI_GPT4O_MINI,
             seat=Seat.SEAT_2,
             remaining_chips=ChipAmount(0),
             hole_cards=None,

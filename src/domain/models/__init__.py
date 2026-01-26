@@ -9,7 +9,6 @@ from src.domain.models.available_action import (
     AvailableRaiseAction,
 )
 from src.domain.models.blinds import BlindLevel
-from src.domain.models.bot import Bot, BotId, BotType, Prompt
 from src.domain.models.card import Card, Rank, Suit
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import (
@@ -51,29 +50,25 @@ __all__ = [
     "BettingState",
     "BlindLevel",
     "BlindState",
-    "Bot",
-    "BotId",
-    "BotType",
     "Card",
     "ChipAmount",
     "Game",
     "GameId",
     "GameIdentity",
-    "HandPhase",
-    "HandOutcome",
     "GameStatus",
     "Hand",
+    "HandOutcome",
     "HandParticipationStatus",
+    "HandPhase",
     "HandState",
     "LlmModel",
     "Narration",
     "NO_POSITION_TO_ACT",
     "Player",
     "PlayerId",
+    "PositionName",
     "Pot",
     "PotState",
-    "PositionName",
-    "Prompt",
     "Rank",
     "Seat",
     "Suit",

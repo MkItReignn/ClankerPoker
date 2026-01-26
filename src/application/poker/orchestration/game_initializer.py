@@ -3,7 +3,6 @@ from datetime import UTC, datetime
 
 from src.config.poker.config import PokerPlayerConfig
 from src.config.tournament.config import TournamentConfig
-from src.domain.models.bot import BotId
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import (
     NO_POSITION_TO_ACT,
@@ -93,7 +92,6 @@ class GameInitializer:
             player = Player(
                 id=config.player_id,
                 name=config.name,
-                bot_id=BotId(config.name),
                 llm_model=config.model_id,
                 seat=Seat.from_int(i),
                 remaining_chips=ChipAmount(starting_chips),
