@@ -204,9 +204,3 @@ class NarrationPanel(Static):
                 formatted_lines.append(f'"{stripped}"')
 
         return "\n".join(formatted_lines)
-
-    def clear_panel(self) -> None:
-        self._last_phase = ""
-        if self.is_mounted:
-            scroll = self.query_one("#narration-scroll", VerticalScroll)
-            scroll.remove_children()

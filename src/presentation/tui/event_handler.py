@@ -25,8 +25,6 @@ def _get_hand_description(
 
 
 class EventHandler:
-    """Maps game events to TUI widget updates."""
-
     def __init__(
         self,
         header: HeaderBar,

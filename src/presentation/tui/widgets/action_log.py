@@ -283,9 +283,3 @@ class ActionLog(Static):
         if 11 <= n % 100 <= 13:
             return "th"
         return {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-
-    def clear_log(self) -> None:
-        self._entries.clear()
-        if self.is_mounted:
-            scroll = self.query_one("#log-scroll", VerticalScroll)
-            scroll.remove_children()

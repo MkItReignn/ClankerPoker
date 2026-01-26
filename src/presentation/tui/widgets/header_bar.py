@@ -5,8 +5,6 @@ from textual.widgets import Static
 
 
 class HeaderBar(Static):
-    """Header bar displaying game info: hand number, blinds, phase, player count, seed."""
-
     # init=False prevents watchers from firing before mount
     hand_number: reactive[int] = reactive(1, init=False)
     small_blind: reactive[int] = reactive(0, init=False)
@@ -21,7 +19,7 @@ class HeaderBar(Static):
         self,
         show_seed: bool = False,
         seed: int | None = None,
-        **kwargs: object,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.show_seed = show_seed

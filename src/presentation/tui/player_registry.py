@@ -13,10 +13,6 @@ class PlayerRegistry:
         return cls._players.get(player_id)
 
     @classmethod
-    def clear(cls) -> None:
-        cls._players.clear()
-
-    @classmethod
     def register_all(cls, players: list[dict]) -> None:
         for player in players:
             player_id = player.get("id", "")
