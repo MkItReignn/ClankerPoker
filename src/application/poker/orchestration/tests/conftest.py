@@ -12,7 +12,8 @@ from typing import Any
 import pytest
 
 from src.application.poker.orchestration.state_manager import PokerStateManager
-from src.application.protocols.player import ActionResponse, PlayerConfig
+from src.application.protocols.player import PlayerConfig
+from src.application.protocols.response import ActionResponse
 from src.config.blind_schedule.config import BlindSchedule, BlindScheduleEntry
 from src.config.poker.config import PokerGameConfig, PokerPlayerConfig
 from src.config.tournament.config import PayoutStructure, TournamentConfig

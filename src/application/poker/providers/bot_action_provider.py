@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING, ClassVar, Self
 from src.application.poker.providers.bot_random_action_selector import (
     BotRandomActionSelector,
 )
-from src.application.protocols.player import ActionResponse, PlayerConfig
+from src.application.protocols.player import PlayerConfig
+from src.application.protocols.response import ActionResponse
 from src.config.poker.bot_config import BotPokerGameConfig
 from src.config.poker.bot_personality import BotPersonality
 from src.domain.models.actions import Action

@@ -13,8 +13,9 @@ from src.application.poker.orchestration.game_initializer import (
 from src.application.poker.records.models import GameRecord
 from src.application.poker.records.recorder import Recorder
 from src.application.poker.state_observers.notifier import GameStateNotifier
-from src.application.protocols.player import ActionResponse, PlayerConfig
+from src.application.protocols.player import PlayerConfig
 from src.application.protocols.record import GameRecordRepository
+from src.application.protocols.response import ActionResponse
 from src.config.poker.config import PokerGameConfig
 from src.config.tournament.config import TournamentConfig
 from src.domain.models.actions import Action

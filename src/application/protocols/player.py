@@ -14,10 +14,6 @@ TAvailableActions = TypeVar("TAvailableActions", contravariant=True)
 TAction = TypeVar("TAction")
 TNarration = TypeVar("TNarration")
 
-# Re-export for backwards compatibility
-# TODO: Remove this backwards compatability
-__all__ = ["ActionResponse", "AsyncActionProvider", "PlayerConfig"]
-
 
 @dataclass(frozen=True, slots=True)
 class PlayerConfig:

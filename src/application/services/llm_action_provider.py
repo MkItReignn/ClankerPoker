@@ -3,8 +3,9 @@
 from typing import Callable, Generic, Self, TypeVar, cast
 
 from src.application.protocols.llm import LlmClient, LlmError, LlmRequest
-from src.application.protocols.player import ActionResponse, PlayerConfig
+from src.application.protocols.player import PlayerConfig
 from src.application.protocols.response import (
+    ActionResponse,
     ParseError,
     ParseFailure,
     ParseResult,
