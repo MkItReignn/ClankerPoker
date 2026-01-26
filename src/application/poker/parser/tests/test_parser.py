@@ -199,12 +199,12 @@ class TestNarrationTrimming:
     def test_narration_exceeding_limit_gets_trimmed(
         self, parser, preflop_actions
     ):
-        # THOUGHT_PROCESS has 600 word limit
-        sentence1 = " ".join(["word"] * 200) + "."
-        sentence2 = " ".join(["word"] * 200) + "."
+        # THOUGHT_PROCESS has 1000 word limit
+        sentence1 = " ".join(["word"] * 400) + "."
+        sentence2 = " ".join(["word"] * 400) + "."
         sentence3 = (
-            " ".join(["word"] * 300) + "."
-        )  # Total ~700, should get trimmed
+            " ".join(["word"] * 400) + "."
+        )  # Total ~1200, should get trimmed
         over_limit = f"{sentence1} {sentence2} {sentence3}"
 
         response = f"""
@@ -217,7 +217,7 @@ ACTION: raise 300
 
         assert isinstance(result, ParseSuccess)
         assert isinstance(result.narration, Narration)
-        assert len(result.narration.thought_process.split()) <= 550
+        assert len(result.narration.thought_process.split()) <= 1000
 
     def test_narration_within_limit_preserved(self, parser, preflop_actions):
         short_thought = " ".join(["word"] * 400) + "."

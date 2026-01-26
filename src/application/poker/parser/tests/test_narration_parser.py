@@ -182,9 +182,9 @@ ACTION: fold
         assert word_count <= 1000
 
     def test_single_long_sentence_trimmed_to_empty_returns_error(self, parser):
-        # A single sentence with 700+ words that exceeds limit
+        # A single sentence with 1100+ words that exceeds limit
         # When trimmed, nothing remains
-        single_long_sentence = " ".join(["word"] * 700)
+        single_long_sentence = " ".join(["word"] * 1100)
 
         response = f"""
 THOUGHT_PROCESS:
