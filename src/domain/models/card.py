@@ -22,10 +22,10 @@ class Suit(Enum):
     @property
     def symbol(self) -> str:
         _symbols: dict[Suit, str] = {
-            Suit.HEARTS: "❤️",
-            Suit.DIAMONDS: "♦️",
-            Suit.CLUBS: "♣️",
-            Suit.SPADES: "♠️",
+            Suit.HEARTS: "♥",
+            Suit.DIAMONDS: "♦",
+            Suit.CLUBS: "♣",
+            Suit.SPADES: "♠",
         }
         return _symbols[self]
 
