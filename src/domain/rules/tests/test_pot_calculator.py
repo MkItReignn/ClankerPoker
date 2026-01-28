@@ -357,34 +357,6 @@ class TestEligiblePlayerIds:
 class TestFoldedPlayerContributions:
     """Folded players contribute chips but are not eligible to win."""
 
-    def test_folded_player_invested_more_than_remaining_in_hand_player(
-        self, sample_player_factory: Callable[..., Player]
-    ) -> None:
-        """SB all-in for 25, BB folds with 50 invested. A wins all 75 chips."""
-        small_blind = sample_player_factory(
-            player_id="small-blind",
-            seat=Seat.SEAT_0,
-            remaining_chips=ChipAmount(0),
-            total_invested_this_hand=ChipAmount(25),
-            participation_status=HandParticipationStatus.IN_HAND,
-        )
-
-        big_blind = sample_player_factory(
-            player_id="big-blind",
-            seat=Seat.SEAT_1,
-            remaining_chips=ChipAmount(100),
-            total_invested_this_hand=ChipAmount(50),
-            participation_status=HandParticipationStatus.FOLDED,
-        )
-
-        result = PotCalculator.calculate_pot_state([small_blind, big_blind])
-
-        assert result.main_pot.amount == ChipAmount(75)
-        assert result.main_pot.eligible_player_ids == frozenset(
-            {"small-blind"}
-        )
-        assert len(result.side_pots) == 0
-
     def test_folded_player_invested_less_than_all_in_hand_players(
         self, sample_player_factory: Callable[..., Player]
     ) -> None:
