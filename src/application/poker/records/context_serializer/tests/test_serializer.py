@@ -980,11 +980,11 @@ class TestSerializeRecentRecordsIntegration:
         expected_lines = [
             "=== PREVIOUS HANDS ===",
             # Hand 3 (Carol=BTN, Alice=SB all-in wins)
-            "H3: Winner=Alice, Pot=650, Showdown=yes, Alice showed A♠️ K❤️; Carol showed Q♦️ J♣️",
+            "H3: Winner=Alice, Pot=650, Showdown=yes, Alice showed A♠ K♥; Carol showed Q♦ J♣",
             "Stacks: Carol(BTN)=1150, Alice(SB)=800, Bob(BB)=900",
             "PRE_FLOP: Carol(BTN):R100, Alice(SB):AI400, Bob(BB):F, Carol(BTN):C",
             # Hand 2 (Bob=BTN, Carol wins showdown)
-            "H2: Winner=Carol, Pot=300, Showdown=yes, Carol showed A♠️ K❤️; Bob showed Q♦️ J♣️",
+            "H2: Winner=Carol, Pot=300, Showdown=yes, Carol showed A♠ K♥; Bob showed Q♦ J♣",
             "Stacks: Bob(BTN)=975, Carol(SB)=950, Alice(BB)=1075",
             "PRE_FLOP: Bob(BTN):R100, Carol(SB):C, Alice(BB):F",
             "FLOP: Carol(SB):X, Bob(BTN):B50, Carol(SB):C",
@@ -1280,7 +1280,7 @@ class TestSerializeRecentRecordsIntegration:
             "=== PREVIOUS HANDS ===",
             # Hand 2 (split pot with viewer as BTN)
             "H2: Winner=you,Alice, Pot=400, Showdown=yes",
-            "you showed A♠️ K❤️",
+            "you showed A♠ K♥",
             "Stacks: you(BTN)=1110, Carol(SB)=950, Alice(BB)=940",
             "PRE_FLOP: you(BTN):R100, Carol(SB):F, Alice(BB):C",
             "FLOP: Alice(BB):X, you(BTN):B100, Alice(BB):C",
