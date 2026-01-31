@@ -6,7 +6,10 @@ from typing import Any, Self
 from src.domain.models.chips import ChipAmount
 from src.domain.models.hand import Hand
 from src.domain.models.llm_model import LlmModel
-from src.domain.models.player import HandParticipationStatus
+from src.domain.models.player import (
+    UNDETERMINED_FINISH_POSITION,
+    HandParticipationStatus,
+)
 from src.domain.models.position import PositionName
 from src.domain.models.seat import Seat
 
@@ -82,7 +85,7 @@ class GameLevelPlayerRecord(PlayerRecordSnapshot):
     hands_played: int = 0
     is_eliminated: bool = False
     elimination_hand_number: int | None = None
-    table_finish_position: int | None = None
+    table_finish_position: int = UNDETERMINED_FINISH_POSITION
 
     def __post_init__(self) -> None:
         super(type(self), self).__post_init__()
@@ -119,7 +122,10 @@ class GameLevelPlayerRecord(PlayerRecordSnapshot):
             hands_played=data.get("hands_played", 0),
             is_eliminated=data.get("is_eliminated", False),
             elimination_hand_number=data.get("elimination_hand_number"),
-            table_finish_position=data.get("table_finish_position"),
+            table_finish_position=data.get(
+                "table_finish_position",
+                UNDETERMINED_FINISH_POSITION,
+            ),
         )
 
 

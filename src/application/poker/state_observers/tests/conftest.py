@@ -22,6 +22,7 @@ from src.domain.models.game import (
 from src.domain.models.hand import Hand
 from src.domain.models.llm_model import LlmModel
 from src.domain.models.player import (
+    UNDETERMINED_FINISH_POSITION,
     BettingRoundActionStatus,
     HandParticipationStatus,
     Player,
@@ -48,7 +49,7 @@ def sample_player_factory() -> Callable[..., Player]:
         hole_cards: Hand | None = None,
         name: str | None = None,
         elimination_hand_number: int | None = None,
-        table_finish_position: int | None = None,
+        table_finish_position: int = UNDETERMINED_FINISH_POSITION,
     ) -> Player:
         return Player(
             id=player_id,

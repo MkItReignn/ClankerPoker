@@ -123,7 +123,7 @@
       "hands_played": 1,
       "is_eliminated": true,
       "elimination_hand_number": 1,
-      "table_finish_position": null,
+      "table_finish_position": -1,
       "player_config": {
         "personality": null,
         "addon_prompt": null
@@ -138,7 +138,7 @@
       "hands_played": 1,
       "is_eliminated": true,
       "elimination_hand_number": 1,
-      "table_finish_position": null,
+      "table_finish_position": -1,
       "player_config": {
         "personality": null,
         "addon_prompt": null
@@ -153,7 +153,7 @@
       "hands_played": 4,
       "is_eliminated": true,
       "elimination_hand_number": 4,
-      "table_finish_position": null,
+      "table_finish_position": -1,
       "player_config": {
         "personality": null,
         "addon_prompt": null
@@ -168,7 +168,7 @@
       "hands_played": 4,
       "is_eliminated": false,
       "elimination_hand_number": null,
-      "table_finish_position": null,
+      "table_finish_position": -1,
       "player_config": {
         "personality": null,
         "addon_prompt": null
@@ -183,7 +183,7 @@
       "hands_played": 1,
       "is_eliminated": true,
       "elimination_hand_number": 1,
-      "table_finish_position": null,
+      "table_finish_position": -1,
       "player_config": {
         "personality": null,
         "addon_prompt": null
@@ -198,7 +198,7 @@
       "hands_played": 2,
       "is_eliminated": true,
       "elimination_hand_number": 2,
-      "table_finish_position": null,
+      "table_finish_position": -1,
       "player_config": {
         "personality": null,
         "addon_prompt": null

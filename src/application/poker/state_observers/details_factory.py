@@ -60,33 +60,25 @@ class DetailsFactory:
             raise ValueError("Cannot complete game: no active players")
         winner = active_players[0]
 
-        standings: list[FinalStanding] = [
+        sorted_players = sorted(
+            game.players,
+            key=lambda p: p.table_finish_position,
+        )
+        standings: tuple[FinalStanding, ...] = tuple(
             FinalStanding(
-                player_id=winner.id,
-                player_name=winner.name,
-                finish_position=1,
-                elimination_hand=None,
+                player_id=p.id,
+                player_name=p.name,
+                finish_position=p.table_finish_position,
+                elimination_hand=p.elimination_hand_number,
             )
-        ]
-
-        eliminated = [p for p in game.players if p.id != winner.id]
-        eliminated.sort(key=lambda p: p.table_finish_position or 0)
-
-        for player in eliminated:
-            standings.append(
-                FinalStanding(
-                    player_id=player.id,
-                    player_name=player.name,
-                    finish_position=player.table_finish_position or 0,
-                    elimination_hand=player.elimination_hand_number,
-                )
-            )
+            for p in sorted_players
+        )
 
         return GameCompletedDetails(
             winner_id=winner.id,
             winner_name=winner.name,
             total_hands=game.hand_state.hand_number,
-            final_standings=tuple(standings),
+            final_standings=standings,
         )
 
     @staticmethod

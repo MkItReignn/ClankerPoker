@@ -7,7 +7,11 @@ from src.application.poker.state_observers.details import (
 )
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game, HandPhase
-from src.domain.models.player import HandParticipationStatus, Player
+from src.domain.models.player import (
+    UNDETERMINED_FINISH_POSITION,
+    HandParticipationStatus,
+    Player,
+)
 from src.domain.rules.hand_evaluator import HandEvaluator
 
 
@@ -82,7 +86,8 @@ class HandOutcomeBuilder:
         for player in game.players:
             if (
                 player.elimination_hand_number == current_hand
-                and player.table_finish_position is not None
+                and player.table_finish_position
+                != UNDETERMINED_FINISH_POSITION
             ):
                 eliminated.append(
                     EliminatedInfo(

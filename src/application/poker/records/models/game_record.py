@@ -11,6 +11,7 @@ from src.domain.models.blinds import BlindLevel
 from src.domain.models.chips import ChipAmount
 from src.domain.models.game import Game
 from src.domain.models.llm_model import LlmModel
+from src.domain.models.player import UNDETERMINED_FINISH_POSITION
 from src.domain.models.seat import Seat
 
 from .hand_outcome_record import HandOutcomeRecord
@@ -144,7 +145,7 @@ class GameRecord:
             hands_played=0,
             is_eliminated=False,
             elimination_hand_number=None,
-            table_finish_position=None,
+            table_finish_position=UNDETERMINED_FINISH_POSITION,
         )
 
     def start_hand(
@@ -175,15 +176,16 @@ class GameRecord:
         self.current_hand.complete(hand_outcome_record)
         self.completed_hands.append(self.current_hand)
 
-        # Build set of eliminated player IDs for quick lookup
-        eliminated_player_ids = {e.player_id for e in outcome.eliminated}
+        eliminated_positions: dict[str, int] = {
+            e.player_id: e.finish_position
+            for e in outcome.eliminated
+        }
 
-        # Update game-level player records based on hand outcome
         for player_outcome in outcome.player_outcomes:
             if player_outcome.player_id in self.player_records:
                 old_record = self.player_records[player_outcome.player_id]
                 was_eliminated = (
-                    player_outcome.player_id in eliminated_player_ids
+                    player_outcome.player_id in eliminated_positions
                 )
                 self.player_records[player_outcome.player_id] = (
                     GameLevelPlayerRecord(
@@ -200,7 +202,13 @@ class GameRecord:
                             if was_eliminated
                             else old_record.elimination_hand_number
                         ),
-                        table_finish_position=old_record.table_finish_position,
+                        table_finish_position=(
+                            eliminated_positions[
+                                player_outcome.player_id
+                            ]
+                            if was_eliminated
+                            else old_record.table_finish_position
+                        ),
                     )
                 )
 

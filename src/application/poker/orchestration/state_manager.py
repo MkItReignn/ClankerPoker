@@ -201,14 +201,21 @@ class PokerStateManager:
 
         self._logger.info("Game complete - winner determined")
 
+        winner: Player = active_players[0]
+        updated_winner: Player = dataclass_replace(
+            winner, table_finish_position=1
+        )
+        self.game.players = self.game.players.replace_player(
+            winner.id, updated_winner
+        )
+
         now: datetime = datetime.now(UTC)
-        completed_identity: GameIdentity = dataclass_replace(
+        self.game.identity = dataclass_replace(
             self.game.identity,
             status=GameStatus.COMPLETED,
             completed_at=now,
             updated_at=now,
         )
-        self.game.identity = completed_identity
 
         await self._notifier.on_game_completed(game=self.game)
 

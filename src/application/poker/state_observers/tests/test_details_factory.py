@@ -95,12 +95,14 @@ class TestGameCompleted:
             Seat.SEAT_0,
             ChipAmount(2000),
             name="Winner Bot",
+            table_finish_position=1,
         )
         eliminated = sample_player_factory(
             PlayerId("loser"),
             Seat.SEAT_1,
             ChipAmount(0),
             participation_status=HandParticipationStatus.ELIMINATED,
+            table_finish_position=2,
         )
         game = game_factory(players=[winner, eliminated], hand_number=5)
 

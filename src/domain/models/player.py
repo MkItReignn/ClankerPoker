@@ -9,6 +9,8 @@ from src.domain.models.seat import Seat
 
 PlayerId = str
 
+UNDETERMINED_FINISH_POSITION: int = -1
+
 
 class BettingRoundActionStatus(Enum):
     """Whether the player has acted in the current betting round."""
@@ -40,7 +42,7 @@ class Player:
     )
     hands_played: int = 0
     elimination_hand_number: int | None = None
-    table_finish_position: int | None = None
+    table_finish_position: int = UNDETERMINED_FINISH_POSITION
     can_raise: bool = (
         True  # Can this player raise in current betting round? (WSOP Rule 96)
     )
@@ -73,11 +75,13 @@ class Player:
                 f"Elimination hand number must be at least 1: {self.elimination_hand_number}"
             )
         if (
-            self.table_finish_position is not None
+            self.table_finish_position != UNDETERMINED_FINISH_POSITION
             and self.table_finish_position < 1
         ):
             raise ValueError(
-                f"Table finish position must be at least 1: {self.table_finish_position}"
+                "Table finish position must be"
+                " at least 1 or UNDETERMINED:"
+                f" {self.table_finish_position}"
             )
 
     def needs_action(self) -> bool:
