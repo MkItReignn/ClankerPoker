@@ -56,26 +56,36 @@ def _create_formatter(
     else:
         renderer = structlog.processors.JSONRenderer()
 
+    # ConsoleRenderer handles exception formatting itself;
+    # format_exc_info is only needed for JSONRenderer.
+    foreign_pre_chain: list[structlog.types.Processor] = [
+        _ensure_dict,
+        structlog.contextvars.merge_contextvars,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.add_logger_name,
+        structlog.processors.TimeStamper(fmt="iso", utc=True),
+        structlog.processors.StackInfoRenderer(),
+    ]
+    if not dev_mode:
+        foreign_pre_chain.append(
+            structlog.processors.format_exc_info
+        )
+
     return structlog.stdlib.ProcessorFormatter(
         processors=[
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
             renderer,
         ],
-        foreign_pre_chain=[
-            _ensure_dict,
-            structlog.contextvars.merge_contextvars,
-            structlog.stdlib.add_log_level,
-            structlog.stdlib.add_logger_name,
-            structlog.processors.TimeStamper(fmt="iso", utc=True),
-            structlog.processors.StackInfoRenderer(),
-            structlog.processors.format_exc_info,
-        ],
+        foreign_pre_chain=foreign_pre_chain,
     )
 
 
-def _configure_structlog_processors() -> None:
-    """Configure structlog to emit records compatible with ProcessorFormatter."""
-    processors = [
+def _configure_structlog_processors(
+    dev_mode: bool = True,
+) -> None:
+    # ConsoleRenderer handles exception formatting itself;
+    # format_exc_info is only needed for JSONRenderer.
+    processors: list[structlog.types.Processor] = [
         structlog.stdlib.filter_by_level,
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,
@@ -83,9 +93,14 @@ def _configure_structlog_processors() -> None:
         structlog.stdlib.PositionalArgumentsFormatter(),
         structlog.processors.TimeStamper(fmt="iso", utc=True),
         structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
-        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
     ]
+    if not dev_mode:
+        processors.append(
+            structlog.processors.format_exc_info
+        )
+    processors.append(
+        structlog.stdlib.ProcessorFormatter.wrap_for_formatter
+    )
 
     structlog.configure(
         processors=processors,
@@ -144,7 +159,7 @@ def configure_logging(
         if _file_handler is not None:
             root_logger.addHandler(_file_handler)
 
-    _configure_structlog_processors()
+    _configure_structlog_processors(dev_mode=dev_mode)
 
     _logging_configured = True
 
