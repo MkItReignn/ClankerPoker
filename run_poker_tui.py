@@ -109,7 +109,7 @@ async def run_with_tui(
         return 1
 
 
-WEB_ONLY_ARGS: set[str] = {"--web", "--host", "--port"}
+WEB_ONLY_ARGS: set[str] = {"--web", "--host", "--port", "--public-url"}
 
 
 def build_terminal_command() -> str:
@@ -136,7 +136,9 @@ def build_terminal_command() -> str:
     return " ".join(base + filtered)
 
 
-def run_web_server(host: str, port: int) -> None:
+def run_web_server(
+    host: str, port: int, public_url: str | None = None
+) -> None:
     from textual_serve.server import Server
 
     command: str = build_terminal_command()
@@ -144,10 +146,12 @@ def run_web_server(host: str, port: int) -> None:
         command,
         host=host,
         port=port,
-        title="Poker Tournament Viewer",
+        title="ClankerPoker Tournament Viewer",
+        public_url=public_url,
     )
 
-    print(f"Starting Poker Viewer at http://{host}:{port}")
+    location: str = public_url or f"http://{host}:{port}"
+    print(f"Starting Poker Viewer at {location}")
     print("Press Ctrl+C to stop the server")
     server.serve()
 
@@ -201,23 +205,41 @@ def main() -> None:
         default=DEFAULT_WEB_PORT,
         help=f"Port for web server (default: {DEFAULT_WEB_PORT})",
     )
+    parser.add_argument(
+        "--public-url",
+        type=str,
+        default=None,
+        help=(
+            "Public base URL browsers use to reach the server, e.g. "
+            "https://poker.example.com. Required behind a reverse "
+            "proxy so the client websocket targets the public host "
+            "rather than the internal bind address."
+        ),
+    )
 
     args: argparse.Namespace = parser.parse_args()
 
     web_arg_used: bool = any(
-        arg in ("--host", "--port")
+        arg in ("--host", "--port", "--public-url")
         or arg.startswith("--host=")
         or arg.startswith("--port=")
+        or arg.startswith("--public-url=")
         for arg in sys.argv[1:]
     )
     if web_arg_used and not args.web:
-        parser.error("--host and --port require --web")
+        parser.error(
+            "--host, --port, and --public-url require --web"
+        )
 
     if args.replay and args.bot:
         parser.error("--replay and --bot are mutually exclusive")
 
     if args.web:
-        run_web_server(host=args.host, port=args.port)
+        run_web_server(
+            host=args.host,
+            port=args.port,
+            public_url=args.public_url,
+        )
     else:
         config: RuntimeConfig = _create_runtime_config(args)
         show_seed: bool = args.seed is not None or args.replay is not None
