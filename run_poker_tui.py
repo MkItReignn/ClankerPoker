@@ -35,6 +35,9 @@ DEFAULT_REPLAY_PATH: Path = Path("replay/llm_default.json")
 DEFAULT_EVENT_DELAY: float = 0.3
 DEFAULT_WEB_HOST: str = "localhost"
 DEFAULT_WEB_PORT: int = 8000
+WEB_TEMPLATES_PATH: Path = (
+    Path(__file__).resolve().parent / "web" / "templates"
+)
 
 
 async def run_with_tui(
@@ -148,6 +151,7 @@ def run_web_server(
         port=port,
         title="ClankerPoker Tournament Viewer",
         public_url=public_url,
+        templates_path=str(WEB_TEMPLATES_PATH),
     )
 
     location: str = public_url or f"http://{host}:{port}"
