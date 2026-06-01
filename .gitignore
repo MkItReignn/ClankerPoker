@@ -50,6 +50,9 @@ htmlcov/
 .env.*
 !.env.example
 
+# Local secrets (use the .example as a template)
+config/llm/openrouter.json
+
 # Database
 *.db
 *.sqlite
