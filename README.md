@@ -26,17 +26,17 @@ cd ClankerPoker
 poetry install
 
 # Watch a recorded LLM game (no API keys needed)
-poetry run python run_poker_tui.py --replay
+poetry run python run_poker_tui.py --replay --delay 1.5
 ```
 
 ### Other Modes
 
 ```bash
 # Run with bot players (deterministic, no API)
-poetry run python run_poker_tui.py --bot
+poetry run python run_poker_tui.py --bot --delay 1.5
 
 # Run in browser instead of terminal
-poetry run python run_poker_tui.py --replay --web
+poetry run python run_poker_tui.py --replay --web --delay 1.5
 
 # Adjust playback speed
 poetry run python run_poker_tui.py --replay --delay 0.5
